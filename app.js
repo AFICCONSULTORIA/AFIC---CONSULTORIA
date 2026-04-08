@@ -87,6 +87,88 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // ─── AFIC CONCIERGE (SUPPORT) ───
+    const supportToggle = document.getElementById('support-toggle');
+    const supportWidget = document.getElementById('support-widget');
+    const closeSupport = document.getElementById('close-support');
+    const chatForm = document.getElementById('chat-form');
+    const chatInput = document.getElementById('chat-input');
+    const chatHistory = document.getElementById('chat-history');
+
+    function addChatMessage(text, side) {
+        if (!chatHistory) return;
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${side === 'user' ? 'user-message' : 'bot-message'}`;
+        msgDiv.textContent = text;
+        chatHistory.appendChild(msgDiv);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+
+    function getBotResponse(query) {
+        const q = query.toLowerCase();
+        
+        if (q.includes('agendar') || q.includes('consultoria') || q.includes('falar')) {
+            return "Com certeza. Podemos agendar um call de alocação estratégica diretamente com nosso consultor sênior. Gostaria de receber o link do calendário ou prefere que entremos em contato via WhatsApp?";
+        }
+        if (q.includes('plano') || q.includes('premium') || q.includes('elite') || q.includes('preço')) {
+            return "Atualmente oferecemos dois tiers institucionais: o Private (R$ 490/mês) para gestão autônoma assistida, e o Elite (R$ 1.850/mês) com mentoria individual 1:1 e revisão trimestral de portfólio. Você pode ver mais detalhes na aba 'Minha Conta'.";
+        }
+        if (q.includes('seguro') || q.includes('dados') || q.includes('supabase')) {
+            return "A AFIC utiliza criptografia de nível bancário e infraestrutura Supabase para garantir que seus dados patrimoniais estejam protegidos e sob sua total soberania.";
+        }
+        if (q.includes('ferramenta') || q.includes('calculadora') || q.includes('juros') || q.includes('simular')) {
+            return "Nossas calculadoras de Projeção Institucional e Bola de Neve Patrimonial estão disponíveis na aba 'Ferramentas'. Elas utilizam modelos de capitalização composta para prever o seu ponto de ignição financeira.";
+        }
+        if (q.includes('oi') || q.includes('olá') || q.includes('bom dia') || q.includes('boa tarde')) {
+            return "Olá! Sou o Concierge Digital da AFIC. Como posso auxiliar na arquitetura do seu patrimônio hoje?";
+        }
+
+        return "Entendo sua dúvida. Como esta é uma questão técnica, gostaria de ser transferido para um consultor humano ou prefere que eu procure informações mais detalhadas na nossa base de conhecimento institucional?";
+    }
+
+    if (supportToggle && supportWidget) {
+        supportToggle.addEventListener('click', () => {
+            supportWidget.classList.toggle('hidden');
+            if (!supportWidget.classList.contains('hidden')) {
+                chatInput.focus();
+            }
+        });
+
+        if (closeSupport) {
+            closeSupport.addEventListener('click', () => {
+                supportWidget.classList.add('hidden');
+            });
+        }
+
+        if (chatForm) {
+            chatForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const msg = chatInput.value.trim();
+                if (!msg) return;
+
+                addChatMessage(msg, 'user');
+                chatInput.value = '';
+
+                setTimeout(() => {
+                    const response = getBotResponse(msg);
+                    addChatMessage(response, 'bot');
+                }, 700);
+            });
+        }
+
+        // Quick Actions
+        document.querySelectorAll('.quick-action-tag').forEach(tag => {
+            tag.addEventListener('click', () => {
+                const query = tag.getAttribute('data-query');
+                addChatMessage(query, 'user');
+                setTimeout(() => {
+                    const response = getBotResponse(query);
+                    addChatMessage(response, 'bot');
+                }, 700);
+            });
+        });
+    }
+
     // ─── COUNTER ANIMATION ───
     function animateCounter(element, target, duration = 1500) {
         const start = 0;

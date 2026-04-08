@@ -1215,6 +1215,50 @@
 
     </main>
 
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- SUPPORT WIDGET (AFIC Concierge)             -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div id="support-widget" class="support-widget hidden">
+        <div class="support-header">
+            <div class="support-avatar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+            </div>
+            <div class="support-title-info">
+                <span class="support-title">AFIC Concierge</span>
+                <span class="support-status"><span class="status-dot"></span> Online</span>
+            </div>
+            <button id="close-support" class="btn-close-support" aria-label="Fechar suporte">×</button>
+        </div>
+        <div id="chat-history" class="chat-history">
+            <div class="message bot-message">
+                Olá! Sou o seu concierge digital AFIC. Como posso auxiliar na gestão do seu patrimônio institucional hoje?
+            </div>
+        </div>
+        <div class="chat-quick-actions">
+            <button class="quick-action-tag" data-query="Como agendar consultoria?">Agendar Consultoria</button>
+            <button class="quick-action-tag" data-query="Quais os planos premium?">Planos Premium</button>
+        </div>
+        <form id="chat-form" class="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Escreva sua pergunta..." autocomplete="off">
+            <button type="submit" class="btn-send" aria-label="Enviar mensagem">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="22" y1="2" x2="11" y2="13"/>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                </svg>
+            </button>
+        </form>
+    </div>
+
+    <!-- SUPPORT TOGGLE BUTTON -->
+    <button id="support-toggle" class="support-toggle" aria-label="Abrir suporte">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        <span class="toggle-label">Concierge</span>
+    </button>
+
     <script src="app.js"></script>
 </body>
 </html>
