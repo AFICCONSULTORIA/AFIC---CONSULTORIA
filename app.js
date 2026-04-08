@@ -3,6 +3,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 document.addEventListener('DOMContentLoaded', () => {
+  try {
     // ─── SUPABASE INITIALIZATION ───
     const supabaseUrl = 'https://sueyfodlqcviojivlxgv.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN1ZXlmb2RscWN2aW9qaXZseGd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NzU4NTMsImV4cCI6MjA5MTI1MTg1M30.g40c4ko9uFKOdN2x4tvQQg-IuWx2ZB4K8_fsZpgeIDw';
@@ -70,8 +71,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize Auth
     checkAuthSession();
-
-    try {
 
     // ─── COUNTER ANIMATION ───
     function animateCounter(element, target, duration = 1500) {
@@ -744,7 +743,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const txForm = document.getElementById('transaction-form');
     if (txForm) {
-        txForm.addEventListener('submit', (e) => {
+        txForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const desc = document.getElementById('tx-desc').value.trim();
             const valStr = document.getElementById('tx-val').value;
@@ -880,7 +879,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const ccForm = document.getElementById('cc-form');
     if (ccForm) {
-        ccForm.addEventListener('submit', (e) => {
+        ccForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const desc = document.getElementById('cc-desc').value.trim();
             const valStr = document.getElementById('cc-val').value;
