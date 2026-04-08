@@ -66,8 +66,19 @@
                     </select>
                 </div>
                 <div class="param-group">
-                    <label class="param-label" for="topic-content">Conteúdo</label>
-                    <textarea class="param-input" id="topic-content" rows="6" placeholder="Descreva sua tese ou dúvida detalhadamente..." required style="resize: none; padding: 12px;"></textarea>
+                    <label class="param-label" for="topic-content">Conteúdo da Tese</label>
+                    <textarea class="param-input" id="topic-content" rows="6" placeholder="Descreva sua análise, oportunidade ou dúvida em detalhes..." required></textarea>
+                </div>
+                
+                <div class="param-group">
+                    <label class="param-label" for="topic-file">Anexo em PDF (Opcional)</label>
+                    <div class="card" style="padding: 12px; background: rgba(255,255,255,0.05); border: 1px dashed rgba(255,255,255,0.2); position: relative;">
+                        <input type="file" id="topic-file" accept=".pdf" style="opacity: 0; position: absolute; inset: 0; cursor: pointer; width: 100%;">
+                        <div style="text-align: center; font-size: 13px; color: var(--text-muted);" id="file-status">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20" style="display: block; margin: 0 auto 4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            Clique para anexar sua tese (PDF máx 20MB)
+                        </div>
+                    </div>
                 </div>
                 <div class="auth-actions">
                     <button type="submit" class="btn-calculate" style="margin-top: 12px;">Publicar Tópico</button>
@@ -1129,6 +1140,78 @@
                 </div>
             </div>
 
+        </section>
+        
+        <!-- ═══════════════════════════════════════ -->
+        <!-- TOPIC DETAILS — Content & Discussion    -->
+        <!-- ═══════════════════════════════════════ -->
+        <section class="page-content page-hidden" id="page-topic-details">
+            <header class="section-header">
+                <div>
+                    <button id="btn-back-to-community" class="btn-secondary" style="margin-bottom: 24px; width: auto; padding: 10px 18px; display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                        Voltar para Comunidade
+                    </button>
+                    <h1 class="page-title" id="detail-topic-title" style="font-size: 32px; line-height: 1.2;">Carregando...</h1>
+                    <div class="thread-meta" style="margin-top: 16px; display: flex; align-items: center; gap: 16px;">
+                        <span class="thread-author" id="detail-topic-author"><strong>Autor</strong></span>
+                        <span class="thread-date" id="detail-topic-date">Data</span>
+                        <div class="thread-badge" id="detail-topic-category" style="background: var(--gold-rich); color: var(--navy-deep); border:none; font-weight: 700;">Categoria</div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="community-layout">
+                <div class="community-main">
+                    <div class="card" style="padding: 40px; font-size: 15px; line-height: 1.8; color: var(--text-primary); min-height: 500px; white-space: pre-wrap; background: var(--bg-white); border-left: 2px solid var(--gold-rich);" id="detail-topic-content">
+                        <!-- Conteúdo carregado via JS -->
+                    </div>
+
+                    <div id="topic-attachment-box" style="margin-top: 24px;">
+                        <!-- Link do PDF se existir -->
+                    </div>
+
+                    <div style="margin-top: 32px; display: flex; align-items: center; gap: 24px; padding: 16px 0; border-bottom: 1px solid rgba(0,0,0,0.05);">
+                        <button id="btn-like-topic" class="btn-like" style="display: flex; align-items: center; gap: 8px; background: none; border: none; cursor: pointer; color: var(--text-secondary); transition: all 0.2s;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24" class="heart-icon"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                            <span id="topic-likes-count">0</span> curtidas
+                        </button>
+                    </div>
+                    
+                    <div id="comment-section" style="margin-top: 48px; padding-top: 32px; border-top: 1px solid rgba(0,0,0,0.05);">
+                        <h4 class="widget-title" style="margin-bottom: 24px;">Discussão Institucional</h4>
+                        
+                        <form id="form-comment" class="comment-form" style="margin-bottom: 40px;">
+                            <textarea id="comment-input" class="param-input" placeholder="Contribua para o debate..." rows="3" style="resize: none;"></textarea>
+                            <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
+                                <button type="submit" class="btn-primary" style="padding: 10px 24px; font-size: 13px;">Publicar Comentário</button>
+                            </div>
+                        </form>
+
+                        <div id="comments-list" style="display: flex; flex-direction: column; gap: 32px;">
+                            <!-- Comentários aninhados carregados via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="community-sidebar">
+                    <div class="sidebar-widget">
+                        <h4 class="widget-title">Aviso de Governança</h4>
+                        <p style="font-size: 13px; line-height: 1.6; color: var(--text-secondary);">Este conteúdo é de propriedade intelectual da AFIC e seus membros. É proibida a reprodução externa de teses e oportunidades aqui listadas sem autorização prévia por escrito.</p>
+                    </div>
+                    
+                    <div class="sidebar-widget">
+                        <h4 class="widget-title">Autor do Post</h4>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div class="member-avatar" id="detail-topic-avatar" style="width: 40px; height: 40px; font-size: 14px;">?</div>
+                            <div>
+                                <strong id="detail-topic-author-name" style="font-size: 14px; display: block;">Identidade Protegida</strong>
+                                <span style="font-size: 11px; color: var(--gold-dry);">Membro Ativo</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
 
         <!-- ═══════════════════════════════════════ -->

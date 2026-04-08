@@ -244,7 +244,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'education': 'page-education',
         'community': 'page-community',
         'account': 'page-account',
-        'plans': 'page-plans'
+        'plans': 'page-plans',
+        'topic-details': 'page-topic-details'
     };
 
     function switchPage(pageName) {
@@ -707,6 +708,52 @@ document.addEventListener('DOMContentLoaded', () => {
         await reloadBudgetData();
         await loadUserProfile();
         await loadCommunityThreads();
+        initializeRealtime();
+    }
+
+    function initializeRealtime() {
+        if (window.communitySubscribed) return;
+        
+        console.log("Initializing AFIC Realtime Channels...");
+        
+        supabase
+            .channel('public:community_topics')
+            .on('postgres_changes', { 
+                event: 'INSERT', 
+                schema: 'public', 
+                table: 'community_topics' 
+            }, (payload) => {
+                console.log("New topic detected via Realtime:", payload.new.title);
+                loadCommunityThreads();
+            })
+            .subscribe((status) => {
+                console.log("Realtime status:", status);
+                if (status === 'SUBSCRIPTION_ERROR') {
+                    console.error("Realtime failed. Ensure Replication is enabled in Supabase.");
+                }
+            });
+
+        supabase
+            .channel('public:community_comments')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'community_comments' }, (payload) => {
+                const activeTopicId = document.getElementById('detail-topic-title').getAttribute('data-id');
+                if (activeTopicId === payload.new.topic_id) {
+                    loadComments(activeTopicId);
+                }
+            })
+            .subscribe();
+
+        supabase
+            .channel('public:community_likes')
+            .on('postgres_changes', { event: 'ALL', schema: 'public', table: 'community_likes' }, (payload) => {
+                const activeTopicId = document.getElementById('detail-topic-title').getAttribute('data-id');
+                if (activeTopicId === (payload.new?.topic_id || payload.old?.topic_id)) {
+                    loadLikes(activeTopicId);
+                }
+            })
+            .subscribe();
+            
+        window.communitySubscribed = true;
     }
 
     function renderBudgetManager() {
@@ -1303,22 +1350,6 @@ document.addEventListener('DOMContentLoaded', () => {
             `)
             .order('created_at', { ascending: false });
 
-        // Realtime Subscription (Initialize only once)
-        if (!window.communitySubscribed) {
-            supabase
-                .channel('public:community_topics')
-                .on('postgres_changes', { 
-                    event: 'INSERT', 
-                    schema: 'public', 
-                    table: 'community_topics' 
-                }, (payload) => {
-                    // Refresh the list when a new topic is inserted
-                    loadCommunityThreads();
-                })
-                .subscribe();
-            window.communitySubscribed = true;
-        }
-
         if (!error && data) {
             data.forEach(topic => {
                 const card = document.createElement('div');
@@ -1337,12 +1368,187 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
                 
                 card.addEventListener('click', () => {
-                    showToast('📄 Abrindo tese: "' + topic.title + '". Em breve você poderá comentar.');
+                    loadTopicDetails(topic.id);
                 });
                 
                 communityMain.appendChild(card);
             });
         }
+        
+        // Add "Load More" button back
+        const loadMore = document.createElement('button');
+        loadMore.className = 'btn-secondary load-more-btn';
+        loadMore.textContent = 'Carregar mais discussões';
+        loadMore.style.marginTop = '24px';
+        loadMore.addEventListener('click', () => showToast('📜 Todas as discussões carregadas.'));
+        communityMain.appendChild(loadMore);
+    }
+
+    async function loadTopicDetails(topicId) {
+        // Show loading state
+        switchPage('topic-details');
+        document.getElementById('detail-topic-title').textContent = "Carregando conteúdo...";
+        document.getElementById('detail-topic-title').setAttribute('data-id', topicId);
+        document.getElementById('detail-topic-content').textContent = "";
+        document.getElementById('topic-attachment-box').innerHTML = "";
+
+        const { data, error } = await supabase
+            .from('community_topics')
+            .select(`
+                *,
+                profiles:user_id (nickname)
+            `)
+            .eq('id', topicId)
+            .single();
+
+        if (error) {
+            showToast("❌ Erro ao abrir postagem.");
+            switchPage('community');
+            return;
+        }
+
+        const date = new Date(data.created_at).toLocaleDateString('pt-BR');
+        const author = data.profiles?.nickname || 'Identidade Protegida';
+        
+        // Populate view
+        document.getElementById('detail-topic-title').textContent = data.title;
+        document.getElementById('detail-topic-author').innerHTML = `<strong>${author}</strong>`;
+        document.getElementById('detail-topic-author-name').textContent = author;
+        document.getElementById('detail-topic-date').textContent = date;
+        document.getElementById('detail-topic-category').textContent = data.category;
+        document.getElementById('detail-topic-content').textContent = data.content;
+        
+        // Attachment
+        if (data.attachment_url) {
+            document.getElementById('topic-attachment-box').innerHTML = `
+                <a href="${data.attachment_url}" target="_blank" class="attachment-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    Acessar Tese em PDF
+                </a>
+            `;
+        }
+
+        // Avatar initials
+        const avatar = document.getElementById('detail-topic-avatar');
+        if (avatar) avatar.textContent = author.substring(0, 2).toUpperCase();
+        
+        loadLikes(topicId);
+        loadComments(topicId);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Likes Logic
+    async function loadLikes(topicId) {
+        const { data, count, error } = await supabase
+            .from('community_likes')
+            .select('*', { count: 'exact' })
+            .eq('topic_id', topicId);
+        
+        if (!error) {
+            document.getElementById('topic-likes-count').textContent = count;
+            const userLiked = data.some(l => l.user_id === currentUser?.id);
+            const btn = document.getElementById('btn-like-topic');
+            if (userLiked) btn.classList.add('active');
+            else btn.classList.remove('active');
+        }
+    }
+
+    const btnLikeTopic = document.getElementById('btn-like-topic');
+    if (btnLikeTopic) {
+        btnLikeTopic.addEventListener('click', async () => {
+            if (!currentUser) return showToast("⚠️ Faça login para curtir.");
+            const topicId = document.getElementById('detail-topic-title').getAttribute('data-id');
+            
+            if (btnLikeTopic.classList.contains('active')) {
+                await supabase.from('community_likes').delete().eq('topic_id', topicId).eq('user_id', currentUser.id);
+            } else {
+                await supabase.from('community_likes').insert([{ topic_id: topicId, user_id: currentUser.id }]);
+            }
+            loadLikes(topicId);
+        });
+    }
+
+    // Comments Logic
+    async function loadComments(topicId) {
+        const container = document.getElementById('comments-list');
+        container.innerHTML = '<p style="color:var(--text-muted); font-size:13px;">Carregando debate...</p>';
+
+        const { data, error } = await supabase
+            .from('community_comments')
+            .select('*, profiles:user_id(nickname)')
+            .eq('topic_id', topicId)
+            .order('created_at', { ascending: true });
+
+        if (error) return container.innerHTML = "";
+        
+        container.innerHTML = data.length === 0 ? '<p style="color:var(--text-muted); font-size:13px; text-align:center;">Nenhum comentário ainda. Seja o primeiro a contribuir!</p>' : '';
+        
+        data.forEach(comment => {
+            const div = document.createElement('div');
+            div.className = 'comment-item';
+            const date = new Date(comment.created_at).toLocaleDateString('pt-BR');
+            div.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                    <strong style="font-size: 14px;">${comment.profiles?.nickname || 'Membro'}</strong>
+                    <span style="font-size: 11px; color: var(--text-muted);">${date}</span>
+                </div>
+                <p style="font-size: 14px; color: var(--text-primary);">${comment.content}</p>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    const formComment = document.getElementById('form-comment');
+    if (formComment) {
+        formComment.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentUser) return showToast("⚠️ Faça login para comentar.");
+            const input = document.getElementById('comment-input');
+            const content = input.value.trim();
+            const topicId = document.getElementById('detail-topic-title').getAttribute('data-id');
+
+            if (!content) return;
+
+            const { error } = await supabase
+                .from('community_comments')
+                .insert([{ topic_id: topicId, user_id: currentUser.id, content: content }]);
+
+            if (!error) {
+                input.value = "";
+                loadComments(topicId);
+            }
+        });
+    }
+
+    // File Upload Handler
+    async function uploadTopicFile(file) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `teses/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+            .from('community-attachments')
+            .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data } = supabase.storage
+            .from('community-attachments')
+            .getPublicUrl(filePath);
+
+        return data.publicUrl;
+    }
+
+    const topicFileInput = document.getElementById('topic-file');
+    if (topicFileInput) {
+        topicFileInput.addEventListener('change', () => {
+            const status = document.getElementById('file-status');
+            if (topicFileInput.files.length > 0) {
+                status.textContent = `📎 Preparado: ${topicFileInput.files[0].name}`;
+                status.style.color = "var(--gold-rich)";
+            }
+        });
+    }
         
         // Add "Load More" button back
         const loadMore = document.createElement('button');
@@ -1378,8 +1584,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const title = document.getElementById('topic-title').value.trim();
             const category = document.getElementById('topic-category').value;
             const content = document.getElementById('topic-content').value.trim();
-
+            const fileInput = document.getElementById('topic-file');
+            
             if (!title || !content) return;
+
+            let attachmentUrl = null;
+            if (fileInput.files.length > 0) {
+                try {
+                    showToast("📤 Enviando anexo PDF...");
+                    attachmentUrl = await uploadTopicFile(fileInput.files[0]);
+                } catch (err) {
+                    return showToast("❌ Erro no upload: " + err.message);
+                }
+            }
 
             const { error } = await supabase
                 .from('community_topics')
@@ -1387,7 +1604,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     user_id: currentUser.id,
                     title,
                     category,
-                    content
+                    content,
+                    attachment_url: attachmentUrl
                 }]);
 
             if (error) {

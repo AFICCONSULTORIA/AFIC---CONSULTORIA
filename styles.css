@@ -2995,3 +2995,52 @@ select.param-input {
     transform: translateX(4px);
     border-left-color: var(--gold-rich);
 }
+
+/* --- TOPIC DETAILS REFINEMENTS --- */
+#page-topic-details .card {
+    box-shadow: var(--shadow-sm);
+}
+
+#btn-back-to-community:hover {
+    background: var(--navy-medium);
+    color: var(--bg-white);
+    transform: translateX(-4px);
+}
+
+/* --- COMMUNITY EXPANSION --- */
+.comment-item {
+    border-bottom: 1px solid rgba(0,0,0,0.03);
+    padding-bottom: 24px;
+}
+
+.comment-nested {
+    margin-left: 48px;
+    border-left: 2px solid var(--bg-off-white);
+    padding-left: 24px;
+    margin-top: 16px;
+}
+
+.btn-like.active {
+    color: #ff4d4f !important;
+}
+.btn-like.active .heart-icon {
+    fill: #ff4d4f;
+    stroke: #ff4d4f;
+}
+
+.attachment-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 24px;
+    background: var(--bg-off-white);
+    border: 1px solid rgba(0,0,0,0.05);
+    color: var(--navy-deep);
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+.attachment-link:hover {
+    background: var(--bg-light-blue);
+    border-color: var(--gold-rich);
+}
