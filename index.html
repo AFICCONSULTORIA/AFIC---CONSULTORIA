@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AFIC Consultoria — Plataforma premium de gestão patrimonial e consultoria financeira institucional.">
+    <title>AFIC — Dashboard | Gestão Patrimonial</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- AUTH MODAL (Login/Cadastro)                 -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div id="auth-modal" class="auth-modal">
+        <div class="auth-modal-content">
+            <div class="auth-header">
+                <h2>Acesso Restrito</h2>
+                <p>Insira suas credenciais para visualizar seu patrimônio.</p>
+            </div>
+            <form id="auth-form" class="auth-form">
+                <div class="param-group">
+                    <label class="param-label" for="auth-email">E-mail</label>
+                    <input type="email" class="param-input" id="auth-email" placeholder="seu@email.com" required>
+                </div>
+                <div class="param-group">
+                    <label class="param-label" for="auth-password">Senha</label>
+                    <input type="password" class="param-input" id="auth-password" placeholder="••••••••" required minlength="6">
+                </div>
+                <div class="auth-actions">
+                    <button type="submit" id="btn-login" class="btn-calculate" style="margin-top: 12px;">Entrar</button>
+                    <button type="button" id="btn-signup" class="btn-primary" style="margin-top: 8px; background: transparent; border: 1px solid var(--gold-rich); color: var(--gold-rich);">Criar Conta</button>
+                </div>
+                <p id="auth-error-msg" style="color: #ff4d4f; font-size: 13px; text-align: center; margin-top: 12px; display: none;"></p>
+            </form>
+        </div>
+    </div>    <!-- ═══════════════════════════════════════════ -->
+    <!-- SIDEBAR — Navegação Principal               -->
+    <!-- ═══════════════════════════════════════════ -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <span class="logo-main">AFIC</span>
+                <span class="logo-sub">CONSULTORIA</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-link active" data-page="dashboard" id="nav-dashboard">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-link" data-page="education" id="nav-education">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                </svg>
+                <span>Educação</span>
+            </a>
+            <a href="#" class="nav-link" data-page="tools" id="nav-tools">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="2" y="2" width="20" height="8"/>
+                    <rect x="2" y="14" width="20" height="8"/>
+                    <line x1="6" y1="6" x2="6.01" y2="6"/>
+                    <line x1="6" y1="18" x2="6.01" y2="18"/>
+                </svg>
+                <span>Ferramentas</span>
+            </a>
+            <a href="#" class="nav-link" data-page="community" id="nav-community">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                <span>Comunidade</span>
+            </a>
+            <a href="#" class="nav-link" data-page="account" id="nav-account">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span>Minha Conta</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="premium-card" id="premium-cta">
+                <div class="premium-badge">VIP</div>
+                <p class="premium-title">Acesso Premium</p>
+                <p class="premium-desc">Desbloqueie análises institucionais e mentoria exclusiva.</p>
+                <button class="premium-btn" id="upgrade-btn">Elevar Acesso</button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- MAIN CONTENT AREA                           -->
+    <!-- ═══════════════════════════════════════════ -->
+    <main class="main-content">
+
+        <!-- TOP BAR -->
+        <header class="top-bar" id="top-bar">
+            <div class="search-container">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="text" class="search-input" id="search-input" placeholder="Buscar mercados ou ferramentas...">
+            </div>
+            <div class="top-bar-actions">
+                <button class="notification-btn" id="notification-btn" aria-label="Notificações">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                    <span class="notification-dot"></span>
+                </button>
+                <div class="user-profile" id="user-profile">
+                    <div class="avatar">
+                        <span>CA</span>
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name">Carlos A.</span>
+                        <span class="user-tier">Private Tier</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- DASHBOARD PAGE                          -->
+        <!-- ═══════════════════════════════════════ -->
+        <section class="page-content" id="page-dashboard">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Visão Geral</h1>
+                    <p class="page-subtitle">Patrimônio consolidado — Abril 2026</p>
+                </div>
+                <div class="page-header-actions">
+                    <span class="last-update">Última atualização: 08 Abr, 14:28</span>
+                </div>
+            </div>
+
+            <!-- ROW 1: Health Score + AUM -->
+            <div class="dashboard-grid-top">
+                
+                <!-- HEALTH SCORE CARD -->
+                <div class="card card-health" id="health-score-card">
+                    <div class="card-label">Score de Saúde Financeira</div>
+                    <div class="health-score-display">
+                        <div class="score-number">
+                            <span class="score-value" id="score-value">842</span>
+                            <span class="score-total">/1000</span>
+                        </div>
+                        <div class="score-rating">Excelente</div>
+                    </div>
+                    <div class="score-bar-track">
+                        <div class="score-bar-fill" id="score-bar" style="width: 84.2%"></div>
+                    </div>
+                    <div class="score-breakdown">
+                        <div class="score-item">
+                            <span class="score-item-label">Diversificação</span>
+                            <span class="score-item-value good">92%</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-item-label">Liquidez</span>
+                            <span class="score-item-value good">88%</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-item-label">Risco/Retorno</span>
+                            <span class="score-item-value moderate">76%</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-item-label">Consistência</span>
+                            <span class="score-item-value good">91%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AUM CARD -->
+                <div class="card card-aum" id="aum-card">
+                    <div class="aum-header">
+                        <div class="card-label card-label-light">Assets Under Management</div>
+                        <div class="aum-period">
+                            <button class="period-btn active" data-period="12m">12M</button>
+                            <button class="period-btn" data-period="ytd">YTD</button>
+                            <button class="period-btn" data-period="all">ALL</button>
+                        </div>
+                    </div>
+                    <div class="aum-value-container">
+                        <span class="aum-currency">R$</span>
+                        <span class="aum-value" id="aum-value">2.847.320</span>
+                        <span class="aum-cents">,00</span>
+                    </div>
+                    <div class="aum-change">
+                        <span class="change-positive">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                                <polyline points="17 6 23 6 23 12"/>
+                            </svg>
+                            +12.4%
+                        </span>
+                        <span class="change-label">vs. período anterior</span>
+                    </div>
+                    
+                    <!-- BAR CHART -->
+                    <div class="aum-chart" id="aum-chart">
+                        <div class="chart-bar-group" data-month="Mai">
+                            <div class="chart-bar" style="height: 45%"></div>
+                        </div>
+                        <div class="chart-bar-group" data-month="Jun">
+                            <div class="chart-bar" style="height: 52%"></div>
+                        </div>
+                        <div class="chart-bar-group" data-month="Jul">
+                            <div class="chart-bar" style="height: 48%"></div>
+                        </div>
+                        <div class="chart-bar-group" data-month="Ago">
+                            <div class="chart-bar" style="height: 58%"></div>
+                        </div>
+                        <div class="chart-bar-group" data-month="Set">
+                            <div class="chart-bar" style="height: 55%"></div>
+                        </div>
+                        <div class="chart-bar-group" data-month="Out">
+                            <div class="chart-bar" style="height: 63%"></div>
+                        </div>
+                        <div class="chart-bar-group" data-month="Nov">
+                            <div class="chart-bar" style="height: 60%"></div>
+                        </div>
+                        <div class="chart-bar-group" data-month="Dez">
+                            <div class="chart-bar" style="height: 72%"></div>
+                        </div>
+                        <div class="chart-bar-group" data-month="Jan">
+                            <div class="chart-bar" style="height: 68%"></div>
+                        </div>
+                        <div class="chart-bar-group" data-month="Fev">
+                            <div class="chart-bar" style="height: 75%"></div>
+                        </div>
+                        <div class="chart-bar-group" data-month="Mar">
+                            <div class="chart-bar" style="height: 82%"></div>
+                        </div>
+                        <div class="chart-bar-group" data-month="Abr" data-current="true">
+                            <div class="chart-bar chart-bar-current" style="height: 88%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROW 2: Market Pulse + Quick Actions -->
+            <div class="dashboard-grid-bottom">
+
+                <!-- MARKET PULSE -->
+                <div class="card card-pulse" id="market-pulse">
+                    <div class="card-label">Pulso de Mercado</div>
+                    <div class="pulse-list">
+                        <div class="pulse-item">
+                            <div class="pulse-info">
+                                <span class="pulse-name">S&P 500</span>
+                                <span class="pulse-detail">SPX</span>
+                            </div>
+                            <div class="pulse-data">
+                                <span class="pulse-price">5.284,32</span>
+                                <span class="pulse-change positive">+1.24%</span>
+                            </div>
+                        </div>
+                        <div class="pulse-item">
+                            <div class="pulse-info">
+                                <span class="pulse-name">IBOVESPA</span>
+                                <span class="pulse-detail">IBOV</span>
+                            </div>
+                            <div class="pulse-data">
+                                <span class="pulse-price">132.847</span>
+                                <span class="pulse-change positive">+0.87%</span>
+                            </div>
+                        </div>
+                        <div class="pulse-item">
+                            <div class="pulse-info">
+                                <span class="pulse-name">Bitcoin</span>
+                                <span class="pulse-detail">BTC/USD</span>
+                            </div>
+                            <div class="pulse-data">
+                                <span class="pulse-price">84.210</span>
+                                <span class="pulse-change negative">−2.15%</span>
+                            </div>
+                        </div>
+                        <div class="pulse-item">
+                            <div class="pulse-info">
+                                <span class="pulse-name">Ethereum</span>
+                                <span class="pulse-detail">ETH/USD</span>
+                            </div>
+                            <div class="pulse-data">
+                                <span class="pulse-price">3.842</span>
+                                <span class="pulse-change positive">+0.43%</span>
+                            </div>
+                        </div>
+                        <div class="pulse-item">
+                            <div class="pulse-info">
+                                <span class="pulse-name">Ouro</span>
+                                <span class="pulse-detail">XAU/USD</span>
+                            </div>
+                            <div class="pulse-data">
+                                <span class="pulse-price">2.328,40</span>
+                                <span class="pulse-change positive">+0.18%</span>
+                            </div>
+                        </div>
+                        <div class="pulse-item">
+                            <div class="pulse-info">
+                                <span class="pulse-name">Dólar</span>
+                                <span class="pulse-detail">USD/BRL</span>
+                            </div>
+                            <div class="pulse-data">
+                                <span class="pulse-price">5,72</span>
+                                <span class="pulse-change negative">−0.34%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- QUICK ACTIONS + HISTORY -->
+                <div class="card card-actions" id="actions-card">
+                    <div class="card-label">Ações Rápidas</div>
+                    <div class="quick-actions">
+                        <button class="action-btn" id="btn-schedule">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20">
+                                <rect x="3" y="4" width="18" height="18"/>
+                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                            Agendar Consultoria
+                        </button>
+                        <button class="action-btn" id="btn-simulate">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20">
+                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                            </svg>
+                            Simular Investimento
+                        </button>
+                    </div>
+
+                    <div class="history-section">
+                        <div class="card-label" style="margin-top: 32px;">Histórico de Execuções</div>
+                        <table class="history-table" id="history-table">
+                            <thead>
+                                <tr>
+                                    <th>Operação</th>
+                                    <th>Ativo</th>
+                                    <th>Valor</th>
+                                    <th>Data</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="op-type buy">Compra</span></td>
+                                    <td class="asset-name">PETR4</td>
+                                    <td>R$ 42.500,00</td>
+                                    <td>07 Abr</td>
+                                    <td><span class="status-badge executed">Executada</span></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="op-type sell">Venda</span></td>
+                                    <td class="asset-name">VALE3</td>
+                                    <td>R$ 28.300,00</td>
+                                    <td>05 Abr</td>
+                                    <td><span class="status-badge executed">Executada</span></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="op-type buy">Compra</span></td>
+                                    <td class="asset-name">BTC</td>
+                                    <td>R$ 75.000,00</td>
+                                    <td>03 Abr</td>
+                                    <td><span class="status-badge executed">Executada</span></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="op-type buy">Aporte</span></td>
+                                    <td class="asset-name">Renda Fixa</td>
+                                    <td>R$ 120.000,00</td>
+                                    <td>01 Abr</td>
+                                    <td><span class="status-badge pending">Pendente</span></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="op-type sell">Venda</span></td>
+                                    <td class="asset-name">AAPL</td>
+                                    <td>R$ 18.740,00</td>
+                                    <td>28 Mar</td>
+                                    <td><span class="status-badge executed">Executada</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- TOOLS PAGE — Calculadora de Juros       -->
+        <!-- ═══════════════════════════════════════ -->
+        <section class="page-content page-hidden" id="page-tools">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Ferramentas Financeiras</h1>
+                    <p class="page-subtitle">Hub de calculadoras e simuladores patrimoniais.</p>
+                </div>
+            </div>
+
+            <!-- TOOLS SUB-NAVIGATION -->
+            <nav class="tools-nav">
+                <button class="tool-tab active" data-tool="compound">Bola de Neve Patrimonial</button>
+                <button class="tool-tab" data-tool="budget">Orçamento Mensal</button>
+                <button class="tool-tab" data-tool="cards">Cartões de Crédito</button>
+                <button class="tool-tab" data-tool="emergency">Reserva de Emergência</button>
+            </nav>
+
+            <!-- TOOL: COMPOUND INTEREST -->
+            <div class="tool-view" id="tool-compound">
+                <div class="tools-grid">
+
+                <!-- PARAMETER PANEL (LEFT) -->
+                <div class="card card-params" id="params-card">
+                    <div class="card-label">Parâmetros da Simulação</div>
+
+                    <div class="param-group">
+                        <label class="param-label" for="input-initial">Investimento Inicial</label>
+                        <div class="param-input-wrapper">
+                            <span class="param-prefix">R$</span>
+                            <input type="text" class="param-input" id="input-initial" value="50.000" inputmode="numeric">
+                        </div>
+                    </div>
+
+                    <div class="param-group">
+                        <label class="param-label" for="input-monthly">Aporte Mensal</label>
+                        <div class="param-input-wrapper">
+                            <span class="param-prefix">R$</span>
+                            <input type="text" class="param-input" id="input-monthly" value="2.000" inputmode="numeric">
+                        </div>
+                    </div>
+
+                    <div class="param-group">
+                        <label class="param-label" for="input-years">Tempo (Anos)</label>
+                        <div class="param-input-wrapper">
+                            <span class="param-suffix">anos</span>
+                            <input type="number" class="param-input" id="input-years" value="10" min="1" max="50">
+                        </div>
+                    </div>
+
+                    <div class="param-group">
+                        <label class="param-label" for="input-rate">Taxa Anual (%)</label>
+                        <div class="param-input-wrapper">
+                            <span class="param-suffix">% a.a.</span>
+                            <input type="number" class="param-input" id="input-rate" value="12" min="0.1" max="50" step="0.1">
+                        </div>
+                    </div>
+
+                    <button class="btn-calculate" id="btn-calculate">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                        </svg>
+                        Recalcular Projeção
+                    </button>
+
+                    <div class="param-disclaimer">
+                        <p>Simulação baseada em capitalização mensal composta. Resultados são projeções e não garantem rentabilidade futura.</p>
+                    </div>
+                </div>
+
+                <!-- RESULTS PANEL (RIGHT) -->
+                <div class="tools-results">
+
+                    <!-- THREE RESULT BLOCKS -->
+                    <div class="results-summary">
+                        <div class="result-block result-primary" id="result-balance" style="flex:1;">
+                            <div class="result-label">Ponto de Ignição (Crossover)</div>
+                            <div class="result-value-row">
+                                <span class="result-value" id="val-crossover-text" style="font-size: 24px; color: var(--gold-rich);">Calculando...</span>
+                            </div>
+                            <div class="result-sub" id="val-crossover-sub">quando o juros supera o seu suor</div>
+                        </div>
+                    </div>
+                    <div class="results-summary" style="margin-top: 16px;">
+                        <div class="result-block" id="result-invested">
+                            <div class="result-label">Total Gasto do seu Bolso</div>
+                            <div class="result-value-row">
+                                <span class="result-currency">R$</span>
+                                <span class="result-value" id="val-invested">290.000</span>
+                            </div>
+                            <div class="result-sub">capital + aportes</div>
+                        </div>
+                        <div class="result-block" id="result-interest">
+                            <div class="result-label">Total Gerado Sozinho (Bola de Neve)</div>
+                            <div class="result-value-row">
+                                <span class="result-currency gold">R$</span>
+                                <span class="result-value gold" id="val-interest">217.832</span>
+                            </div>
+                            <div class="result-sub">rendimento passivo e mágico</div>
+                        </div>
+                    </div>
+
+                    <!-- PROJECTION CHART -->
+                    <div class="card card-projection" id="projection-card">
+                        <div class="projection-header">
+                            <div class="card-label">Projeção de Crescimento</div>
+                            <div class="chart-legend">
+                                <span class="legend-item">
+                                    <span class="legend-dot legend-principal"></span>
+                                    Capital Investido
+                                </span>
+                                <span class="legend-item">
+                                    <span class="legend-dot legend-interest"></span>
+                                    Juros Acumulados
+                                </span>
+                            </div>
+                        </div>
+                        <div class="projection-chart" id="projection-chart">
+                            <!-- Bars generated by JS -->
+                        </div>
+                        <div class="projection-axis" id="projection-axis">
+                            <!-- Year labels generated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- YEARLY BREAKDOWN TABLE -->
+                    <div class="card card-breakdown" id="breakdown-card">
+                        <div class="card-label">Evolução Anual Detalhada</div>
+                        <table class="breakdown-table" id="breakdown-table">
+                            <thead>
+                                <tr>
+                                    <th>Ano</th>
+                                    <th>Investido</th>
+                                    <th>Juros Acum.</th>
+                                    <th>Saldo Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="breakdown-tbody">
+                                <!-- Rows generated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                </div>
+            </div> <!-- CLOSE tool-compound -->
+
+            <!-- TOOL: BUDGET -->
+            <div class="tool-view tool-hidden" id="tool-budget">
+                <!-- Month Selector -->
+                <div class="month-selector">
+                    <button id="prev-month" class="btn-icon">&lt;</button>
+                    <h2 id="current-month-display">Mês Corrente</h2>
+                    <button id="next-month" class="btn-icon">&gt;</button>
+                </div>
+
+                <div class="tools-grid">
+                    <!-- LEFT PANEL (Forms and Lists) -->
+                    <div class="budget-tracker-left">
+                        <div class="card card-params mb-lg">
+                            <div class="card-label">Novo Lançamento</div>
+                            <form id="transaction-form" class="transaction-form">
+                                <div class="param-group">
+                                    <label class="param-label" for="tx-desc">Descrição</label>
+                                    <input type="text" class="param-input" id="tx-desc" placeholder="Ex: Salário, Aluguel..." required>
+                                </div>
+                                <div class="param-group">
+                                    <label class="param-label" for="tx-val">Valor</label>
+                                    <div class="param-input-wrapper">
+                                        <span class="param-prefix">R$</span>
+                                        <input type="text" class="param-input" id="tx-val" placeholder="0,00" required inputmode="numeric">
+                                    </div>
+                                </div>
+                                <div class="param-group">
+                                    <label class="param-label" for="tx-type">Categoria</label>
+                                    <select class="param-input" id="tx-type">
+                                        <option value="income">Receita (Entrada)</option>
+                                        <option value="fixed">Custo Fixo (Essencial)</option>
+                                        <option value="variable">Custo Variável (Estilo de Vida)</option>
+                                    </select>
+                                </div>
+                                <div class="param-group">
+                                    <label class="param-label" for="tx-method">Método de Pgto.</label>
+                                    <select class="param-input" id="tx-method">
+                                        <option value="pix">PIX / Dinheiro</option>
+                                        <option value="debit">Débito</option>
+                                        <option value="credit">Cartão de Crédito</option>
+                                        <option value="boleto">Boleto / Transferência</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn-calculate" id="btn-add-tx">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
+                                        <line x1="12" y1="5" x2="12" y2="19"/>
+                                        <line x1="5" y1="12" x2="19" y2="12"/>
+                                    </svg>
+                                    Lançar
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="card card-transaction-list">
+                            <div class="card-label">Movimentações do Mês</div>
+                            <ul class="tx-list" id="tx-list">
+                                <!-- JS injected -->
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT PANEL (Analytics) -->
+                    <div class="tools-results">
+                        <div class="results-summary mb-lg">
+                            <div class="result-block result-primary">
+                                <div class="result-label">Resultado Líquido do Mês</div>
+                                <div class="result-value-row">
+                                    <span class="result-currency">R$</span>
+                                    <span class="result-value" id="budget-net-val">0</span>
+                                </div>
+                                <div class="result-sub" id="budget-net-pct">0% da Renda Salva</div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-label">Análise de Alocação (Regra 50/30/20)</div>
+                            
+                            <!-- Fixed Cost Bar -->
+                            <div class="budget-chart-container mb-xl">
+                                <div class="budget-bar-labels">
+                                    <span>Custos Fixos (<span id="pct-fixed-actual">0%</span>)</span>
+                                    <span>Teto: 50%</span>
+                                </div>
+                                <div class="budget-progress-bar dual-bar">
+                                    <div class="budget-fill-target" style="width: 50%"></div>
+                                    <div class="budget-fill fill-fixed" id="bar-fixed-actual" style="width: 0%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Variable Cost Bar -->
+                            <div class="budget-chart-container mb-xl">
+                                <div class="budget-bar-labels">
+                                    <span>Custos Variáveis (<span id="pct-var-actual">0%</span>)</span>
+                                    <span>Teto: 30%</span>
+                                </div>
+                                <div class="budget-progress-bar dual-bar">
+                                    <div class="budget-fill-target" style="width: 30%"></div>
+                                    <div class="budget-fill fill-var" id="bar-var-actual" style="width: 0%"></div>
+                                </div>
+                            </div>
+
+                            <p class="budget-insight" id="budget-tracker-insight">Adicione sua renda e despesas para iniciar a análise.</p>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- CLOSE tool-budget -->
+
+            <!-- TOOL: EMERGENCY FUND -->
+            <div class="tool-view tool-hidden" id="tool-emergency">
+                <div class="tools-grid">
+                    <div class="card card-params">
+                        <div class="card-label">Parâmetros de Proteção</div>
+
+                        <div class="param-group">
+                            <label class="param-label" for="em-cost">Custo Fixo Mensal</label>
+                            <div class="param-input-wrapper">
+                                <span class="param-prefix">R$</span>
+                                <input type="text" class="param-input" id="em-cost" value="10.000" inputmode="numeric">
+                            </div>
+                        </div>
+
+                        <div class="param-group">
+                            <label class="param-label" for="em-months">Meses de Cobertura</label>
+                            <div class="param-input-wrapper">
+                                <span class="param-suffix">meses</span>
+                                <input type="number" class="param-input" id="em-months" value="6" min="1" max="24">
+                            </div>
+                        </div>
+
+                        <div class="param-group">
+                            <label class="param-label" for="em-current">Reserva Atual Formada</label>
+                            <div class="param-input-wrapper">
+                                <span class="param-prefix">R$</span>
+                                <input type="text" class="param-input" id="em-current" value="20.000" inputmode="numeric">
+                            </div>
+                        </div>
+
+                        <div class="param-group">
+                            <label class="param-label" for="em-apply">Aporte Mensal Previsto</label>
+                            <div class="param-input-wrapper">
+                                <span class="param-prefix">R$</span>
+                                <input type="text" class="param-input" id="em-apply" value="4.000" inputmode="numeric">
+                            </div>
+                        </div>
+
+                        <button class="btn-calculate" id="btn-calc-emergency">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
+                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                            </svg>
+                            Calcular Proteção
+                        </button>
+                    </div>
+
+                    <div class="tools-results">
+                        <div class="results-summary">
+                            <div class="result-block result-primary">
+                                <div class="result-label">Tamanho Ideal do Escudo</div>
+                                <div class="result-value-row">
+                                    <span class="result-currency">R$</span>
+                                    <span class="result-value" id="em-target-val">60.000</span>
+                                </div>
+                                <div class="result-sub">O suficiente para enfrentar Black Swans</div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-label">Progresso do Escudo Financeiro</div>
+                            
+                            <div class="budget-chart-container">
+                                <div class="budget-bar-labels">
+                                    <span>Concluído (<span id="em-pct">33%</span>)</span>
+                                </div>
+                                <div class="budget-progress-bar">
+                                    <div class="budget-fill fill-sav" id="em-fill" style="width: 33%"></div>
+                                </div>
+                                <p class="budget-insight" id="em-insight">Faltam R$ 40.000. Mantendo aportes de R$ 4.000, sua reserva blindada estará pronta em <strong>10 meses</strong>.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- CLOSE tool-emergency -->
+
+            <!-- TOOL: CREDIT CARDS -->
+            <div class="tool-view tool-hidden" id="tool-cards">
+                <div class="month-selector">
+                    <button id="cc-prev-month" class="btn-icon">&lt;</button>
+                    <h2 id="cc-current-month-display">Mês Corrente</h2>
+                    <button id="cc-next-month" class="btn-icon">&gt;</button>
+                </div>
+
+                <div class="tools-grid">
+                    <div class="budget-tracker-left">
+                        <div class="card card-params mb-lg">
+                            <div class="card-label">Nova Compra Parcelada</div>
+                            <form id="cc-form" class="transaction-form">
+                                <div class="param-group">
+                                    <label class="param-label" for="cc-desc">Descrição da Compra</label>
+                                    <input type="text" class="param-input" id="cc-desc" placeholder="Ex: Eletrônicos, Viagem..." required>
+                                </div>
+                                <div class="param-group">
+                                    <label class="param-label" for="cc-val">Valor Total da Compra</label>
+                                    <div class="param-input-wrapper">
+                                        <span class="param-prefix">R$</span>
+                                        <input type="text" class="param-input" id="cc-val" placeholder="0,00" required inputmode="numeric">
+                                    </div>
+                                </div>
+                                <div style="display:flex; gap: var(--space-md);">
+                                    <div class="param-group" style="flex:1;">
+                                        <label class="param-label" for="cc-installments">Parcelas</label>
+                                        <div class="param-input-wrapper">
+                                            <span class="param-suffix">x</span>
+                                            <input type="number" class="param-input" id="cc-installments" placeholder="12" min="1" max="60" required>
+                                        </div>
+                                    </div>
+                                    <div class="param-group" style="flex:1;">
+                                        <label class="param-label" for="cc-start-month">Mês da Compra</label>
+                                        <input type="month" class="param-input" id="cc-start-month" required>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn-calculate" id="btn-add-cc">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
+                                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                                        <line x1="1" y1="10" x2="23" y2="10"/>
+                                    </svg>
+                                    Registrar Compra
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="card card-transaction-list">
+                            <div class="card-label">Passivos Ativos (Cartões)</div>
+                            <ul class="tx-list" id="cc-list">
+                                <!-- JS injected -->
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="tools-results">
+                        <div class="results-summary mb-lg">
+                            <div class="result-block result-primary" style="background: #ff4d4f; border-color: #d32f2f;">
+                                <div class="result-label" style="color:rgba(255,255,255,0.9)">Fatura Deste Mês</div>
+                                <div class="result-value-row">
+                                    <span class="result-currency" style="color:#ffffff">R$</span>
+                                    <span class="result-value" id="cc-current-bill-val" style="color:#ffffff">0</span>
+                                </div>
+                                <div class="result-sub" style="color:rgba(255,255,255,0.8)">Soma das parcelas que caem agora</div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-label">Raio-X da Dívida Futura</div>
+                            
+                            <div class="budget-chart-container mb-xl">
+                                <div class="budget-bar-labels" style="font-size: 14px;">
+                                    <span>Montante Comprometido (A Pagar)</span>
+                                    <span style="color:#d32f2f; font-weight:700;">R$ <span id="cc-future-debt">0</span></span>
+                                </div>
+                                <p class="budget-insight" style="border-left-color: #d32f2f;">
+                                    Todo parcelamento é uma hipoteca do seu "Eu" do futuro. Este montante bloqueia investimentos institucionais até ser 100% amortizado.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- CLOSE tool-cards -->        </section>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- EDUCATION PAGE — Sovereign Academy      -->
+        <!-- ═══════════════════════════════════════ -->
+        <section class="page-content page-hidden" id="page-education">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Sovereign Academy</h1>
+                    <p class="page-subtitle">Acesso exclusivo ao acervo de inteligência financeira e masterclasses.</p>
+                </div>
+            </div>
+
+            <!-- GAMIFICATION & PROGRESS BANNER -->
+            <div class="edu-hero-banner">
+                <div class="edu-hero-content">
+                    <div class="edu-tier-badge">Private Tier</div>
+                    <h2 class="edu-hero-title">Sua Jornada Institucional</h2>
+                    <p class="edu-hero-desc">Você completou <strong>68%</strong> da trilha "Arquitetura de Portfólios". Faltam 320 pontos para atingir o nível Elite.</p>
+                    <div class="edu-progress-wrapper">
+                        <div class="edu-progress-bar">
+                            <div class="edu-progress-fill" style="width: 68%;"></div>
+                        </div>
+                        <div class="edu-progress-labels">
+                            <span>Private</span>
+                            <span>Elite (1000 pts)</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="edu-hero-action">
+                    <button class="btn-continue">
+                        Continuar Módulo
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                            <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                    </button>
+                    <div class="edu-current-module">
+                        Módulo 4: Alocação Tática de Ativos
+                    </div>
+                </div>
+            </div>
+
+            <!-- LEARNING PATHS (TRILHAS) -->
+            <div class="section-title-row">
+                <h3 class="section-title">Trilhas de Inteligência</h3>
+                <a href="#" class="view-all">Ver Acervo Completo</a>
+            </div>
+
+            <div class="edu-grid">
+                <!-- Course Card 1 -->
+                <div class="edu-card">
+                    <div class="edu-card-thumb">
+                        <svg viewBox="0 0 24 24" fill="none" class="edu-thumb-icon">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="1.5" stroke-linejoin="miter"/>
+                        </svg>
+                        <div class="edu-card-overlay">
+                            <div class="edu-thumb-duration">2h 45m</div>
+                        </div>
+                    </div>
+                    <div class="edu-card-body">
+                        <div class="edu-card-meta">
+                            <span class="edu-tag">Em andamento</span>
+                            <span class="edu-progress-text">68%</span>
+                        </div>
+                        <h4 class="edu-card-title">Arquitetura de Portfólios</h4>
+                        <p class="edu-card-desc">Princípios de alocação de capital utilizados por investidores institucionais.</p>
+                        <div class="edu-card-progress-mini">
+                            <div class="edu-mini-fill" style="width: 68%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Course Card 2 -->
+                <div class="edu-card">
+                    <div class="edu-card-thumb thumb-alt1">
+                        <svg viewBox="0 0 24 24" fill="none" class="edu-thumb-icon">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="1.5"/>
+                        </svg>
+                        <div class="edu-card-overlay">
+                            <div class="edu-thumb-duration">1h 30m</div>
+                        </div>
+                    </div>
+                    <div class="edu-card-body">
+                        <div class="edu-card-meta">
+                            <span class="edu-tag tag-new">Novo Lançamento</span>
+                            <span class="edu-progress-text">0%</span>
+                        </div>
+                        <h4 class="edu-card-title">Macroeconomia Aplicada</h4>
+                        <p class="edu-card-desc">Como ler ciclos de mercado e proteger seu patrimônio contra a inflação.</p>
+                        <div class="edu-card-progress-mini">
+                            <div class="edu-mini-fill" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Course Card 3 -->
+                <div class="edu-card locked">
+                    <div class="edu-card-thumb thumb-alt2">
+                        <svg viewBox="0 0 24 24" fill="none" class="edu-thumb-icon">
+                            <rect x="3" y="11" width="18" height="11" rx="0" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" stroke-width="1.5"/>
+                        </svg>
+                        <div class="edu-card-overlay">
+                            <div class="edu-lock-badge">
+                                Nível Elite Necessário
+                            </div>
+                        </div>
+                    </div>
+                    <div class="edu-card-body">
+                        <div class="edu-card-meta">
+                            <span class="edu-tag tag-locked">Módulo Fechado</span>
+                        </div>
+                        <h4 class="edu-card-title">Gestão de Risco Tail-Event</h4>
+                        <p class="edu-card-desc">Estratégias avançadas de opções para proteção contra cisnes negros.</p>
+                        <div class="edu-card-progress-mini hidden"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MASTERCLASSES (BOTTOM) -->
+            <div class="section-title-row" style="margin-top: var(--space-2xl);">
+                <h3 class="section-title">Masterclasses Recentes</h3>
+            </div>
+            
+            <div class="masterclass-list">
+                <div class="mc-item">
+                    <div class="mc-play-btn">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <polygon points="9 7 18 12 9 17 9 7"/>
+                        </svg>
+                    </div>
+                    <div class="mc-info">
+                        <h5 class="mc-title">Análise de Cenário: Taxas de Juros Globais</h5>
+                        <div class="mc-meta">Masterclass • 45 min • Ministrado por Carlos A.</div>
+                    </div>
+                    <button class="mc-action-btn">Assistir</button>
+                </div>
+                
+                <div class="mc-item">
+                    <div class="mc-play-btn">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <polygon points="9 7 18 12 9 17 9 7"/>
+                        </svg>
+                    </div>
+                    <div class="mc-info">
+                        <h5 class="mc-title">Estruturação Offshore: Mitos e Verdades</h5>
+                        <div class="mc-meta">Masterclass • 52 min • Ministrado por Carlos A.</div>
+                    </div>
+                    <button class="mc-action-btn">Assistir</button>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- COMMUNITY PAGE — Sovereign Circle       -->
+        <!-- ═══════════════════════════════════════ -->
+        <section class="page-content page-hidden" id="page-community">
+            <header class="section-header">
+                <div>
+                    <h1 class="page-title">Sovereign Circle</h1>
+                    <p class="page-subtitle">Debates institucionais, deal flow e inteligência coletiva.</p>
+                </div>
+                <button class="btn-primary">Novo Tópico</button>
+            </header>
+
+            <div class="community-layout">
+                <!-- MAIN FORUM AREA -->
+                <div class="community-main">
+                    <!-- PINNED TOPIC -->
+                    <div class="thread-card pinned-thread">
+                        <div class="thread-badge">Fixado</div>
+                        <h3 class="thread-title">Macro Call de Abril: Cenário de Estagflação e Allocation</h3>
+                        <p class="thread-excerpt">Resumo da nossa reunião mensal sobre proteção de carteiras contra o repique inflacionário americano. Faça o download da tese completa e discuta suas movimentações.</p>
+                        <div class="thread-meta">
+                            <span class="thread-author"><strong>AFIC Research</strong></span>
+                            <span class="thread-date">Há 2 dias</span>
+                            <span class="thread-comments">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                42
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- THREAD LIST -->
+                    <div class="thread-list">
+                        <div class="thread-card">
+                            <span class="thread-tag tag-dealflow">Deal Flow</span>
+                            <h3 class="thread-title">Oportunidade Off-market: FII de Galpões Logísticos no PR</h3>
+                            <p class="thread-excerpt">Análise preliminar de um ativo distressed sendo liquidado por family office local. Cap rate estimado de 13% a.a. + upside de vacância.</p>
+                            <div class="thread-meta">
+                                <span class="thread-author">Roberto S.</span>
+                                <span class="thread-date">Hoje, 09:15</span>
+                                <span class="thread-comments">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                    18
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="thread-card">
+                            <span class="thread-tag tag-discussion">Discussão</span>
+                            <h3 class="thread-title">Fazendo hedge de carteira BR com Treasury Long-duration</h3>
+                            <p class="thread-excerpt">Alguém alocando forte em TLT ou equivalentes via conta offshore para balancear risco fiscal doméstico? Queria debater o timing.</p>
+                            <div class="thread-meta">
+                                <span class="thread-author">Eduardo M.</span>
+                                <span class="thread-date">Ontem, 16:40</span>
+                                <span class="thread-comments">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                    8
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="thread-card">
+                            <span class="thread-tag tag-tax">Tributário</span>
+                            <h3 class="thread-title">Nova regulamentação de Offshores: Estruturas vs PIC</h3>
+                            <p class="thread-excerpt">Compartilhando parecer jurídico do escritório sobre como otimizar a estrutura de PICs nas Ilhas Cayman frente a nova lei de tributação.</p>
+                            <div class="thread-meta">
+                                <span class="thread-author">Felipe C.</span>
+                                <span class="thread-date">12 de Abril</span>
+                                <span class="thread-comments">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                    35
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-secondary load-more-btn">Carregar mais discussões</button>
+                </div>
+
+                <!-- SIDEBAR AREA -->
+                <div class="community-sidebar">
+                    <div class="sidebar-widget">
+                        <h4 class="widget-title">Próximos Eventos</h4>
+                        <ul class="event-list">
+                            <li>
+                                <div class="event-date">
+                                    <span class="event-day">18</span>
+                                    <span class="event-month">Abr</span>
+                                </div>
+                                <div class="event-info">
+                                    <strong class="gold-text">Sovereign Call</strong>
+                                    <span>Análise global de Juros</span>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="event-date">
+                                    <span class="event-day">05</span>
+                                    <span class="event-month">Mai</span>
+                                </div>
+                                <div class="event-info">
+                                    <strong>Private Dinner</strong>
+                                    <span>São Paulo, SP (Apenas Convidados)</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="sidebar-widget">
+                        <h4 class="widget-title">Membros Online (12)</h4>
+                        <div class="online-members">
+                            <div class="member-avatar">RS</div>
+                            <div class="member-avatar">EM</div>
+                            <div class="member-avatar">FC</div>
+                            <div class="member-avatar">AF</div>
+                            <div class="member-avatar">...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- PLANS PAGE — Subscription & Upgrade     -->
+        <!-- ═══════════════════════════════════════ -->
+        <section class="page-content page-hidden" id="page-plans">
+            <div class="plans-header">
+                <h1 class="page-title plans-title">Eleve sua Arquitetura de Riqueza</h1>
+                <p class="page-subtitle plans-subtitle">Tenha acesso à mesma inteligência utilizada por gestores de Multi-Family Offices.</p>
+            </div>
+
+            <div class="plans-grid">
+                <!-- PLAN: PRIVATE -->
+                <div class="plan-card">
+                    <div class="plan-header">
+                        <div class="plan-name">Tier Private</div>
+                        <div class="plan-price-row">
+                            <span class="plan-currency">R$</span>
+                            <span class="plan-price">490</span>
+                            <span class="plan-period">/mês</span>
+                        </div>
+                        <p class="plan-desc">Acesso completo à plataforma, inteligência de mercado e calculadoras de projeção institucional.</p>
+                    </div>
+                    <div class="plan-features">
+                        <ul class="feature-list">
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                                Full Dashboard & Analytics
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                                Calculadoras Patrimoniais Avançadas
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                                Acervo Sovereign Academy
+                            </li>
+                            <li>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                                Sessões Mensais de Macroeconomia
+                            </li>
+                            <li class="feature-disabled">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                Mentoria Individual (1:1)
+                            </li>
+                            <li class="feature-disabled">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                Alocação Tática via Whatsapp
+                            </li>
+                        </ul>
+                    </div>
+                    <button class="plan-btn btn-secondary">Assinar Plan Private</button>
+                </div>
+
+                <!-- PLAN: INSTITUTIONAL -->
+                <div class="plan-card plan-premium">
+                    <div class="plan-badge">Nível Exclusivo</div>
+                    <div class="plan-header">
+                        <div class="plan-name gold-text">Tier Elite Institucional</div>
+                        <div class="plan-price-row">
+                            <span class="plan-currency gold-text">R$</span>
+                            <span class="plan-price gold-text">1.850</span>
+                            <span class="plan-period">/mês</span>
+                        </div>
+                        <p class="plan-desc text-muted">Acompanhamento direto. Você opera sua riqueza com a retaguarda de um Family Office próprio.</p>
+                    </div>
+                    <div class="plan-features">
+                        <ul class="feature-list">
+                            <li>
+                                <svg class="gold-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                                Tudo do Tier Private
+                            </li>
+                            <li>
+                                <svg class="gold-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                                Mentoria Patrimonial Individual (1h/mês)
+                            </li>
+                            <li>
+                                <svg class="gold-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                                Revisão Trimestral de Portfólio
+                            </li>
+                            <li>
+                                <svg class="gold-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                                Acesso Direto via Grupo de Whatsapp
+                            </li>
+                            <li>
+                                <svg class="gold-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                                Evento Anual Sovereign Fechado
+                            </li>
+                        </ul>
+                    </div>
+                    <button class="plan-btn btn-primary">Aplicar para o Elite</button>
+                </div>
+            </div>
+
+            <!-- SOCIAL PROOF -->
+            <div class="social-proof-section">
+                <p class="social-proof-title">CONFIADO POR GESTORES, EMPRESÁRIOS E FAMILY OFFICES</p>
+                <div class="testimonial-grid">
+                    <div class="testimonial-card">
+                        <svg class="quote-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h4v10h-10z"/></svg>
+                        <p class="testimonial-text">"A clareza que o tier institucional me trouxe sobre risco de cauda mudou fundamentalmente como meu patrimônio de segunda geração está alocado."</p>
+                        <div class="testimonial-author">
+                            <strong>Roberto S.</strong>
+                            <span>Dono de Construtora e Investidor</span>
+                        </div>
+                    </div>
+                    <div class="testimonial-card">
+                        <svg class="quote-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h4v10h-10z"/></svg>
+                        <p class="testimonial-text">"Pela primeira vez tenho acesso à mesma tecnologia de rebalançamento de MFOs gringos num dashboard que não polui minha atenção."</p>
+                        <div class="testimonial-author">
+                            <strong>Eduardo M.</strong>
+                            <span>Parceiro em Venture Capital</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>

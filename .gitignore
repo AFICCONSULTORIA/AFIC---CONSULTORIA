@@ -1,0 +1,23 @@
+# Variáveis de Ambiente e Segredos
+.env
+.env.local
+.env.*.local
+
+# Pastas e arquivos do Sistema Operacional
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editores e IDEs
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

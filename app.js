@@ -1,0 +1,1233 @@
+/* ═══════════════════════════════════════════════════════════════
+   AFIC CONSULTORIA — Application Logic
+   ═══════════════════════════════════════════════════════════════ */
+
+document.addEventListener('DOMContentLoaded', () => {
+    // ─── SUPABASE INITIALIZATION ───
+    const supabaseUrl = 'https://sueyfodlqcviojivlxgv.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN1ZXlmb2RscWN2aW9qaXZseGd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NzU4NTMsImV4cCI6MjA5MTI1MTg1M30.g40c4ko9uFKOdN2x4tvQQg-IuWx2ZB4K8_fsZpgeIDw';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    let currentUser = null;
+
+    // ─── AUTHENTICATION HANDLERS ───
+    const authModal = document.getElementById('auth-modal');
+    const authForm = document.getElementById('auth-form');
+    const authEmail = document.getElementById('auth-email');
+    const authPassword = document.getElementById('auth-password');
+    const authErrorMsg = document.getElementById('auth-error-msg');
+    const btnSignup = document.getElementById('btn-signup');
+
+    async function checkAuthSession() {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+            currentUser = session.user;
+            if (authModal) authModal.classList.add('hidden');
+            await loadSupabaseData();
+        } else {
+            if (authModal) authModal.classList.remove('hidden');
+        }
+    }
+
+    if (authForm) {
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            authErrorMsg.style.display = 'none';
+            const { error } = await supabase.auth.signInWithPassword({
+                email: authEmail.value,
+                password: authPassword.value,
+            });
+            if (error) {
+                authErrorMsg.textContent = 'Erro ao entrar: ' + error.message;
+                authErrorMsg.style.display = 'block';
+            } else {
+                checkAuthSession();
+            }
+        });
+    }
+
+    if (btnSignup) {
+        btnSignup.addEventListener('click', async () => {
+            if (!authEmail.value || !authPassword.value) {
+                authErrorMsg.textContent = 'Preencha E-mail e Senha para criar conta.';
+                authErrorMsg.style.display = 'block';
+                return;
+            }
+            authErrorMsg.style.display = 'none';
+            const { error } = await supabase.auth.signUp({
+                email: authEmail.value,
+                password: authPassword.value,
+            });
+            if (error) {
+                authErrorMsg.textContent = 'Erro ao criar conta: ' + error.message;
+                authErrorMsg.style.display = 'block';
+            } else {
+                authErrorMsg.textContent = 'Conta criada com sucesso! Você pode fazer login agora.';
+                authErrorMsg.style.color = '#388e3c';
+                authErrorMsg.style.display = 'block';
+            }
+        });
+    }
+
+    // Initialize Auth
+    checkAuthSession();
+
+    try {
+
+    // ─── COUNTER ANIMATION ───
+    function animateCounter(element, target, duration = 1500) {
+        const start = 0;
+        const startTime = performance.now();
+        
+        function update(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const current = Math.floor(start + (target - start) * eased);
+            
+            element.textContent = current;
+            
+            if (progress < 1) {
+                requestAnimationFrame(update);
+            } else {
+                element.textContent = target;
+            }
+        }
+        
+        requestAnimationFrame(update);
+    }
+
+    function animateFormattedCounter(element, targetStr, duration = 1800) {
+        const cleanTarget = parseInt(targetStr.replace(/\./g, ''), 10);
+        const startTime = performance.now();
+        
+        function formatBR(num) {
+            return num.toLocaleString('pt-BR');
+        }
+        
+        function update(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const current = Math.floor(cleanTarget * eased);
+            
+            element.textContent = formatBR(current);
+            
+            if (progress < 1) {
+                requestAnimationFrame(update);
+            } else {
+                element.textContent = formatBR(cleanTarget);
+            }
+        }
+        
+        requestAnimationFrame(update);
+    }
+
+    // Trigger counters
+    const scoreEl = document.getElementById('score-value');
+    const aumEl = document.getElementById('aum-value');
+    
+    if (scoreEl) {
+        setTimeout(() => animateCounter(scoreEl, 842, 1500), 600);
+    }
+    
+    if (aumEl) {
+        setTimeout(() => animateFormattedCounter(aumEl, '2.847.320', 2000), 800);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // NAVIGATION — Page Switching
+    // ═══════════════════════════════════════════════════════════
+    const navLinks = document.querySelectorAll('.nav-link');
+    const pages = document.querySelectorAll('.page-content');
+    
+    // Page map: data-page value → page element ID
+    const pageMap = {
+        'dashboard': 'page-dashboard',
+        'tools': 'page-tools',
+        'education': 'page-education',
+        'community': 'page-community',
+        'account': 'page-plans',
+        'plans': 'page-plans'
+    };
+
+    function switchPage(pageName) {
+        // Hide all pages
+        pages.forEach(p => p.classList.add('page-hidden'));
+        
+        // Show target page
+        const targetId = pageMap[pageName];
+        if (targetId) {
+            const targetPage = document.getElementById(targetId);
+            if (targetPage) {
+                targetPage.classList.remove('page-hidden');
+                // Re-trigger animations
+                targetPage.style.animation = 'none';
+                targetPage.offsetHeight; // force reflow
+                targetPage.style.animation = '';
+            }
+        }
+
+        // If switching to tools, auto-calculate 
+        if (pageName === 'tools') {
+            setTimeout(() => calculateCompound(), 100);
+        }
+    }
+    
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            navLinks.forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+            
+            const page = link.getAttribute('data-page');
+            switchPage(page);
+        });
+    });
+
+    // ─── PERIOD BUTTONS (AUM Chart) ───
+    const periodBtns = document.querySelectorAll('.period-btn');
+    
+    periodBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            periodBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            const bars = document.querySelectorAll('#aum-chart .chart-bar');
+            bars.forEach((bar) => {
+                const randomHeight = 30 + Math.random() * 60;
+                bar.style.height = `${randomHeight}%`;
+            });
+        });
+    });
+
+    // ─── SEARCH INPUT FOCUS STATE ───
+    const searchInput = document.getElementById('search-input');
+    const searchContainer = searchInput?.closest('.search-container');
+    
+    if (searchInput && searchContainer) {
+        searchInput.addEventListener('focus', () => {
+            searchContainer.style.background = 'var(--bg-light-blue)';
+            searchContainer.style.padding = '4px 12px';
+            searchContainer.style.transition = 'all 0.3s cubic-bezier(0.22, 1, 0.36, 1)';
+        });
+        
+        searchInput.addEventListener('blur', () => {
+            searchContainer.style.background = 'transparent';
+            searchContainer.style.padding = '0';
+        });
+    }
+
+    // ─── NOTIFICATION BUTTON ───
+    const notifBtn = document.getElementById('notification-btn');
+    if (notifBtn) {
+        notifBtn.addEventListener('click', () => {
+            const dot = notifBtn.querySelector('.notification-dot');
+            if (dot) {
+                dot.style.display = dot.style.display === 'none' ? 'block' : 'none';
+            }
+        });
+    }
+
+    // ─── CHART BAR TOOLTIPS ───
+    const chartBarGroups = document.querySelectorAll('#aum-chart .chart-bar-group');
+    const monthValues = {
+        'Mai': '2.210.400', 'Jun': '2.318.200', 'Jul': '2.290.100',
+        'Ago': '2.425.800', 'Set': '2.398.500', 'Out': '2.502.300',
+        'Nov': '2.478.000', 'Dez': '2.612.700', 'Jan': '2.580.400',
+        'Fev': '2.689.100', 'Mar': '2.762.800', 'Abr': '2.847.320'
+    };
+
+    chartBarGroups.forEach(group => {
+        const month = group.getAttribute('data-month');
+        const bar = group.querySelector('.chart-bar');
+        
+        group.addEventListener('mouseenter', () => {
+            if (bar && monthValues[month]) {
+                bar.setAttribute('title', `R$ ${monthValues[month]},00`);
+            }
+        });
+    });
+
+    // ─── PREMIUM CTA ───
+    const upgradeBtn = document.getElementById('upgrade-btn');
+    if (upgradeBtn) {
+        upgradeBtn.addEventListener('click', () => {
+            // Un-highlight nav items
+            navLinks.forEach(l => l.classList.remove('active'));
+            const accountLink = document.getElementById('nav-account');
+            if (accountLink) accountLink.classList.add('active');
+            
+            // Navigate to plans page
+            switchPage('plans');
+        });
+    }
+
+    // ─── INTERSECTION OBSERVER FOR SCROLL ANIMATIONS ───
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    const pulseItems = document.querySelectorAll('.pulse-item');
+    pulseItems.forEach((item, index) => {
+        item.style.opacity = '0';
+        item.style.transform = 'translateY(10px)';
+        item.style.transition = `all 0.4s cubic-bezier(0.22, 1, 0.36, 1) ${index * 0.08}s`;
+        observer.observe(item);
+    });
+
+    const historyRows = document.querySelectorAll('.history-table tbody tr');
+    historyRows.forEach((row, index) => {
+        row.style.opacity = '0';
+        row.style.transform = 'translateY(8px)';
+        row.style.transition = `all 0.35s cubic-bezier(0.22, 1, 0.36, 1) ${0.4 + index * 0.06}s`;
+        observer.observe(row);
+    });
+
+
+    // ═══════════════════════════════════════════════════════════
+    // COMPOUND INTEREST CALCULATOR
+    // ═══════════════════════════════════════════════════════════
+
+    function parseBRNumber(str) {
+        if (typeof str === 'number') return str;
+        return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
+    }
+
+    function formatBR(num) {
+        return Math.round(num).toLocaleString('pt-BR');
+    }
+
+    function calculateCompound() {
+        const initialEl = document.getElementById('input-initial');
+        const monthlyEl = document.getElementById('input-monthly');
+        const yearsEl = document.getElementById('input-years');
+        const rateEl = document.getElementById('input-rate');
+
+        if (!initialEl || !monthlyEl || !yearsEl || !rateEl) return;
+
+        const P = parseBRNumber(initialEl.value);
+        const M = parseBRNumber(monthlyEl.value);
+        const years = parseInt(yearsEl.value, 10) || 10;
+        const annualRate = parseFloat(rateEl.value) || 12;
+        const monthlyRate = annualRate / 100 / 12;
+        const totalMonths = years * 12;
+
+        const yearData = [];
+        let currentBalance = P;
+        let crossoverYear = null;
+        let crossoverMonth = null;
+
+        for (let year = 1; year <= years; year++) {
+            const monthsThisYear = 12;
+            for (let m = 0; m < monthsThisYear; m++) {
+                const interestEarnedThisMonth = currentBalance * monthlyRate;
+                
+                // Bola de neve (Ignition Rule): The moment passive interest > active contribution
+                if (!crossoverYear && M > 0 && interestEarnedThisMonth >= M) {
+                    crossoverYear = year;
+                    crossoverMonth = m + 1;
+                }
+
+                currentBalance = currentBalance + interestEarnedThisMonth + M;
+            }
+            const totalInvested = P + M * 12 * year;
+            const totalInterest = currentBalance - totalInvested;
+
+            yearData.push({
+                year,
+                invested: totalInvested,
+                interest: Math.max(0, totalInterest),
+                balance: currentBalance
+            });
+        }
+
+        const finalData = yearData[yearData.length - 1];
+
+        // Update result blocks
+        const valInvested = document.getElementById('val-invested');
+        const valInterest = document.getElementById('val-interest');
+        const valCrossover = document.getElementById('val-crossover-text');
+        const valCrossoverSub = document.getElementById('val-crossover-sub');
+
+        if (valInvested) valInvested.textContent = formatBR(finalData.invested);
+        if (valInterest) valInterest.textContent = formatBR(finalData.interest);
+
+        if (valCrossover) {
+            if (M === 0) {
+                valCrossover.textContent = "Renda Passiva Ativa";
+                valCrossoverSub.textContent = "Sem novos aportes, seu patrimônio cresce sozinho.";
+                valCrossover.style.color = 'var(--gold-rich)';
+            } else if (crossoverYear !== null) {
+                valCrossover.textContent = `No Ano ${crossoverYear}`;
+                valCrossoverSub.textContent = `No mês ${crossoverMonth}, o juro mensal supera R$ ${formatBR(M)}`;
+                valCrossover.style.color = '#388e3c'; // Green
+            } else {
+                valCrossover.textContent = "Aumente o Aporte";
+                valCrossoverSub.textContent = "Nesta métrica, levará mais do que " + years + " anos para estourar o efeito bola de neve.";
+                valCrossover.style.color = '#ff4d4f'; // Red warning
+            }
+        }
+
+        // Build projection chart
+        buildProjectionChart(yearData);
+
+        // Build breakdown table
+        buildBreakdownTable(yearData);
+    }
+
+    function buildProjectionChart(yearData) {
+        const chartContainer = document.getElementById('projection-chart');
+        const axisContainer = document.getElementById('projection-axis');
+        if (!chartContainer || !axisContainer) return;
+
+        chartContainer.innerHTML = '';
+        axisContainer.innerHTML = '';
+
+        const maxBalance = Math.max(...yearData.map(d => d.balance));
+        const chartHeight = chartContainer.clientHeight || 260;
+
+        yearData.forEach((data, index) => {
+            const group = document.createElement('div');
+            group.className = 'proj-bar-group';
+
+            const stack = document.createElement('div');
+            stack.className = 'proj-bar-stack';
+
+            const totalPx = (data.balance / maxBalance) * (chartHeight - 10);
+            const interestPx = (data.interest / data.balance) * totalPx;
+            const principalPx = totalPx - interestPx;
+
+            const interestBar = document.createElement('div');
+            interestBar.className = 'proj-bar-interest';
+            interestBar.style.height = '0px';
+            interestBar.title = `Juros: R$ ${formatBR(data.interest)}`;
+
+            const principalBar = document.createElement('div');
+            principalBar.className = 'proj-bar-principal';
+            principalBar.style.height = '0px';
+            principalBar.title = `Investido: R$ ${formatBR(data.invested)}`;
+
+            stack.appendChild(interestBar);
+            stack.appendChild(principalBar);
+            group.appendChild(stack);
+            chartContainer.appendChild(group);
+
+            // Animate bars in with stagger
+            setTimeout(() => {
+                interestBar.style.height = `${Math.max(interestPx, 0)}px`;
+                principalBar.style.height = `${Math.max(principalPx, 2)}px`;
+            }, 100 + index * 60);
+
+            // Year label
+            const label = document.createElement('div');
+            label.className = 'proj-year-label';
+            label.textContent = `Ano ${data.year}`;
+            axisContainer.appendChild(label);
+        });
+    }
+
+    function buildBreakdownTable(yearData) {
+        const tbody = document.getElementById('breakdown-tbody');
+        if (!tbody) return;
+
+        tbody.innerHTML = '';
+
+        yearData.forEach((data, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${data.year}º</td>
+                <td>R$ ${formatBR(data.invested)}</td>
+                <td class="interest-cell">R$ ${formatBR(data.interest)}</td>
+                <td>R$ ${formatBR(data.balance)}</td>
+            `;
+            
+            // Stagger animation
+            row.style.opacity = '0';
+            row.style.transform = 'translateY(8px)';
+            row.style.transition = `all 0.3s cubic-bezier(0.22, 1, 0.36, 1) ${index * 0.04}s`;
+            
+            tbody.appendChild(row);
+
+            // Trigger animation
+            setTimeout(() => {
+                row.style.opacity = '1';
+                row.style.transform = 'translateY(0)';
+            }, 50);
+        });
+    }
+
+    // Calculate button
+    const btnCalc = document.getElementById('btn-calculate');
+    if (btnCalc) {
+        btnCalc.addEventListener('click', () => {
+            btnCalc.style.transform = 'scale(0.97)';
+            setTimeout(() => {
+                btnCalc.style.transform = 'scale(1)';
+            }, 150);
+            calculateCompound();
+        });
+    }
+
+    // Auto-format currency inputs
+    const currencyInputs = document.querySelectorAll('#input-initial, #input-monthly');
+    currencyInputs.forEach(input => {
+        input.addEventListener('blur', function() {
+            const val = parseBRNumber(this.value);
+            if (!isNaN(val) && val > 0) {
+                this.value = formatBR(val);
+            }
+        });
+    });
+
+    // ═══════════════════════════════════════════════════════════
+    // TOOLS SUB-NAVIGATION
+    // ═══════════════════════════════════════════════════════════
+    const toolTabs = document.querySelectorAll('.tool-tab');
+    const toolViews = document.querySelectorAll('.tool-view');
+
+    toolTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            toolTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+
+            const targetTool = tab.getAttribute('data-tool');
+            toolViews.forEach(v => v.classList.add('tool-hidden'));
+            
+            const viewTarget = document.getElementById(`tool-${targetTool}`);
+            if (viewTarget) {
+                viewTarget.classList.remove('tool-hidden');
+            }
+        });
+    });
+
+    // ═══════════════════════════════════════════════════════════
+    // CREDIT CARD DATA (Supabase Sync)
+    // ═══════════════════════════════════════════════════════════
+    let ccData = [];
+
+    async function saveCCData(desc, totalVal, installments, startMonthStr) {
+        if (!currentUser) return;
+        const { error } = await supabase.from('credit_cards').insert([{
+            user_id: currentUser.id,
+            description: desc,
+            total_val: totalVal,
+            installments: installments,
+            start_month_str: startMonthStr
+        }]);
+        if (error) console.error("Error saving CC:", error);
+        await reloadCCData();
+    }
+
+    async function reloadCCData() {
+        if (!currentUser) return;
+        const { data, error } = await supabase.from('credit_cards').select('*');
+        if (!error && data) {
+            ccData = data.map(row => ({
+                db_id: row.id,
+                desc: row.description,
+                totalVal: parseFloat(row.total_val),
+                installments: row.installments,
+                startMonthStr: row.start_month_str
+            }));
+            if (typeof renderCCManager === 'function') renderCCManager();
+            if (typeof renderBudgetManager === 'function') renderBudgetManager();
+        }
+    }
+
+    async function deleteCCData(dbId) {
+        const { error } = await supabase.from('credit_cards').delete().eq('id', dbId);
+        if (!error) await reloadCCData();
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // BUDGET TRACKER DYNAMIC (Supabase Sync)
+    // ═══════════════════════════════════════════════════════════
+    let budgetData = {};
+    let currentBudgetMonth = new Date(); // Date object
+
+    function getMonthKey(date) {
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    function formatMonthDisplay(date) {
+        const months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+        return `${months[date.getMonth()]} ${date.getFullYear()}`;
+    }
+
+    async function saveBudgetDataTx(monthKey, desc, value, type, method) {
+        if (!currentUser) return;
+        const { error } = await supabase.from('budget_transactions').insert([{
+            user_id: currentUser.id,
+            month_key: monthKey,
+            description: desc,
+            value: value,
+            type: type,
+            method: method
+        }]);
+        if (error) console.error("Error saving TX:", error);
+        await reloadBudgetData();
+    }
+
+    async function reloadBudgetData() {
+        if (!currentUser) return;
+        const { data, error } = await supabase.from('budget_transactions').select('*');
+        if (!error && data) {
+            budgetData = {};
+            data.forEach(row => {
+                if (!budgetData[row.month_key]) budgetData[row.month_key] = [];
+                budgetData[row.month_key].push({
+                    db_id: row.id,
+                    desc: row.description,
+                    value: parseFloat(row.value),
+                    type: row.type,
+                    method: row.method
+                });
+            });
+            if (typeof renderBudgetManager === 'function') renderBudgetManager();
+        }
+    }
+
+    async function deleteBudgetDataTx(dbId) {
+        const { error } = await supabase.from('budget_transactions').delete().eq('id', dbId);
+        if (!error) await reloadBudgetData();
+    }
+
+    // Global Load Function
+    async function loadSupabaseData() {
+        await reloadCCData();
+        await reloadBudgetData();
+    }
+
+    function renderBudgetManager() {
+        const monthKey = getMonthKey(currentBudgetMonth);
+        const txListEl = document.getElementById('tx-list');
+        const displayEl = document.getElementById('current-month-display');
+        
+        if(!displayEl || !txListEl) return;
+        displayEl.textContent = formatMonthDisplay(currentBudgetMonth);
+
+        const txs = budgetData[monthKey] || [];
+        
+        let totalIncome = 0;
+        let totalFixed = 0;
+        let totalVar = 0;
+
+        txListEl.innerHTML = '';
+
+        if(txs.length === 0) {
+            txListEl.innerHTML = '<li style="padding: 16px; color: var(--text-muted); text-align: center; font-size: 13px;">Nenhum lançamento neste mês.</li>';
+        }
+
+        txs.forEach((tx, idx) => {
+            if(tx.type === 'income') totalIncome += tx.value;
+            if(tx.type === 'fixed') totalFixed += tx.value;
+            if(tx.type === 'variable') totalVar += tx.value;
+
+            let typeLabel = "Receita";
+            if(tx.type === 'fixed') typeLabel = "Fixo";
+            if(tx.type === 'variable') typeLabel = "Variável";
+
+            let methodLabel = "";
+            if (tx.method === 'pix') methodLabel = " • PIX";
+            if (tx.method === 'debit') methodLabel = " • Débito";
+            if (tx.method === 'credit') methodLabel = " • Crédito";
+            if (tx.method === 'boleto') methodLabel = " • Boleto";
+
+            const li = document.createElement('li');
+            li.className = `tx-item ${tx.type}`;
+            li.innerHTML = `
+                <div class="tx-info">
+                    <span class="tx-desc">${tx.desc}</span>
+                    <span class="tx-type-label">${typeLabel}${methodLabel}</span>
+                </div>
+                <div class="tx-right">
+                    <span class="tx-val">${tx.type === 'income' ? '+' : '-'} R$ ${formatBR(tx.value)}</span>
+                    <button class="btn-delete" data-idx="${tx.db_id}">×</button>
+                </div>
+            `;
+            txListEl.appendChild(li);
+        });
+
+        // INJECT ACTIVE CREDIT CARD INSTALLMENTS INTO BUDGET
+        if (typeof getCCMetricsForMonth === 'function') {
+            const ccMetrics = getCCMetricsForMonth(currentBudgetMonth);
+            ccMetrics.activeInstallments.forEach(inst => {
+                totalVar += inst.instValue; // They act as variable debt
+                
+                const li = document.createElement('li');
+                li.className = `tx-item variable`;
+                li.style.borderLeftColor = '#d32f2f'; // Give it a red tint to distinguish
+                li.innerHTML = `
+                    <div class="tx-info">
+                        <span class="tx-desc">Fatura Cartão: ${inst.desc}</span>
+                        <span class="tx-type-label">Cartão de Crédito (${inst.instNumber}/${inst.totalIns})</span>
+                    </div>
+                    <div class="tx-right">
+                        <span class="tx-val">- R$ ${formatBR(inst.instValue)}</span>
+                        <button class="btn-delete" disabled style="opacity:0.2" title="Gerenciado na aba Cartões">×</button>
+                    </div>
+                `;
+                txListEl.appendChild(li);
+            });
+        }
+
+        // Add Delete Listeners
+        document.querySelectorAll('.btn-delete').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const dbId = btn.getAttribute('data-idx');
+                if (dbId && !btn.hasAttribute('disabled')) {
+                    await deleteBudgetDataTx(dbId);
+                }
+            });
+        });
+
+        // Analytics
+        const totalExp = totalFixed + totalVar;
+        const netValue = totalIncome - totalExp;
+        
+        let savPct = 0;
+        let fixPct = 0;
+        let varPct = 0;
+
+        if (totalIncome > 0) {
+            savPct = Math.round((netValue / totalIncome) * 100);
+            fixPct = Math.round((totalFixed / totalIncome) * 100);
+            varPct = Math.round((totalVar / totalIncome) * 100);
+        }
+
+        const netValEl = document.getElementById('budget-net-val');
+        const netPctEl = document.getElementById('budget-net-pct');
+        const pctFixedEl = document.getElementById('pct-fixed-actual');
+        const barFixedEl = document.getElementById('bar-fixed-actual');
+        const pctVarEl = document.getElementById('pct-var-actual');
+        const barVarEl = document.getElementById('bar-var-actual');
+
+        if (netValEl) netValEl.textContent = formatBR(netValue);
+        if (netPctEl) netPctEl.textContent = `${savPct > 0 ? savPct : 0}% da Renda Poupada`;
+        
+        if (pctFixedEl) pctFixedEl.textContent = `${fixPct}%`;
+        if (barFixedEl) barFixedEl.style.width = `${fixPct > 100 ? 100 : fixPct}%`;
+        
+        if (pctVarEl) pctVarEl.textContent = `${varPct}%`;
+        if (barVarEl) barVarEl.style.width = `${varPct > 100 ? 100 : varPct}%`;
+
+        // Warning Colors
+        if (barFixedEl) barFixedEl.style.backgroundColor = fixPct > 50 ? '#ff4d4f' : 'var(--navy-deep)';
+        if (barVarEl) barVarEl.style.backgroundColor = varPct > 30 ? '#ff4d4f' : 'var(--navy-medium)';
+
+        const insightEl = document.getElementById('budget-tracker-insight');
+        if (insightEl) {
+            if (totalIncome === 0) {
+                insightEl.innerHTML = "Adicione sua renda e despesas para iniciar a análise institucional.";
+                insightEl.style.borderLeftColor = "var(--gold-dry)";
+            } else if (fixPct > 50 || varPct > 30) {
+                insightEl.innerHTML = "<b>Alerta:</b> Você estourou os limites do benchmark 50/30/20. Reveja suas despesas marcadas em vermelho para proteger sua capacidade de aporte.";
+                insightEl.style.borderLeftColor = "#ff4d4f";
+            } else {
+                insightEl.innerHTML = "<b>Excelente!</b> Custos sob controle. Você preservou uma alta capacidade poupança mensal. Direcione este lucro para seus investimentos institucionais.";
+                insightEl.style.borderLeftColor = "var(--gold-rich)";
+            }
+        }
+    }
+
+    const txForm = document.getElementById('transaction-form');
+    if (txForm) {
+        txForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const desc = document.getElementById('tx-desc').value.trim();
+            const valStr = document.getElementById('tx-val').value;
+            const type = document.getElementById('tx-type').value;
+            const methodEl = document.getElementById('tx-method');
+            const method = methodEl ? methodEl.value : 'pix';
+            
+            const value = parseBRNumber(valStr);
+            if (!desc || value <= 0) return;
+
+            const monthKey = getMonthKey(currentBudgetMonth);
+            await saveBudgetDataTx(monthKey, desc, value, type, method);
+            
+            txForm.reset();
+        });
+
+        const prevBtn = document.getElementById('prev-month');
+        const nextBtn = document.getElementById('next-month');
+        
+        if (prevBtn && nextBtn) {
+            prevBtn.addEventListener('click', () => {
+                currentBudgetMonth.setMonth(currentBudgetMonth.getMonth() - 1);
+                renderBudgetManager();
+            });
+            nextBtn.addEventListener('click', () => {
+                currentBudgetMonth.setMonth(currentBudgetMonth.getMonth() + 1);
+                renderBudgetManager();
+            });
+        }
+
+        renderBudgetManager();
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // CREDIT CARDS TRACKER (ccData + saveCCData declared above)
+    // ═══════════════════════════════════════════════════════════
+
+    function getCCMetricsForMonth(monthDate) {
+        let currentBillTotal = 0;
+        let futureDebtTotal = 0;
+        const activeInstallments = [];
+
+        const refYear = monthDate.getFullYear();
+        const refM  = monthDate.getMonth();
+        const refAbs = refYear * 12 + refM;
+
+        ccData.forEach(cc => {
+            const [yStr, mStr] = cc.startMonthStr.split('-');
+            const startYear = parseInt(yStr);
+            const startM = parseInt(mStr) - 1;
+            const startAbs = startYear * 12 + startM;
+
+            const instValue = cc.totalVal / cc.installments;
+            const instNumber = (refAbs - startAbs) + 1;
+
+            if (instNumber > 0 && instNumber <= cc.installments) {
+                currentBillTotal += instValue;
+                activeInstallments.push({ desc: cc.desc, instValue, instNumber, totalIns: cc.installments });
+            }
+
+            if (instNumber <= cc.installments) {
+                let remainingInst = cc.installments - (instNumber > 0 ? instNumber : 0);
+                if(instNumber <= 0) remainingInst = cc.installments;
+                futureDebtTotal += (remainingInst * instValue);
+            }
+        });
+
+        return { currentBillTotal, futureDebtTotal, activeInstallments };
+    }
+
+    function renderCCManager() {
+        const metrics = getCCMetricsForMonth(currentBudgetMonth);
+        const displayEl = document.getElementById('cc-current-month-display');
+        const listEl = document.getElementById('cc-list');
+
+        if(displayEl) displayEl.textContent = formatMonthDisplay(currentBudgetMonth);
+
+        if(listEl) {
+            listEl.innerHTML = '';
+            if (ccData.length === 0) {
+                listEl.innerHTML = '<li style="padding: 16px; color: var(--text-muted); text-align: center; font-size: 13px;">Nenhum cartão cadastrado.</li>';
+            }
+
+            ccData.forEach((cc, idx) => {
+                const [yStr, mStr] = cc.startMonthStr.split('-');
+                const startAbs = parseInt(yStr) * 12 + (parseInt(mStr) - 1);
+                const refAbs = currentBudgetMonth.getFullYear() * 12 + currentBudgetMonth.getMonth();
+                const instNumber = (refAbs - startAbs) + 1;
+                
+                let statusBadge = '';
+                if (instNumber > cc.installments) {
+                    statusBadge = '<span style="color: #388e3c; font-weight:700;">Quitado</span>';
+                } else if (instNumber <= 0) {
+                    statusBadge = '<span style="color: var(--gold-rich);">Futuro</span>';
+                } else {
+                    statusBadge = `<span style="color: #d32f2f;">${instNumber} / ${cc.installments} Pagas</span>`;
+                }
+
+                const instValue = cc.totalVal / cc.installments;
+
+                const li = document.createElement('li');
+                li.className = 'tx-item';
+                li.style.borderLeftColor = instNumber > cc.installments ? '#388e3c' : '#d32f2f';
+                li.innerHTML = `
+                    <div class="tx-info">
+                        <span class="tx-desc">${cc.desc}</span>
+                        <span class="tx-type-label">Início: ${mStr}/${yStr} • ${statusBadge}</span>
+                    </div>
+                    <div class="tx-right">
+                        <span class="tx-val" style="color: var(--text-primary);">- R$ ${formatBR(instValue)}/mês</span>
+                        <button class="btn-delete" data-cc-idx="${cc.db_id}">×</button>
+                    </div>
+                `;
+                listEl.appendChild(li);
+            });
+
+            document.querySelectorAll('button[data-cc-idx]').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const dbId = btn.getAttribute('data-cc-idx');
+                    if (dbId) {
+                        await deleteCCData(dbId);
+                    }
+                });
+            });
+        }
+
+        const billEl = document.getElementById('cc-current-bill-val');
+        if(billEl) billEl.textContent = formatBR(metrics.currentBillTotal);
+        
+        const debtEl = document.getElementById('cc-future-debt');
+        if(debtEl) debtEl.textContent = formatBR(metrics.futureDebtTotal);
+    }
+
+    const ccForm = document.getElementById('cc-form');
+    if (ccForm) {
+        ccForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const desc = document.getElementById('cc-desc').value.trim();
+            const valStr = document.getElementById('cc-val').value;
+            const installments = parseInt(document.getElementById('cc-installments').value);
+            const startMonthStr = document.getElementById('cc-start-month').value;
+            
+            const totalVal = parseBRNumber(valStr);
+            if (!desc || totalVal <= 0 || !installments || !startMonthStr) return;
+
+            await saveCCData(desc, totalVal, installments, startMonthStr);
+            ccForm.reset();
+        });
+
+        const ccPrevBtn = document.getElementById('cc-prev-month');
+        const ccNextBtn = document.getElementById('cc-next-month');
+        
+        if (ccPrevBtn && ccNextBtn) {
+            ccPrevBtn.addEventListener('click', () => {
+                currentBudgetMonth.setMonth(currentBudgetMonth.getMonth() - 1);
+                renderCCManager();
+                renderBudgetManager();
+            });
+            ccNextBtn.addEventListener('click', () => {
+                currentBudgetMonth.setMonth(currentBudgetMonth.getMonth() + 1);
+                renderCCManager();
+                renderBudgetManager();
+            });
+        }
+        
+        // Initial render
+        renderCCManager();
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // EMERGENCY FUND CALCULATOR
+    // ═══════════════════════════════════════════════════════════
+    function calculateEmergency() {
+        const costInput = document.getElementById('em-cost');
+        const monthsInput = document.getElementById('em-months');
+        const currentInput = document.getElementById('em-current');
+        const applyInput = document.getElementById('em-apply');
+
+        if (!costInput || !monthsInput || !currentInput || !applyInput) return;
+
+        const cost = parseBRNumber(costInput.value);
+        const months = parseInt(monthsInput.value) || 6;
+        const current = parseBRNumber(currentInput.value);
+        const apply = parseBRNumber(applyInput.value) || 1; // avoid / 0
+
+        const target = cost * months;
+        let p = (current / target) * 100;
+        if (p > 100) p = 100;
+        if (p < 0) p = 0;
+
+        const remaining = target - current;
+        let timeMonths = 0;
+        
+        if (remaining > 0) {
+            timeMonths = Math.ceil(remaining / apply);
+        }
+
+        // Update visuals
+        document.getElementById('em-target-val').textContent = formatBR(target);
+        document.getElementById('em-pct').textContent = `${Math.round(p)}%`;
+        document.getElementById('em-fill').style.width = `${Math.round(p)}%`;
+
+        const insightEl = document.getElementById('em-insight');
+        if (remaining <= 0) {
+            insightEl.innerHTML = "Parabéns. Seu escudo financeiro está 100% blindado para o alvo de <strong>" + months + " meses</strong>. O capital adicional deve ir integralmente para investimentos.";
+            insightEl.style.borderLeftColor = "var(--gold-rich)";
+        } else {
+            insightEl.innerHTML = `Faltam R$ ${formatBR(remaining)}. Mantendo aportes de R$ ${formatBR(apply)}, sua reserva blindada estará pronta em <strong>${timeMonths} meses</strong>.`;
+            insightEl.style.borderLeftColor = "var(--navy-medium)";
+        }
+    }
+
+    const btnEmergency = document.getElementById('btn-calc-emergency');
+    if (btnEmergency) {
+        btnEmergency.addEventListener('click', calculateEmergency);
+        // Default init
+        setTimeout(calculateEmergency, 500);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // GLOBAL INTERACTIVITY — ALL REMAINING BUTTONS & LINKS
+    // ═══════════════════════════════════════════════════════════
+
+    // ─── Reusable Toast Notification ───
+    function showToast(message, duration = 3000) {
+        let container = document.getElementById('afic-toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'afic-toast-container';
+            container.style.cssText = 'position:fixed;top:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:12px;pointer-events:none;';
+            document.body.appendChild(container);
+        }
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            background: var(--navy-deep, #051845); color: #fff; padding: 16px 24px;
+            font-family: Inter, sans-serif; font-size: 14px; font-weight: 500;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.25); pointer-events: auto;
+            transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.22,1,0.36,1);
+            border-left: 3px solid var(--gold-rich, #D4AF37); max-width: 380px;
+        `;
+        toast.textContent = message;
+        container.appendChild(toast);
+        requestAnimationFrame(() => { toast.style.transform = 'translateX(0)'; });
+        setTimeout(() => {
+            toast.style.transform = 'translateX(120%)';
+            setTimeout(() => toast.remove(), 400);
+        }, duration);
+    }
+
+    // ─── 1. SEARCH INPUT (Top Bar) ───
+    if (searchInput) {
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && searchInput.value.trim()) {
+                const query = searchInput.value.trim().toLowerCase();
+                const searchMap = {
+                    'orçamento': 'budget', 'orcamento': 'budget', 'budget': 'budget',
+                    'cartão': 'cards', 'cartao': 'cards', 'cartões': 'cards', 'cartoes': 'cards', 'crédito': 'cards', 'credito': 'cards',
+                    'bola': 'compound', 'juros': 'compound', 'composto': 'compound', 'neve': 'compound',
+                    'emergência': 'emergency', 'emergencia': 'emergency', 'reserva': 'emergency',
+                    'educação': null, 'educacao': null, 'academy': null, 'curso': null,
+                    'comunidade': null, 'community': null, 'forum': null,
+                    'plano': null, 'planos': null, 'premium': null, 'elite': null,
+                };
+                let matched = false;
+                for (const [keyword, tool] of Object.entries(searchMap)) {
+                    if (query.includes(keyword)) {
+                        matched = true;
+                        if (tool) {
+                            // Navigate to tools page and activate sub-tab
+                            navLinks.forEach(l => l.classList.remove('active'));
+                            document.getElementById('nav-tools')?.classList.add('active');
+                            switchPage('tools');
+                            // Activate the right tool tab
+                            toolTabs.forEach(t => t.classList.remove('active'));
+                            toolViews.forEach(v => v.classList.add('tool-hidden'));
+                            const tab = document.querySelector(`.tool-tab[data-tool="${tool}"]`);
+                            const view = document.getElementById(`tool-${tool}`);
+                            if (tab) tab.classList.add('active');
+                            if (view) view.classList.remove('tool-hidden');
+                        } else if (['educação','educacao','academy','curso'].some(k => query.includes(k))) {
+                            navLinks.forEach(l => l.classList.remove('active'));
+                            document.getElementById('nav-education')?.classList.add('active');
+                            switchPage('education');
+                        } else if (['comunidade','community','forum'].some(k => query.includes(k))) {
+                            navLinks.forEach(l => l.classList.remove('active'));
+                            document.getElementById('nav-community')?.classList.add('active');
+                            switchPage('community');
+                        } else if (['plano','planos','premium','elite'].some(k => query.includes(k))) {
+                            navLinks.forEach(l => l.classList.remove('active'));
+                            document.getElementById('nav-account')?.classList.add('active');
+                            switchPage('plans');
+                        }
+                        showToast(`Navegando para: "${keyword}"`);
+                        break;
+                    }
+                }
+                if (!matched) {
+                    showToast('Nenhum resultado encontrado para: "' + query + '"');
+                }
+                searchInput.value = '';
+                searchInput.blur();
+            }
+        });
+    }
+
+    // ─── 2. USER PROFILE CLICK → Account Page ───
+    const userProfile = document.getElementById('user-profile');
+    if (userProfile) {
+        userProfile.style.cursor = 'pointer';
+        userProfile.addEventListener('click', () => {
+            navLinks.forEach(l => l.classList.remove('active'));
+            document.getElementById('nav-account')?.classList.add('active');
+            switchPage('plans');
+        });
+    }
+
+    // ─── 3. QUICK ACTIONS (Dashboard) ───
+    const btnSchedule = document.getElementById('btn-schedule');
+    if (btnSchedule) {
+        btnSchedule.addEventListener('click', () => {
+            showToast('📅 Funcionalidade de Agendamento será ativada com a integração do Calendly. Em breve!');
+        });
+    }
+
+    const btnSimulate = document.getElementById('btn-simulate');
+    if (btnSimulate) {
+        btnSimulate.addEventListener('click', () => {
+            navLinks.forEach(l => l.classList.remove('active'));
+            document.getElementById('nav-tools')?.classList.add('active');
+            switchPage('tools');
+            // Auto-activate Bola de Neve (compound) tab
+            toolTabs.forEach(t => t.classList.remove('active'));
+            toolViews.forEach(v => v.classList.add('tool-hidden'));
+            const tab = document.querySelector('.tool-tab[data-tool="compound"]');
+            const view = document.getElementById('tool-compound');
+            if (tab) tab.classList.add('active');
+            if (view) view.classList.remove('tool-hidden');
+            setTimeout(() => calculateCompound(), 150);
+        });
+    }
+
+    // ─── 4. EDUCATION PAGE ───
+    // "Continuar Módulo" button
+    const btnContinue = document.querySelector('.btn-continue');
+    if (btnContinue) {
+        btnContinue.addEventListener('click', () => {
+            showToast('🎓 Módulo 4: Alocação Tática de Ativos será liberado com a integração de vídeo. Em breve!');
+        });
+    }
+
+    // "Ver Acervo Completo" link
+    const viewAllLink = document.querySelector('.view-all');
+    if (viewAllLink) {
+        viewAllLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showToast('📚 O acervo completo estará disponível na versão final da Sovereign Academy.');
+        });
+    }
+
+    // Education Course Cards — clickable
+    document.querySelectorAll('.edu-card').forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', () => {
+            const title = card.querySelector('.edu-card-title')?.textContent || 'Módulo';
+            if (card.classList.contains('locked')) {
+                showToast('🔒 "' + title + '" requer Nível Elite. Eleve seu acesso na aba Minha Conta.');
+            } else {
+                showToast('▶ Abrindo: "' + title + '". O player de conteúdo será integrado em breve.');
+            }
+        });
+    });
+
+    // Masterclass "Assistir" buttons
+    document.querySelectorAll('.mc-action-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const title = btn.closest('.mc-item')?.querySelector('.mc-title')?.textContent || 'Masterclass';
+            showToast('▶ Reproduzindo: "' + title + '". Player de vídeo em breve.');
+        });
+    });
+
+    // Masterclass play icons
+    document.querySelectorAll('.mc-play-btn').forEach(btn => {
+        btn.style.cursor = 'pointer';
+        btn.addEventListener('click', () => {
+            const title = btn.closest('.mc-item')?.querySelector('.mc-title')?.textContent || 'Masterclass';
+            showToast('▶ Reproduzindo: "' + title + '".');
+        });
+    });
+
+    // ─── 5. COMMUNITY PAGE ───
+    // "Novo Tópico" button
+    const btnNewTopic = document.querySelector('.btn-primary');
+    if (btnNewTopic && btnNewTopic.textContent.trim() === 'Novo Tópico') {
+        btnNewTopic.addEventListener('click', () => {
+            showToast('✏️ O editor de tópicos será habilitado com o sistema de autenticação e banco de dados.');
+        });
+    }
+
+    // Thread Cards — clickable
+    document.querySelectorAll('.thread-card').forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', () => {
+            const title = card.querySelector('.thread-title')?.textContent || 'Tópico';
+            showToast('📄 Abrindo: "' + title + '". Sistema de comentários em breve.');
+        });
+    });
+
+    // "Carregar mais discussões"
+    const loadMoreBtn = document.querySelector('.load-more-btn');
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', () => {
+            showToast('📜 Todas as discussões já foram carregadas nesta demo.');
+            loadMoreBtn.style.opacity = '0.5';
+            loadMoreBtn.style.pointerEvents = 'none';
+        });
+    }
+
+    // ─── 6. PLANS PAGE ───
+    document.querySelectorAll('.plan-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const planName = btn.textContent.trim();
+            showToast('💳 "' + planName + '" — O checkout será integrado com Stripe/Pix. Em breve!');
+        });
+    });
+
+    // ─── 7. BUDGET ↔ CREDIT CARD MONTH SYNC ───
+    // When budget month changes, also sync the CC viewer display
+    const budgetPrev = document.getElementById('prev-month');
+    const budgetNext = document.getElementById('next-month');
+    if (budgetPrev) {
+        budgetPrev.addEventListener('click', () => {
+            if (typeof renderCCManager === 'function') renderCCManager();
+        });
+    }
+    if (budgetNext) {
+        budgetNext.addEventListener('click', () => {
+            if (typeof renderCCManager === 'function') renderCCManager();
+        });
+    }
+
+    // ─── MOBILE SIDEBAR TOGGLE ───
+    if (window.innerWidth <= 900) {
+        const hamburger = document.createElement('button');
+        hamburger.className = 'hamburger-btn';
+        hamburger.setAttribute('aria-label', 'Menu');
+        hamburger.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="22" height="22">
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <line x1="3" y1="12" x2="21" y2="12"/>
+                <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+        `;
+        hamburger.style.cssText = `
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            color: var(--text-primary);
+            margin-right: 12px;
+            order: -1;
+        `;
+        
+        const topBar = document.getElementById('top-bar');
+        const sidebar = document.getElementById('sidebar');
+        
+        if (topBar && sidebar) {
+            topBar.insertBefore(hamburger, topBar.firstChild);
+            
+            hamburger.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+            });
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    sidebar.classList.remove('open');
+                });
+            });
+        }
+    }
+
+    console.log('AFIC Dashboard initialized ✦');
+
+  } catch(err) {
+    console.error('AFIC INIT ERROR:', err);
+  }
+});
