@@ -40,6 +40,41 @@
                 <p id="auth-error-msg" style="color: #ff4d4f; font-size: 13px; text-align: center; margin-top: 12px; display: none;"></p>
             </form>
         </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- NEW TOPIC MODAL (Community)                 -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div id="modal-new-topic" class="auth-modal hidden">
+        <div class="auth-modal-content" style="max-width: 600px;">
+            <div class="auth-header">
+                <h2>Nova Discussão</h2>
+                <p>Compartilhe teses, dúvidas ou oportunidades com o Sovereign Circle.</p>
+            </div>
+            <form id="form-new-topic" class="auth-form">
+                <div class="param-group">
+                    <label class="param-label" for="topic-title">Título da Discussão</label>
+                    <input type="text" class="param-input" id="topic-title" placeholder="Ex: Tese de Alocação Macro Q3" required>
+                </div>
+                <div class="param-group">
+                    <label class="param-label" for="topic-category">Categoria</label>
+                    <select class="param-input" id="topic-category" required>
+                        <option value="Macroeconomia">Macroeconomia</option>
+                        <option value="Deal Flow">Deal Flow</option>
+                        <option value="Gestão de Patrimônio">Gestão de Patrimônio</option>
+                        <option value="Dúvidas Gerais">Dúvidas Gerais</option>
+                    </select>
+                </div>
+                <div class="param-group">
+                    <label class="param-label" for="topic-content">Conteúdo</label>
+                    <textarea class="param-input" id="topic-content" rows="6" placeholder="Descreva sua tese ou dúvida detalhadamente..." required style="resize: none; padding: 12px;"></textarea>
+                </div>
+                <div class="auth-actions">
+                    <button type="submit" class="btn-calculate" style="margin-top: 12px;">Publicar Tópico</button>
+                    <button type="button" id="btn-close-topic" class="btn-primary" style="margin-top: 8px; background: transparent; border: 1px solid var(--gold-rich); color: var(--gold-rich);">Cancelar</button>
+                </div>
+            </form>
+        </div>
     </div>    <!-- ═══════════════════════════════════════════ -->
     <!-- SIDEBAR — Navegação Principal               -->
     <!-- ═══════════════════════════════════════════ -->
@@ -984,7 +1019,7 @@
                     <h1 class="page-title">Sovereign Circle</h1>
                     <p class="page-subtitle">Debates institucionais, deal flow e inteligência coletiva.</p>
                 </div>
-                <button class="btn-primary">Novo Tópico</button>
+                <button class="btn-primary" id="btn-open-new-topic">Novo Tópico</button>
             </header>
 
             <div class="community-layout">
@@ -1094,6 +1129,31 @@
                 </div>
             </div>
 
+        </section>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!-- ACCOUNT PAGE — Profile & Nickname       -->
+        <!-- ═══════════════════════════════════════ -->
+        <section class="page-content page-hidden" id="page-account">
+            <header class="section-header">
+                <div>
+                    <h1 class="page-title">Configurações de Perfil</h1>
+                    <p class="page-subtitle">Gerencie sua identidade no Sovereign Circle.</p>
+                </div>
+            </header>
+
+            <div class="card" style="max-width: 600px;">
+                <div class="card-label">Identidade Digital</div>
+                <form id="form-profile" class="auth-form">
+                    <div class="param-group">
+                        <label class="param-label" for="user-nickname">Seu Apelido (Nickname)</label>
+                        <input type="text" class="param-input" id="user-nickname" placeholder="Ex: GestorSovereign" required>
+                        <p class="param-help" style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">Este nome será exibido publicamente nos seus tópicos na comunidade.</p>
+                    </div>
+                    <button type="submit" class="btn-calculate" style="width: auto; padding: 12px 32px;">Salvar Alterações</button>
+                    <p id="profile-msg" style="font-size: 13px; margin-top: 12px; display: none;"></p>
+                </form>
+            </div>
         </section>
 
         <!-- ═══════════════════════════════════════ -->

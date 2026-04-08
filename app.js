@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN1ZXlmb2RscWN2aW9qaXZseGd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NzU4NTMsImV4cCI6MjA5MTI1MTg1M30.g40c4ko9uFKOdN2x4tvQQg-IuWx2ZB4K8_fsZpgeIDw';
     const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
     let currentUser = null;
+    let currentUserProfile = null; // Store nickname and other profile data
 
     // ─── AUTHENTICATION HANDLERS ───
     const authModal = document.getElementById('auth-modal');
@@ -242,7 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'tools': 'page-tools',
         'education': 'page-education',
         'community': 'page-community',
-        'account': 'page-plans',
+        'account': 'page-account',
         'plans': 'page-plans'
     };
 
@@ -704,6 +705,8 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadSupabaseData() {
         await reloadCCData();
         await reloadBudgetData();
+        await loadUserProfile();
+        await loadCommunityThreads();
     }
 
     function renderBudgetManager() {
@@ -1231,30 +1234,154 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ─── 5. COMMUNITY PAGE ───
-    // "Novo Tópico" button
-    const btnNewTopic = document.querySelector('.btn-primary');
-    if (btnNewTopic && btnNewTopic.textContent.trim() === 'Novo Tópico') {
-        btnNewTopic.addEventListener('click', () => {
-            showToast('✏️ O editor de tópicos será habilitado com o sistema de autenticação e banco de dados.');
+    const modalNewTopic = document.getElementById('modal-new-topic');
+    const btnOpenNewTopic = document.getElementById('btn-open-new-topic');
+    const btnCloseNewTopic = document.getElementById('btn-close-topic');
+    const formNewTopic = document.getElementById('form-new-topic');
+
+    // Profile Management
+    async function loadUserProfile() {
+        if (!currentUser) return;
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('nickname')
+            .eq('id', currentUser.id)
+            .single();
+        
+        if (!error && data) {
+            currentUserProfile = data;
+            const nicknameInput = document.getElementById('user-nickname');
+            if (nicknameInput) nicknameInput.value = data.nickname || '';
+            
+            // Update UI with nickname if needed
+            const userDisplay = document.querySelector('.user-name');
+            if (userDisplay && data.nickname) userDisplay.textContent = data.nickname;
+        }
+    }
+
+    const formProfile = document.getElementById('form-profile');
+    if (formProfile) {
+        formProfile.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nickname = document.getElementById('user-nickname').value.trim();
+            const profileMsg = document.getElementById('profile-msg');
+            
+            if (!nickname) return;
+
+            const { error } = await supabase
+                .from('profiles')
+                .upsert({ id: currentUser.id, nickname: nickname, updated_at: new Date() });
+
+            if (error) {
+                profileMsg.textContent = "Erro ao salvar: " + error.message;
+                profileMsg.style.color = "#ff4d4f";
+            } else {
+                profileMsg.textContent = "Perfil atualizado com sucesso!";
+                profileMsg.style.color = "#388e3c";
+                await loadUserProfile();
+            }
+            profileMsg.style.display = 'block';
+            setTimeout(() => profileMsg.style.display = 'none', 3000);
         });
     }
 
-    // Thread Cards — clickable
-    document.querySelectorAll('.thread-card').forEach(card => {
-        card.style.cursor = 'pointer';
-        card.addEventListener('click', () => {
-            const title = card.querySelector('.thread-title')?.textContent || 'Tópico';
-            showToast('📄 Abrindo: "' + title + '". Sistema de comentários em breve.');
-        });
-    });
+    // Community Handlers
+    async function loadCommunityThreads() {
+        const communityMain = document.querySelector('.community-main');
+        if (!communityMain) return;
 
-    // "Carregar mais discussões"
-    const loadMoreBtn = document.querySelector('.load-more-btn');
-    if (loadMoreBtn) {
-        loadMoreBtn.addEventListener('click', () => {
-            showToast('📜 Todas as discussões já foram carregadas nesta demo.');
-            loadMoreBtn.style.opacity = '0.5';
-            loadMoreBtn.style.pointerEvents = 'none';
+        // Keep the pinned thread if it exists, or clear and rebuild
+        const pinned = communityMain.querySelector('.pinned-thread');
+        communityMain.innerHTML = '';
+        if (pinned) communityMain.appendChild(pinned);
+
+        const { data, error } = await supabase
+            .from('community_topics')
+            .select(`
+                *,
+                profiles:user_id (nickname)
+            `)
+            .order('created_at', { ascending: false });
+
+        if (!error && data) {
+            data.forEach(topic => {
+                const card = document.createElement('div');
+                card.className = 'thread-card';
+                const date = new Date(topic.created_at).toLocaleDateString('pt-BR');
+                const author = topic.profiles?.nickname || 'Membro AFIC';
+                
+                card.innerHTML = `
+                    <div class="thread-badge" style="background: var(--navy-medium); color: var(--bg-white); border:none;">${topic.category}</div>
+                    <h3 class="thread-title">${topic.title}</h3>
+                    <p class="thread-excerpt">${topic.content.substring(0, 150)}${topic.content.length > 150 ? '...' : ''}</p>
+                    <div class="thread-meta">
+                        <span class="thread-author"><strong>${author}</strong></span>
+                        <span class="thread-date">${date}</span>
+                    </div>
+                `;
+                
+                card.addEventListener('click', () => {
+                    showToast('📄 Abrindo tese: "' + topic.title + '". Em breve você poderá comentar.');
+                });
+                
+                communityMain.appendChild(card);
+            });
+        }
+        
+        // Add "Load More" button back
+        const loadMore = document.createElement('button');
+        loadMore.className = 'btn-secondary load-more-btn';
+        loadMore.textContent = 'Carregar mais discussões';
+        loadMore.style.marginTop = '24px';
+        loadMore.addEventListener('click', () => showToast('📜 Todas as discussões carregadas.'));
+        communityMain.appendChild(loadMore);
+    }
+
+    if (btnOpenNewTopic) {
+        btnOpenNewTopic.addEventListener('click', () => {
+            if (!currentUserProfile || !currentUserProfile.nickname) {
+                showToast('⚠️ Defina um apelido na aba "Minha Conta" antes de publicar.');
+                switchPage('account');
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                document.getElementById('nav-account')?.classList.add('active');
+                return;
+            }
+            modalNewTopic.classList.remove('hidden');
+        });
+    }
+
+    if (btnCloseNewTopic) {
+        btnCloseNewTopic.addEventListener('click', () => {
+            modalNewTopic.classList.add('hidden');
+        });
+    }
+
+    if (formNewTopic) {
+        formNewTopic.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('topic-title').value.trim();
+            const category = document.getElementById('topic-category').value;
+            const content = document.getElementById('topic-content').value.trim();
+
+            if (!title || !content) return;
+
+            const { error } = await supabase
+                .from('community_topics')
+                .insert([{
+                    user_id: currentUser.id,
+                    title,
+                    category,
+                    content
+                }]);
+
+            if (error) {
+                showToast('❌ Erro ao publicar: ' + error.message);
+            } else {
+                showToast('✅ Tópico publicado no Sovereign Circle!');
+                formNewTopic.reset();
+                modalNewTopic.classList.add('hidden');
+                await loadCommunityThreads();
+            }
         });
     }
 
