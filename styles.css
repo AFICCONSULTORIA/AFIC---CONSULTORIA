@@ -210,6 +210,17 @@ h1, h2, h3, h4, h5, h6 {
     opacity: 1;
 }
 
+.nav-link.logout-link:hover {
+    color: var(--red);
+    background: var(--red-bg);
+    border-left-color: var(--red);
+}
+
+.nav-link.logout-link:hover .nav-icon {
+    color: var(--red);
+    opacity: 1;
+}
+
 /* ─── PREMIUM CARD ─── */
 .sidebar-footer {
     padding: var(--space-lg);

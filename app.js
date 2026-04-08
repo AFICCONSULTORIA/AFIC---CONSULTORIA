@@ -72,6 +72,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize Auth
     checkAuthSession();
 
+    // ─── LOGOUT HANDLER ───
+    const btnLogout = document.getElementById('btn-logout');
+    if (btnLogout) {
+        btnLogout.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+                console.error('Erro ao sair:', error.message);
+            } else {
+                currentUser = null;
+                checkAuthSession();
+            }
+        });
+    }
+
     // ─── COUNTER ANIMATION ───
     function animateCounter(element, target, duration = 1500) {
         const start = 0;
