@@ -1303,6 +1303,22 @@ document.addEventListener('DOMContentLoaded', () => {
             `)
             .order('created_at', { ascending: false });
 
+        // Realtime Subscription (Initialize only once)
+        if (!window.communitySubscribed) {
+            supabase
+                .channel('public:community_topics')
+                .on('postgres_changes', { 
+                    event: 'INSERT', 
+                    schema: 'public', 
+                    table: 'community_topics' 
+                }, (payload) => {
+                    // Refresh the list when a new topic is inserted
+                    loadCommunityThreads();
+                })
+                .subscribe();
+            window.communitySubscribed = true;
+        }
+
         if (!error && data) {
             data.forEach(topic => {
                 const card = document.createElement('div');
@@ -1377,7 +1393,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (error) {
                 showToast('❌ Erro ao publicar: ' + error.message);
             } else {
-                showToast('✅ Tópico publicado no Sovereign Circle!');
+                showToast('✅ Tópico publicado na Comunidade!');
                 formNewTopic.reset();
                 modalNewTopic.classList.add('hidden');
                 await loadCommunityThreads();
