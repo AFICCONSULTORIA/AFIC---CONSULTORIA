@@ -16,8 +16,43 @@ document.addEventListener('DOMContentLoaded', () => {
     const authForm = document.getElementById('auth-form');
     const authEmail = document.getElementById('auth-email');
     const authPassword = document.getElementById('auth-password');
+    const authConfirmPassword = document.getElementById('auth-confirm-password');
+    const groupConfirmPassword = document.getElementById('group-confirm-password');
     const authErrorMsg = document.getElementById('auth-error-msg');
-    const btnSignup = document.getElementById('btn-signup');
+    
+    const authTitle = document.getElementById('auth-title');
+    const authSubtitle = document.getElementById('auth-subtitle');
+    const btnAuthSubmit = document.getElementById('btn-auth-submit');
+    const authToggleLink = document.getElementById('auth-toggle-link');
+    const authToggleText = document.getElementById('auth-toggle-text');
+
+    let authMode = 'login'; // 'login' or 'signup'
+
+    if (authToggleLink) {
+        authToggleLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            authMode = authMode === 'login' ? 'signup' : 'login';
+            
+            if (authMode === 'signup') {
+                authTitle.textContent = "Criar Conta AFIC";
+                authSubtitle.textContent = "Inicie seu planejamento patrimonial hoje.";
+                btnAuthSubmit.textContent = "Cadastrar Agora";
+                authToggleText.textContent = "Já possui uma conta?";
+                authToggleLink.textContent = "Entre aqui";
+                groupConfirmPassword.style.display = 'block';
+                authConfirmPassword.setAttribute('required', 'required');
+            } else {
+                authTitle.textContent = "Acesso Restrito";
+                authSubtitle.textContent = "Insira suas credenciais para visualizar seu patrimônio.";
+                btnAuthSubmit.textContent = "Entrar";
+                authToggleText.textContent = "Ainda não tem conta?";
+                authToggleLink.textContent = "Crie agora";
+                groupConfirmPassword.style.display = 'none';
+                authConfirmPassword.removeAttribute('required');
+            }
+            authErrorMsg.style.display = 'none';
+        });
+    }
 
     async function checkAuthSession() {
         const { data: { session } } = await supabase.auth.getSession();
@@ -34,38 +69,41 @@ document.addEventListener('DOMContentLoaded', () => {
         authForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             authErrorMsg.style.display = 'none';
-            const { error } = await supabase.auth.signInWithPassword({
-                email: authEmail.value,
-                password: authPassword.value,
-            });
-            if (error) {
-                authErrorMsg.textContent = 'Erro ao entrar: ' + error.message;
-                authErrorMsg.style.display = 'block';
-            } else {
-                checkAuthSession();
-            }
-        });
-    }
+            authErrorMsg.style.color = '#ff4d4f';
 
-    if (btnSignup) {
-        btnSignup.addEventListener('click', async () => {
-            if (!authEmail.value || !authPassword.value) {
-                authErrorMsg.textContent = 'Preencha E-mail e Senha para criar conta.';
-                authErrorMsg.style.display = 'block';
-                return;
-            }
-            authErrorMsg.style.display = 'none';
-            const { error } = await supabase.auth.signUp({
-                email: authEmail.value,
-                password: authPassword.value,
-            });
-            if (error) {
-                authErrorMsg.textContent = 'Erro ao criar conta: ' + error.message;
-                authErrorMsg.style.display = 'block';
+            const email = authEmail.value;
+            const password = authPassword.value;
+
+            if (authMode === 'login') {
+                const { error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) {
+                    let msg = error.message;
+                    if (msg.includes("Email not confirmed")) {
+                        msg = "⚠️ E-mail ainda não confirmado. Verifique sua caixa de entrada para o link de ativação.";
+                    }
+                    authErrorMsg.textContent = msg;
+                    authErrorMsg.style.display = 'block';
+                } else {
+                    checkAuthSession();
+                }
             } else {
-                authErrorMsg.textContent = 'Conta criada com sucesso! Você pode fazer login agora.';
-                authErrorMsg.style.color = '#388e3c';
-                authErrorMsg.style.display = 'block';
+                // SIGN UP mode
+                const confirm = authConfirmPassword.value;
+                if (password !== confirm) {
+                    authErrorMsg.textContent = "As senhas não coincidem.";
+                    authErrorMsg.style.display = 'block';
+                    return;
+                }
+
+                const { error } = await supabase.auth.signUp({ email, password });
+                if (error) {
+                    authErrorMsg.textContent = "Erro ao cadastrar: " + error.message;
+                    authErrorMsg.style.display = 'block';
+                } else {
+                    authErrorMsg.style.color = '#388e3c';
+                    authErrorMsg.textContent = "Conta criada! ✅ Verifique seu e-mail para confirmar o cadastro e poder entrar.";
+                    authErrorMsg.style.display = 'block';
+                }
             }
         });
     }

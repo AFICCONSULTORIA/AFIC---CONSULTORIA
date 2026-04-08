@@ -21,8 +21,8 @@
     <div id="auth-modal" class="auth-modal">
         <div class="auth-modal-content">
             <div class="auth-header">
-                <h2>Acesso Restrito</h2>
-                <p>Insira suas credenciais para visualizar seu patrimônio.</p>
+                <h2 id="auth-title">Acesso Restrito</h2>
+                <p id="auth-subtitle">Insira suas credenciais para visualizar seu patrimônio.</p>
             </div>
             <form id="auth-form" class="auth-form">
                 <div class="param-group">
@@ -33,11 +33,19 @@
                     <label class="param-label" for="auth-password">Senha</label>
                     <input type="password" class="param-input" id="auth-password" placeholder="••••••••" required minlength="6">
                 </div>
-                <div class="auth-actions">
-                    <button type="submit" id="btn-login" class="btn-calculate" style="margin-top: 12px;">Entrar</button>
-                    <button type="button" id="btn-signup" class="btn-primary" style="margin-top: 8px; background: transparent; border: 1px solid var(--gold-rich); color: var(--gold-rich);">Criar Conta</button>
+                <div class="param-group" id="group-confirm-password" style="display: none;">
+                    <label class="param-label" for="auth-confirm-password">Confirmar Senha</label>
+                    <input type="password" class="param-input" id="auth-confirm-password" placeholder="••••••••" minlength="6">
                 </div>
-                <p id="auth-error-msg" style="color: #ff4d4f; font-size: 13px; text-align: center; margin-top: 12px; display: none;"></p>
+                
+                <div class="auth-actions" style="margin-top: 24px;">
+                    <button type="submit" id="btn-auth-submit" class="btn-calculate" style="width: 100%;">Entrar</button>
+                    <p style="text-align: center; margin-top: 16px; font-size: 13px; color: var(--text-muted);">
+                        <span id="auth-toggle-text">Ainda não tem conta?</span> 
+                        <a href="#" id="auth-toggle-link" style="color: var(--gold-rich); font-weight: 600; text-decoration: none;">Crie agora</a>
+                    </p>
+                </div>
+                <p id="auth-error-msg" style="color: #ff4d4f; font-size: 13px; text-align: center; margin-top: 16px; display: none; padding: 12px; background: rgba(255, 77, 79, 0.05); border-left: 2px solid #ff4d4f;"></p>
             </form>
         </div>
     </div>
