@@ -1587,16 +1587,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-        
-        // Add "Load More" button back
-        const loadMore = document.createElement('button');
-        loadMore.className = 'btn-secondary load-more-btn';
-        loadMore.textContent = 'Carregar mais discussões';
-        loadMore.style.marginTop = '24px';
-        loadMore.addEventListener('click', () => showToast('📜 Todas as discussões carregadas.'));
-        communityMain.appendChild(loadMore);
-    }
-
     if (btnOpenNewTopic) {
         btnOpenNewTopic.addEventListener('click', () => {
             if (!currentUserProfile || !currentUserProfile.nickname) {
