@@ -1448,7 +1448,8 @@ document.addEventListener('DOMContentLoaded', () => {
             .single();
 
         if (error) {
-            showToast("❌ Erro ao abrir postagem.");
+            console.error(error);
+            showToast("❌ Erro ao abrir postagem: O Banco de Dados não está configurado corretamente. Crie as novas tabelas.");
             switchPage('community');
             return;
         }
@@ -1630,7 +1631,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     showToast("📤 Enviando anexo PDF...");
                     attachmentUrl = await uploadTopicFile(fileInput.files[0]);
                 } catch (err) {
-                    return showToast("❌ Erro no upload: " + err.message);
+                    let msg = err.message;
+                    if (msg.includes("Bucket not found")) {
+                        msg = "O Bucket 'community-attachments' ainda não foi criado no painel do Supabase.";
+                    }
+                    return showToast("❌ Erro no upload: " + msg);
                 }
             }
 
@@ -1645,7 +1650,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 }]);
 
             if (error) {
-                showToast('❌ Erro ao publicar: ' + error.message);
+                console.error(error);
+                let msg = error.message;
+                if (msg.includes("column attachment_url")) {
+                    msg = "Execute o script SQL para adicionar a coluna attachment_url no painel Supabase.";
+                }
+                showToast('❌ Erro ao publicar: ' + msg);
             } else {
                 showToast('✅ Tópico publicado na Comunidade!');
                 formNewTopic.reset();
