@@ -1383,51 +1383,103 @@ document.addEventListener('DOMContentLoaded', () => {
         const communityMain = document.querySelector('.community-main');
         if (!communityMain) return;
 
-        // Keep the pinned thread if it exists, or clear and rebuild
-        const pinned = communityMain.querySelector('.pinned-thread');
-        communityMain.innerHTML = '';
-        if (pinned) communityMain.appendChild(pinned);
+        // Gerenciando o estado de carregamento e container de tópicos
+        let threadList = communityMain.querySelector('.thread-list');
+        if (!threadList) {
+            threadList = document.createElement('div');
+            threadList.className = 'thread-list';
+            // Inserir após o post fixado se existir, senão no início
+            const pinned = communityMain.querySelector('.pinned-thread');
+            if (pinned) {
+                pinned.after(threadList);
+            } else {
+                communityMain.prepend(threadList);
+            }
+        }
 
-        const { data, error } = await supabase
-            .from('community_topics')
-            .select(`
-                *,
-                profiles:user_id (nickname)
-            `)
-            .order('created_at', { ascending: false });
+        // Mostrar indicador de carregamento
+        const loadingId = 'community-loading-indicator';
+        if (!document.getElementById(loadingId)) {
+            const loading = document.createElement('div');
+            loading.id = loadingId;
+            loading.style.textAlign = 'center';
+            loading.style.padding = '20px';
+            loading.style.color = 'var(--text-muted)';
+            loading.style.fontSize = '13px';
+            loading.textContent = 'Buscando inteligência coletiva...';
+            threadList.prepend(loading);
+        }
 
-        if (!error && data) {
-            data.forEach(topic => {
-                const card = document.createElement('div');
-                card.className = 'thread-card';
-                const date = new Date(topic.created_at).toLocaleDateString('pt-BR');
-                const author = topic.profiles?.nickname || 'Membro AFIC';
-                
-                card.innerHTML = `
-                    <div class="thread-badge" style="background: var(--navy-medium); color: var(--bg-white); border:none;">${topic.category}</div>
-                    <h3 class="thread-title">${topic.title}</h3>
-                    <p class="thread-excerpt">${topic.content.substring(0, 150)}${topic.content.length > 150 ? '...' : ''}</p>
-                    <div class="thread-meta">
-                        <span class="thread-author"><strong>${author}</strong></span>
-                        <span class="thread-date">${date}</span>
-                    </div>
-                `;
-                
-                card.addEventListener('click', () => {
-                    loadTopicDetails(topic.id);
+        try {
+            console.log("Fetching community topics...");
+            const { data, error } = await supabase
+                .from('community_topics')
+                .select(`
+                    *,
+                    profiles:user_id (nickname)
+                `)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            // Limpar apenas a lista de tópicos (mantendo o fixado se estiver fora e o load more)
+            // Remover apenas cards de tópicos, mas manter o loader por enquanto se estiver invisível
+            threadList.querySelectorAll('.thread-card').forEach(card => card.remove());
+            const emptyMsg = threadList.querySelector('.empty-community-msg');
+            if (emptyMsg) emptyMsg.remove();
+            
+            if (data && data.length > 0) {
+                data.forEach(topic => {
+                    const card = document.createElement('div');
+                    card.className = 'thread-card';
+                    const date = new Date(topic.created_at).toLocaleDateString('pt-BR');
+                    const author = topic.profiles?.nickname || 'Membro AFIC';
+                    
+                    card.innerHTML = `
+                        <div class="thread-badge" style="background: var(--navy-medium); color: var(--bg-white); border:none;">${topic.category}</div>
+                        <h3 class="thread-title">${topic.title}</h3>
+                        <p class="thread-excerpt">${topic.content.substring(0, 150)}${topic.content.length > 150 ? '...' : ''}</p>
+                        <div class="thread-meta">
+                            <span class="thread-author"><strong>${author}</strong></span>
+                            <span class="thread-date">${date}</span>
+                        </div>
+                    `;
+                    
+                    card.addEventListener('click', () => {
+                        loadTopicDetails(topic.id);
+                    });
+                    
+                    threadList.appendChild(card);
                 });
-                
-                communityMain.appendChild(card);
-            });
+            } else {
+                const p = document.createElement('p');
+                p.className = 'empty-community-msg';
+                p.style.cssText = 'text-align:center; padding: 40px; color: var(--text-muted); font-size: 14px;';
+                p.textContent = 'Nenhuma discussão encontrada no momento.';
+                threadList.appendChild(p);
+            }
+        } catch (err) {
+            console.error("Erro ao carregar tópicos:", err);
+            showToast("⚠️ Falha ao carregar a comunidade. Verifique sua conexão ou as permissões do banco.");
+            
+            if (threadList.children.length <= 1) { // Apenas loader ou vazio
+                threadList.innerHTML = `<p class="empty-community-msg" style="text-align:center; padding: 40px; color: #ff4d4f; font-size: 14px;">Erro ao carregar discussões. Tente novamente mais tarde.<br><small>${err.message}</small></p>`;
+            }
+        } finally {
+            const loader = document.getElementById(loadingId);
+            if (loader) loader.remove();
         }
         
-        // Add "Load More" button back
-        const loadMore = document.createElement('button');
-        loadMore.className = 'btn-secondary load-more-btn';
-        loadMore.textContent = 'Carregar mais discussões';
-        loadMore.style.marginTop = '24px';
-        loadMore.addEventListener('click', () => showToast('📜 Todas as discussões carregadas.'));
-        communityMain.appendChild(loadMore);
+        // Garantir que o botão "Carregar mais" está no lugar certo (fim da community-main)
+        let loadMore = communityMain.querySelector('.load-more-btn');
+        if (!loadMore) {
+            loadMore = document.createElement('button');
+            loadMore.className = 'btn-secondary load-more-btn';
+            loadMore.textContent = 'Carregar mais discussões';
+            loadMore.style.marginTop = '24px';
+            loadMore.addEventListener('click', () => showToast('📜 Todas as discussões carregadas.'));
+            communityMain.appendChild(loadMore);
+        }
     }
 
     async function loadTopicDetails(topicId) {
@@ -1618,49 +1670,65 @@ document.addEventListener('DOMContentLoaded', () => {
     if (formNewTopic) {
         formNewTopic.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const title = document.getElementById('topic-title').value.trim();
-            const category = document.getElementById('topic-category').value;
-            const content = document.getElementById('topic-content').value.trim();
+            const btnSubmit = formNewTopic.querySelector('button[type="submit"]');
+            const titleInput = document.getElementById('topic-title');
+            const contentInput = document.getElementById('topic-content');
+            const categoryInput = document.getElementById('topic-category');
             const fileInput = document.getElementById('topic-file');
+            
+            const title = titleInput.value.trim();
+            const content = contentInput.value.trim();
+            const category = categoryInput.value;
             
             if (!title || !content) return;
 
-            let attachmentUrl = null;
-            if (fileInput.files.length > 0) {
-                try {
+            // Bloquear botão para evitar cliques duplos
+            const originalBtnText = btnSubmit.textContent;
+            btnSubmit.disabled = true;
+            btnSubmit.textContent = "Publicando...";
+
+            try {
+                let attachmentUrl = null;
+                if (fileInput.files.length > 0) {
                     showToast("📤 Enviando anexo PDF...");
                     attachmentUrl = await uploadTopicFile(fileInput.files[0]);
-                } catch (err) {
-                    let msg = err.message;
-                    if (msg.includes("Bucket not found")) {
-                        msg = "O Bucket 'community-attachments' ainda não foi criado no painel do Supabase.";
-                    }
-                    return showToast("❌ Erro no upload: " + msg);
                 }
-            }
 
-            const { error } = await supabase
-                .from('community_topics')
-                .insert([{
-                    user_id: currentUser.id,
-                    title,
-                    category,
-                    content,
-                    attachment_url: attachmentUrl
-                }]);
+                console.log("Inserting new topic:", title);
+                const { error } = await supabase
+                    .from('community_topics')
+                    .insert([{
+                        user_id: currentUser.id,
+                        title,
+                        category,
+                        content,
+                        attachment_url: attachmentUrl
+                    }]);
 
-            if (error) {
-                console.error(error);
-                let msg = error.message;
-                if (msg.includes("column attachment_url")) {
-                    msg = "Execute o script SQL para adicionar a coluna attachment_url no painel Supabase.";
-                }
-                showToast('❌ Erro ao publicar: ' + msg);
-            } else {
+                if (error) throw error;
+
                 showToast('✅ Tópico publicado na Comunidade!');
                 formNewTopic.reset();
+                if (document.getElementById('file-status')) {
+                    document.getElementById('file-status').textContent = 'Nenhum arquivo selecionado (Opcional)';
+                    document.getElementById('file-status').style.color = '';
+                }
                 modalNewTopic.classList.add('hidden');
+                
+                // Recarregar discussões
                 await loadCommunityThreads();
+            } catch (err) {
+                console.error("Erro ao publicar tópico:", err);
+                let msg = err.message;
+                if (msg.includes("column attachment_url")) {
+                    msg = "Erro: A coluna 'attachment_url' falta no banco. Execute o script SQL de migração.";
+                } else if (msg.includes("policy")) {
+                    msg = "Erro de permissão RLS. Verifique as políticas de inserção no Supabase.";
+                }
+                showToast('❌ Erro ao publicar: ' + msg);
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = originalBtnText;
             }
         });
     }
