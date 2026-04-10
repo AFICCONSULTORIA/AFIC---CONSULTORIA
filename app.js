@@ -1412,7 +1412,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             console.log("Fetching community topics...");
-            const { data, error } = await supabase
+            let { data, error } = await supabase
                 .from('community_topics')
                 .select(`
                     *,
@@ -1420,10 +1420,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 `)
                 .order('created_at', { ascending: false });
 
-            if (error) throw error;
+            // FALLBACK: Se o join falhar (comum se não houver FK no banco), tenta carregar sem o join
+            if (error) {
+                console.warn("Join with profiles failed, attempting fallback simple select...", error.message);
+                const fallback = await supabase
+                    .from('community_topics')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (fallback.error) throw fallback.error;
+                data = fallback.data;
+            }
 
-            // Limpar apenas a lista de tópicos (mantendo o fixado se estiver fora e o load more)
-            // Remover apenas cards de tópicos, mas manter o loader por enquanto se estiver invisível
+            // Limpar apenas a lista de tópicos
             threadList.querySelectorAll('.thread-card').forEach(card => card.remove());
             const emptyMsg = threadList.querySelector('.empty-community-msg');
             if (emptyMsg) emptyMsg.remove();
@@ -1459,11 +1468,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 threadList.appendChild(p);
             }
         } catch (err) {
-            console.error("Erro ao carregar tópicos:", err);
-            showToast("⚠️ Falha ao carregar a comunidade. Verifique sua conexão ou as permissões do banco.");
+            console.error("Erro crítico ao carregar tópicos:", err);
+            showToast("⚠️ Erro ao acessar o banco de dados. Verifique o console.");
             
-            if (threadList.children.length <= 1) { // Apenas loader ou vazio
-                threadList.innerHTML = `<p class="empty-community-msg" style="text-align:center; padding: 40px; color: #ff4d4f; font-size: 14px;">Erro ao carregar discussões. Tente novamente mais tarde.<br><small>${err.message}</small></p>`;
+            if (threadList.querySelectorAll('.thread-card').length === 0) {
+                threadList.innerHTML = `<p class="empty-community-msg" style="text-align:center; padding: 40px; color: #ff4d4f; font-size: 14px;">Erro de conexão com o banco.<br><small>${err.message}</small></p>`;
             }
         } finally {
             const loader = document.getElementById(loadingId);
