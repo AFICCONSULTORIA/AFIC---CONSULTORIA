@@ -1411,8 +1411,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            console.log("Fetching community topics...");
-            let { data, error } = await supabase
+            console.group("Comunidade: Diagnóstico de Carregamento");
+            console.log("Iniciando busca de tópicos...");
+
+            let { data, error, status } = await supabase
                 .from('community_topics')
                 .select(`
                     *,
@@ -1420,20 +1422,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 `)
                 .order('created_at', { ascending: false });
 
-            // FALLBACK: Se o join falhar (comum se não houver FK no banco), tenta carregar sem o join
+            // Detecção de erro no Join
             if (error) {
-                console.warn("Join with profiles failed, attempting fallback simple select...", error.message);
+                console.warn(`[Aviso] Busca com join falhou (Status: ${status}). Erro:`, error.message);
+                console.log("Tentando Fallback: Busca simples (sem join)...");
+                
                 const fallback = await supabase
                     .from('community_topics')
                     .select('*')
                     .order('created_at', { ascending: false });
                 
-                if (fallback.error) throw fallback.error;
+                if (fallback.error) {
+                    console.error("[Erro Fatal] Busca simples também falhou:", fallback.error);
+                    throw fallback.error;
+                }
+                
                 data = fallback.data;
+                console.log("Fallback bem sucedido. Dados recuperados sem perfis.");
             }
 
-            // Limpar apenas a lista de tópicos
-            threadList.querySelectorAll('.thread-card').forEach(card => card.remove());
+            console.log(`Tópicos encontrados: ${data ? data.length : 0}`);
+            if (data) console.table(data);
+
+            // Limpar a lista atual (removendo cards estáticos e dinâmicos)
+            const currentCards = threadList.querySelectorAll('.thread-card');
+            console.log(`Limpando ${currentCards.length} cards existentes...`);
+            currentCards.forEach(card => card.remove());
+
             const emptyMsg = threadList.querySelector('.empty-community-msg');
             if (emptyMsg) emptyMsg.remove();
             
@@ -1460,21 +1475,29 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     threadList.appendChild(card);
                 });
+                console.log("Interface da comunidade atualizada com sucesso.");
             } else {
+                console.warn("Nenhum dado retornado. Isso geralmente indica falta de políticas de RLS ou tabela vazia.");
                 const p = document.createElement('p');
                 p.className = 'empty-community-msg';
                 p.style.cssText = 'text-align:center; padding: 40px; color: var(--text-muted); font-size: 14px;';
-                p.textContent = 'Nenhuma discussão encontrada no momento.';
+                p.textContent = 'Nenhuma discussão encontrada no momento. (Verifique RLS no Supabase)';
                 threadList.appendChild(p);
             }
         } catch (err) {
-            console.error("Erro crítico ao carregar tópicos:", err);
-            showToast("⚠️ Erro ao acessar o banco de dados. Verifique o console.");
+            console.error("ERRO CRÍTICO NA COMUNIDADE:", err);
+            showToast(`❌ Erro DB [${err.code || 'JS'}]: ${err.message.substring(0, 50)}...`);
             
             if (threadList.querySelectorAll('.thread-card').length === 0) {
-                threadList.innerHTML = `<p class="empty-community-msg" style="text-align:center; padding: 40px; color: #ff4d4f; font-size: 14px;">Erro de conexão com o banco.<br><small>${err.message}</small></p>`;
+                threadList.innerHTML = `
+                    <div class="empty-community-msg" style="text-align:center; padding: 40px; color: #ff4d4f; font-size: 14px;">
+                        <strong>Erro de conexão com o banco.</strong><br>
+                        <small>Código: ${err.code || 'N/A'}</small><br>
+                        <small>${err.message}</small>
+                    </div>`;
             }
         } finally {
+            console.groupEnd();
             const loader = document.getElementById(loadingId);
             if (loader) loader.remove();
         }
