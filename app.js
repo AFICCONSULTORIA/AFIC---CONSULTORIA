@@ -1522,51 +1522,67 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('detail-topic-content').textContent = "";
         document.getElementById('topic-attachment-box').innerHTML = "";
 
-        const { data, error } = await supabase
-            .from('community_topics')
-            .select(`
-                *,
-                profiles:user_id (nickname)
-            `)
-            .eq('id', topicId)
-            .single();
+        try {
+            let { data, error } = await supabase
+                .from('community_topics')
+                .select(`
+                    *,
+                    profiles:user_id (nickname)
+                `)
+                .eq('id', topicId)
+                .single();
 
-        if (error) {
-            console.error(error);
-            showToast("❌ Erro ao abrir postagem: O Banco de Dados não está configurado corretamente. Crie as novas tabelas.");
+            // FALLBACK: Se o join falhar, tenta buscar apenas o tópico
+            if (error) {
+                console.warn("Topic details join failed, attempting fallback...", error.message);
+                const fallback = await supabase
+                    .from('community_topics')
+                    .select('*')
+                    .eq('id', topicId)
+                    .single();
+                
+                if (fallback.error) throw fallback.error;
+                data = fallback.data;
+            }
+
+            if (!data) throw new Error("Postagem não encontrada.");
+
+            const date = new Date(data.created_at).toLocaleDateString('pt-BR');
+            const author = data.profiles?.nickname || 'Identidade Protegida';
+            
+            // Populate view
+            document.getElementById('detail-topic-title').textContent = data.title;
+            document.getElementById('detail-topic-author').innerHTML = `<strong>${author}</strong>`;
+            document.getElementById('detail-topic-author-name').textContent = author;
+            document.getElementById('detail-topic-date').textContent = date;
+            document.getElementById('detail-topic-category').textContent = data.category;
+            document.getElementById('detail-topic-content').textContent = data.content;
+            
+            // Attachment
+            if (data.attachment_url) {
+                document.getElementById('topic-attachment-box').innerHTML = `
+                    <a href="${data.attachment_url}" target="_blank" class="attachment-link">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        Acessar Tese em PDF
+                    </a>
+                `;
+            }
+
+            // Avatar initials
+            const avatar = document.getElementById('detail-topic-avatar');
+            if (avatar) avatar.textContent = author.substring(0, 2).toUpperCase();
+            
+            loadLikes(topicId);
+            loadComments(topicId);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        } catch (err) {
+            console.error("Erro ao abrir postagem:", err);
+            showToast(`❌ Erro ao abrir postagem: ${err.message}`);
             switchPage('community');
-            return;
         }
-
-        const date = new Date(data.created_at).toLocaleDateString('pt-BR');
-        const author = data.profiles?.nickname || 'Identidade Protegida';
-        
-        // Populate view
-        document.getElementById('detail-topic-title').textContent = data.title;
-        document.getElementById('detail-topic-author').innerHTML = `<strong>${author}</strong>`;
-        document.getElementById('detail-topic-author-name').textContent = author;
-        document.getElementById('detail-topic-date').textContent = date;
-        document.getElementById('detail-topic-category').textContent = data.category;
-        document.getElementById('detail-topic-content').textContent = data.content;
-        
-        // Attachment
-        if (data.attachment_url) {
-            document.getElementById('topic-attachment-box').innerHTML = `
-                <a href="${data.attachment_url}" target="_blank" class="attachment-link">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                    Acessar Tese em PDF
-                </a>
-            `;
-        }
-
-        // Avatar initials
-        const avatar = document.getElementById('detail-topic-avatar');
-        if (avatar) avatar.textContent = author.substring(0, 2).toUpperCase();
-        
-        loadLikes(topicId);
-        loadComments(topicId);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+
 
     // Likes Logic
     async function loadLikes(topicId) {
@@ -1604,29 +1620,47 @@ document.addEventListener('DOMContentLoaded', () => {
         const container = document.getElementById('comments-list');
         container.innerHTML = '<p style="color:var(--text-muted); font-size:13px;">Carregando debate...</p>';
 
-        const { data, error } = await supabase
-            .from('community_comments')
-            .select('*, profiles:user_id(nickname)')
-            .eq('topic_id', topicId)
-            .order('created_at', { ascending: true });
+        try {
+            let { data, error } = await supabase
+                .from('community_comments')
+                .select('*, profiles:user_id(nickname)')
+                .eq('topic_id', topicId)
+                .order('created_at', { ascending: true });
 
-        if (error) return container.innerHTML = "";
-        
-        container.innerHTML = data.length === 0 ? '<p style="color:var(--text-muted); font-size:13px; text-align:center;">Nenhum comentário ainda. Seja o primeiro a contribuir!</p>' : '';
-        
-        data.forEach(comment => {
-            const div = document.createElement('div');
-            div.className = 'comment-item';
-            const date = new Date(comment.created_at).toLocaleDateString('pt-BR');
-            div.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                    <strong style="font-size: 14px;">${comment.profiles?.nickname || 'Membro'}</strong>
-                    <span style="font-size: 11px; color: var(--text-muted);">${date}</span>
-                </div>
-                <p style="font-size: 14px; color: var(--text-primary);">${comment.content}</p>
-            `;
-            container.appendChild(div);
-        });
+            // FALLBACK: Se o join falhar, busca apenas os comentários
+            if (error) {
+                console.warn("Comments join failed, attempting fallback...", error.message);
+                const fallback = await supabase
+                    .from('community_comments')
+                    .select('*')
+                    .eq('topic_id', topicId)
+                    .order('created_at', { ascending: true });
+                
+                if (fallback.error) throw fallback.error;
+                data = fallback.data;
+            }
+
+            container.innerHTML = data.length === 0 ? '<p style="color:var(--text-muted); font-size:13px; text-align:center;">Nenhum comentário ainda. Seja o primeiro a contribuir!</p>' : '';
+            
+            data.forEach(comment => {
+                const div = document.createElement('div');
+                div.className = 'comment-item';
+                const date = new Date(comment.created_at).toLocaleDateString('pt-BR');
+                const authorNickname = comment.profiles?.nickname || 'Membro';
+                
+                div.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <strong style="font-size: 14px;">${authorNickname}</strong>
+                        <span style="font-size: 11px; color: var(--text-muted);">${date}</span>
+                    </div>
+                    <p style="font-size: 14px; color: var(--text-primary);">${comment.content}</p>
+                `;
+                container.appendChild(div);
+            });
+        } catch (err) {
+            console.error("Erro ao carregar comentários:", err);
+            container.innerHTML = '<p style="color:#ff4d4f; font-size:12px;">Erro ao carregar comentários.</p>';
+        }
     }
 
     const formComment = document.getElementById('form-comment');
