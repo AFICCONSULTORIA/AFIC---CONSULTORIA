@@ -17,6 +17,8 @@ import '../app.js';
 const ReactApp = () => {
   const dashboardRoot = document.getElementById('react-dashboard-root');
   const toolsRoot = document.getElementById('react-tools-root');
+  const toolDebtRoot = document.getElementById('react-tool-debt-root');
+  const toolFeeRoot = document.getElementById('react-tool-fee-root');
 
   return (
     <UserProfileProvider>
@@ -33,16 +35,34 @@ const ReactApp = () => {
       )}
 
       {/* 
-        Portal 2: Ferramentas
-        Aqui colocamos as calculadoras e demais suportes
+        Portal 2: Ferramentas (Grid Geral no Topo)
+        Aqui colocamos apenas o SupportToolsGrid
       */}
       {toolsRoot && createPortal(
-        <div className="space-y-12 pb-24">
+        <div className="space-y-6 mb-8">
           <SupportToolsGrid />
-          <DebtDestroyerCalc />
-          <FeeAuditorCalc />
         </div>,
         toolsRoot
+      )}
+
+      {/* 
+        Portal 3: Aba Destruidor de Dívidas
+      */}
+      {toolDebtRoot && createPortal(
+        <div>
+          <DebtDestroyerCalc />
+        </div>,
+        toolDebtRoot
+      )}
+
+      {/* 
+        Portal 4: Aba Auditoria de Custos
+      */}
+      {toolFeeRoot && createPortal(
+        <div>
+          <FeeAuditorCalc />
+        </div>,
+        toolFeeRoot
       )}
     </UserProfileProvider>
   );
