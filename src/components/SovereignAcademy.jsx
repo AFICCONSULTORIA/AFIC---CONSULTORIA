@@ -1,68 +1,58 @@
 import React, { useState } from 'react';
 
-// === MOCK DATA ===
-const COURSE_MODULES = [
-  {
-    id: 1,
-    title: "Módulo 1: Fundamentos Institucionais",
-    isLocked: false,
-    lessons: [
-      { id: 101, title: "A Lógica Seca do Patrimônio", duration: "12:45", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4", pdfUrl: "#" },
-      { id: 102, title: "Protecionismo contra Inflação", duration: "18:20", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4", pdfUrl: "#" },
-    ],
-    quiz: {
-      questions: [
-        { q: "Qual o principal vilão do patrimônio a longo prazo?", options: ["Juros Compostos", "Inflação Invisível", "Taxas de Corretagem"], correct: 1 },
-        { q: "O conceito de 'Risco de Cauda' (Tail Risk) se refere a:", options: ["Flutuação diária da bolsa", "Eventos extremos e altamente improváveis", "Risco de trocar de banco"], correct: 1 }
-      ]
-    }
-  },
-  {
-    id: 2,
-    title: "Módulo 2: Otimização Tática",
-    isLocked: true,
-    lessons: [
-      { id: 201, title: "Hedging e Opções Simples", duration: "25:10", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4", pdfUrl: "#" },
-      { id: 202, title: "Alavancagem Positiva", duration: "19:05", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4", pdfUrl: "#" },
-    ],
-    quiz: {
-      questions: [
-        { q: "Hedge significa:", options: ["Aumentar o risco", "Proteger a carteira contra variações adversas", "Vender descoberto"], correct: 1 }
-      ]
-    }
-  },
-  {
-    id: 3,
-    title: "Módulo 3: Arquitetura Offshore",
-    isLocked: true,
-    lessons: [
-      { id: 301, title: "Estruturação de PIC (Cayman)", duration: "42:00", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4", pdfUrl: "#" }
-    ],
-    quiz: null
-  }
-];
+import { useAcademy } from './AcademyContext';
+import { AcademyAdmin } from './AcademyAdmin';
 
 // === COMPONENT ===
 export const SovereignAcademy = () => {
-  const [unlockedState, setUnlockedState] = useState([1]); // Array de IDs de módulos liberados
+  const { courseModules } = useAcademy();
+  const [isAdminMode, setIsAdminMode] = useState(false);
+
+  const [unlockedState, setUnlockedState] = useState([1]); 
   const [activeModuleId, setActiveModuleId] = useState(1);
+  // Se não houver módulo, ou não houver lição, fallback graciosamente
   const [activeLessonId, setActiveLessonId] = useState(101);
   
-  // Quiz states
+  // Smart Note State
+  const [smartNotes, setSmartNotes] = useState("");
+  // Q&A State
+  const [fakeCommunityComments, setFakeCommunityComments] = useState([]);
+  const [newComment, setNewComment] = useState("");
+
   const [isQuizOpen, setIsQuizOpen] = useState(false);
   const [currentQuizModule, setCurrentQuizModule] = useState(null);
   const [quizAnswers, setQuizAnswers] = useState({});
-  const [quizResult, setQuizResult] = useState(null); // 'pass', 'fail', null
+  const [quizResult, setQuizResult] = useState(null); 
 
-  const activeModuleData = COURSE_MODULES.find(m => m.id === activeModuleId);
-  const activeLessonData = activeModuleData?.lessons.find(l => l.id === activeLessonId);
+  const activeModuleData = courseModules?.find(m => m.id === activeModuleId);
+  const activeLessonData = activeModuleData?.lessons?.find(l => l.id === activeLessonId);
 
   const handleLessonClick = (mod, lesson) => {
     if (unlockedState.includes(mod.id)) {
       setActiveModuleId(mod.id);
       setActiveLessonId(lesson.id);
+      // Ao mudar de aula, reseta as notas e comentarios mockados pra aula atual (Logica do MVP)
+      setSmartNotes(localStorage.getItem(`note_${lesson.id}`) || "");
+      setFakeCommunityComments([]);
     }
   };
+
+  const handleSaveNotes = () => {
+    if(activeLessonData) {
+       localStorage.setItem(`note_${activeLessonData.id}`, smartNotes);
+       alert("Anotações salvas no cofre pessoal!");
+    }
+  };
+
+  const handleAddComment = () => {
+    if(!newComment) return;
+    setFakeCommunityComments(prev => [...prev, newComment]);
+    setNewComment("");
+  };
+
+  if (isAdminMode) {
+    return <AcademyAdmin onExit={() => setIsAdminMode(false)} />;
+  }
 
   const openQuiz = (mod) => {
     setCurrentQuizModule(mod);
@@ -119,19 +109,79 @@ export const SovereignAcademy = () => {
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">{activeLessonData.title}</h2>
                 <p className="text-gray-500 text-sm">Escola Sovereign • Módulo {activeModuleId} • Duração: {activeLessonData.duration}</p>
               </div>
+              <button 
+                onClick={() => setIsAdminMode(true)}
+                className="text-xs bg-gray-100 text-gray-500 hover:text-black font-semibold py-1 px-3 rounded shadow-sm border border-gray-200"
+              >
+                ⚙️ Ajustar Aulas
+              </button>
             </div>
             
             <div className="mt-8 pt-6 border-t border-gray-100 flex items-center gap-4">
               <a 
                 href={activeLessonData.pdfUrl} 
-                className="inline-flex items-center gap-2 px-5 py-3 text-sm font-semibold rounded-lg text-[#0a2540] bg-[#eef1f6] hover:bg-[#e1e6f0] transition-colors"
-                download
+                className="inline-flex items-center gap-2 px-5 py-3 text-sm font-semibold rounded-lg text-[#0a2540] bg-[#eef1f6] hover:bg-[#e1e6f0] transition-colors cursor-pointer"
+                target="_blank" rel="noreferrer"
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                 Baixar Material de Apoio (.pdf)
               </a>
             </div>
           </div>
+        )}
+
+        {/* Ferramentas do Aluno (Notes / Q&A) */}
+        {activeLessonData && (
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">
+             
+             {/* Smart Notes Widget */}
+             <div className="bg-yellow-50/50 border border-yellow-200 rounded-xl p-5 shadow-sm">
+               <div className="flex items-center gap-2 mb-3">
+                 <span className="text-xl">📝</span>
+                 <h4 className="font-bold text-gray-800 text-sm">Smart Notes (Anotações da Aula)</h4>
+               </div>
+               <textarea 
+                  className="w-full h-32 p-3 text-sm bg-transparent border-none focus:ring-0 resize-none text-gray-700 placeholder-gray-400" 
+                  placeholder="Quais insights principais você teve agora?..."
+                  value={smartNotes}
+                  onChange={e => setSmartNotes(e.target.value)}
+               ></textarea>
+               <button onClick={handleSaveNotes} className="w-full mt-2 bg-yellow-200/50 hover:bg-yellow-300/50 text-yellow-800 font-bold py-2 rounded-lg text-xs transition-colors">
+                 Salvar no Cofre
+               </button>
+             </div>
+
+             {/* Fórum de Discussão Widget */}
+             <div className="bg-white border border-gray-100 rounded-xl p-5 shadow-sm flex flex-col">
+               <div className="flex items-center gap-2 mb-3">
+                 <span className="text-xl">💬</span>
+                 <h4 className="font-bold text-gray-800 text-sm">Quadro de Discussões (Q&A)</h4>
+               </div>
+               
+               <div className="flex-1 overflow-y-auto max-h-32 mb-3 space-y-3">
+                 {fakeCommunityComments.map((comment, i) => (
+                   <div key={i} className="bg-gray-50 p-3 rounded-lg text-sm text-gray-700 border border-gray-100">
+                     <strong>Você: </strong> {comment}
+                   </div>
+                 ))}
+                 {fakeCommunityComments.length === 0 && (
+                   <p className="text-xs text-center text-gray-400 py-4">Seja o primeiro a levantar uma questão sobre este material.</p>
+                 )}
+               </div>
+
+               <div className="flex gap-2">
+                  <input 
+                    type="text" 
+                    value={newComment} 
+                    onChange={e => setNewComment(e.target.value)}
+                    placeholder="Sua dúvida ou constatação..." 
+                    className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500"
+                  />
+                  <button onClick={handleAddComment} className="bg-[#0a2540] text-white px-4 py-2 rounded-lg font-bold text-sm">Enviar</button>
+               </div>
+             </div>
+
+           </div>
         )}
       </div>
 
@@ -140,7 +190,7 @@ export const SovereignAcademy = () => {
         <h3 className="text-lg font-bold text-gray-900 px-1">Trilha de Inteligência</h3>
         
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          {COURSE_MODULES.map((mod, index) => {
+          {courseModules?.map((mod, index) => {
             const isUnlocked = unlockedState.includes(mod.id);
             const isFinished = unlockedState.includes(mod.id + 1); // Simples logica: se o próx tá aberto, este terminou
             const isActiveModule = activeModuleId === mod.id;

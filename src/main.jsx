@@ -9,6 +9,7 @@ import { ProfileOnboarding } from './components/ProfileOnboarding';
 import { DashboardWidgets } from './components/DashboardWidgets';
 import { DebtDestroyerCalc, FeeAuditorCalc } from './components/Calculators';
 import { SovereignAcademy } from './components/SovereignAcademy';
+import { AcademyProvider } from './components/AcademyContext';
 
 // Importa o script vanilla JS antigo, garantindo que rode normalmente
 import '../app.js';
@@ -59,7 +60,9 @@ const ReactApp = () => {
       */}
       {educationRoot && createPortal(
         <div className="pt-6">
-          <SovereignAcademy />
+          <AcademyProvider>
+            <SovereignAcademy />
+          </AcademyProvider>
         </div>,
         educationRoot
       )}
