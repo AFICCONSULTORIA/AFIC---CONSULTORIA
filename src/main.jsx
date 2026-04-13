@@ -8,6 +8,7 @@ import { UserProfileProvider } from './components/UserProfileContext';
 import { ProfileOnboarding } from './components/ProfileOnboarding';
 import { DashboardWidgets } from './components/DashboardWidgets';
 import { DebtDestroyerCalc, FeeAuditorCalc } from './components/Calculators';
+import { SovereignAcademy } from './components/SovereignAcademy';
 
 // Importa o script vanilla JS antigo, garantindo que rode normalmente
 import '../app.js';
@@ -15,6 +16,7 @@ import '../app.js';
 // O componente App coordena onde renderizar cada funcionalidade React (Portals)
 const ReactApp = () => {
   const dashboardRoot = document.getElementById('react-dashboard-root');
+  const educationRoot = document.getElementById('react-education-root');
   const toolDebtRoot = document.getElementById('react-tool-debt-root');
   const toolFeeRoot = document.getElementById('react-tool-fee-root');
 
@@ -50,6 +52,16 @@ const ReactApp = () => {
           <FeeAuditorCalc />
         </div>,
         toolFeeRoot
+      )}
+
+      {/* 
+        Portal 5: Sovereign Academy (Educação)
+      */}
+      {educationRoot && createPortal(
+        <div className="pt-6">
+          <SovereignAcademy />
+        </div>,
+        educationRoot
       )}
     </UserProfileProvider>
   );
