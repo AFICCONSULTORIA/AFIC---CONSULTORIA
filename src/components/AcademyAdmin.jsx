@@ -35,7 +35,7 @@ export const AcademyAdmin = ({ onExit }) => {
       const filePath = `academy/${fileName}`;
 
       const { data, error } = await supabaseClient.storage
-        .from('afic-data')
+        .from('community-attachments')
         .upload(filePath, file);
 
       if (error) {
@@ -43,7 +43,7 @@ export const AcademyAdmin = ({ onExit }) => {
         alert("Erro no upload ao conectar no Storage: " + error.message);
       } else {
         const { data: urlData } = supabaseClient.storage
-          .from('afic-data')
+          .from('community-attachments')
           .getPublicUrl(filePath);
         
         setLessonPdfUrl(urlData.publicUrl);
