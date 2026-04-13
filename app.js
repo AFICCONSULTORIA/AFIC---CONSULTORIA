@@ -1293,7 +1293,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (viewAllLink) {
         viewAllLink.addEventListener('click', (e) => {
             e.preventDefault();
-            showToast('📚 O acervo completo estará disponível na versão final da Sovereign Academy.');
+            showToast('📚 O acervo completo estará disponível na versão final da Academia AFIC.');
         });
     }
 

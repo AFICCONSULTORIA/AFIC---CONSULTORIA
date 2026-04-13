@@ -162,7 +162,7 @@ export const SovereignAcademy = () => {
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">{activeLessonData.title}</h2>
                 <div className="flex items-center gap-4">
-                  <p className="text-gray-500 text-sm">Escola Sovereign • Módulo {activeModuleId} • Duração: {activeLessonData.duration}</p>
+                  <p className="text-gray-500 text-sm">Escola AFIC • Módulo {activeModuleId} • Duração: {activeLessonData.duration}</p>
                   <div className="flex items-center gap-1 bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
                     <span className="text-xs font-bold text-gray-600 mr-1">Avaliação:</span>
                     {[1, 2, 3, 4, 5].map((star) => (
@@ -206,7 +206,7 @@ export const SovereignAcademy = () => {
              <div className="bg-yellow-50/50 border border-yellow-200 rounded-xl p-5 shadow-sm">
                <div className="flex items-center gap-2 mb-3">
                  <span className="text-xl">📝</span>
-                 <h4 className="font-bold text-gray-800 text-sm">Smart Notes (Anotações da Aula)</h4>
+                 <h4 className="font-bold text-gray-800 text-sm">Anotações Inteligentes</h4>
                </div>
                <textarea 
                   className="w-full h-32 p-3 text-sm bg-transparent border-none focus:ring-0 resize-none text-gray-700 placeholder-gray-400" 

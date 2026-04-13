@@ -109,7 +109,7 @@ export const AcademyAdmin = ({ onExit }) => {
     <div className="w-full max-w-5xl mx-auto pb-20 fade-in">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900">Sovereign Studio</h2>
+          <h2 className="text-3xl font-bold text-gray-900">Estúdio AFIC</h2>
           <p className="text-gray-500">Painel de Administração da Academia</p>
         </div>
         <button 
