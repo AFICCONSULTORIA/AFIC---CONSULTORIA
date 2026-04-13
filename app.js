@@ -291,6 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'community': 'page-community',
         'account': 'page-account',
         'plans': 'page-plans',
+        'calculators': 'page-calculators',
         'topic-details': 'page-topic-details'
     };
 
