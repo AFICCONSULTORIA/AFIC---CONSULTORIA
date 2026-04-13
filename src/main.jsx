@@ -7,7 +7,6 @@ import './index.css';
 import { UserProfileProvider } from './components/UserProfileContext';
 import { ProfileOnboarding } from './components/ProfileOnboarding';
 import { DashboardWidgets } from './components/DashboardWidgets';
-import { SupportToolsGrid } from './components/SupportToolsGrid';
 import { DebtDestroyerCalc, FeeAuditorCalc } from './components/Calculators';
 
 // Importa o script vanilla JS antigo, garantindo que rode normalmente
@@ -16,7 +15,6 @@ import '../app.js';
 // O componente App coordena onde renderizar cada funcionalidade React (Portals)
 const ReactApp = () => {
   const dashboardRoot = document.getElementById('react-dashboard-root');
-  const toolsRoot = document.getElementById('react-tools-root');
   const toolDebtRoot = document.getElementById('react-tool-debt-root');
   const toolFeeRoot = document.getElementById('react-tool-fee-root');
 
@@ -32,17 +30,6 @@ const ReactApp = () => {
           <DashboardWidgets />
         </div>,
         dashboardRoot
-      )}
-
-      {/* 
-        Portal 2: Ferramentas (Grid Geral no Topo)
-        Aqui colocamos apenas o SupportToolsGrid
-      */}
-      {toolsRoot && createPortal(
-        <div className="space-y-6 mb-8">
-          <SupportToolsGrid />
-        </div>,
-        toolsRoot
       )}
 
       {/* 
