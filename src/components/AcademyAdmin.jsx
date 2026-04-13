@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { useAcademy } from './AcademyContext';
 
 export const AcademyAdmin = ({ onExit }) => {
-  const { courseModules, addModule, addLesson, deleteLesson } = useAcademy();
+  const { courseModules, addModule, addLesson, deleteLesson, editLesson } = useAcademy();
   
   const [newModuleTitle, setNewModuleTitle] = useState("");
-  const [addingLessonToMod, setAddingLessonToMod] = useState(null);
+  // { type: 'add', moduleId: ID } OU { type: 'edit', moduleId: ID, lesson: { ...dados } }
+  const [modalState, setModalState] = useState(null);
   
   // Lesson Form state
   const [lessonTitle, setLessonTitle] = useState("");
@@ -20,22 +21,47 @@ export const AcademyAdmin = ({ onExit }) => {
     setNewModuleTitle("");
   };
 
-  const handleCreateLesson = (e) => {
+  const handleSaveLesson = (e) => {
     e.preventDefault();
     if (!lessonTitle) return;
 
-    addLesson(addingLessonToMod, {
-      title: lessonTitle,
-      duration: lessonDuration || "00:00",
-      videoUrl: lessonVideoUrl,
-      pdfUrl: lessonPdfUrl || "#"
-    });
+    if (modalState.type === 'add') {
+      addLesson(modalState.moduleId, {
+        title: lessonTitle,
+        duration: lessonDuration || "00:00",
+        videoUrl: lessonVideoUrl,
+        pdfUrl: lessonPdfUrl || "#"
+      });
+    } else if (modalState.type === 'edit') {
+      editLesson(modalState.moduleId, modalState.lesson.id, {
+        title: lessonTitle,
+        duration: lessonDuration || "00:00",
+        videoUrl: lessonVideoUrl,
+        pdfUrl: lessonPdfUrl || "#"
+      });
+    }
 
-    setAddingLessonToMod(null);
+    closeModal();
+  };
+
+  const openAddModal = (moduleId) => {
     setLessonTitle("");
     setLessonDuration("");
     setLessonVideoUrl("");
     setLessonPdfUrl("");
+    setModalState({ type: 'add', moduleId });
+  };
+
+  const openEditModal = (moduleId, lesson) => {
+    setLessonTitle(lesson.title);
+    setLessonDuration(lesson.duration);
+    setLessonVideoUrl(lesson.videoUrl);
+    setLessonPdfUrl(lesson.pdfUrl);
+    setModalState({ type: 'edit', moduleId, lesson });
+  };
+
+  const closeModal = () => {
+    setModalState(null);
   };
 
   return (
@@ -84,7 +110,7 @@ export const AcademyAdmin = ({ onExit }) => {
                 <div className="bg-gray-50 p-4 border-b border-gray-200 flex justify-between items-center">
                   <h4 className="font-bold text-gray-900 text-lg">{mod.title}</h4>
                   <button 
-                    onClick={() => setAddingLessonToMod(mod.id)}
+                    onClick={() => openAddModal(mod.id)}
                     className="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-bold hover:bg-blue-200"
                   >
                     + Nova Aula
@@ -105,12 +131,20 @@ export const AcademyAdmin = ({ onExit }) => {
                             </td>
                             <td className="p-3 text-xs text-gray-500">{lesson.duration}</td>
                             <td className="p-3 text-right">
-                              <button 
-                                onClick={() => deleteLesson(mod.id, lesson.id)}
-                                className="text-red-500 hover:text-red-700 font-bold text-sm"
-                              >
-                                Remover
-                              </button>
+                              <div className="flex gap-3 justify-end">
+                                <button 
+                                  onClick={() => openEditModal(mod.id, lesson)}
+                                  className="text-gray-500 hover:text-gray-800 font-bold text-sm"
+                                >
+                                  Editar
+                                </button>
+                                <button 
+                                  onClick={() => deleteLesson(mod.id, lesson.id)}
+                                  className="text-red-500 hover:text-red-700 font-bold text-sm"
+                                >
+                                  Remover
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -131,15 +165,15 @@ export const AcademyAdmin = ({ onExit }) => {
         </div>
       </div>
 
-      {/* Modal Nova Aula */}
-      {addingLessonToMod && (
+      {/* Modal Nova/Editar Aula */}
+      {modalState && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl max-w-md w-full shadow-2xl overflow-hidden animate-fade-in-up">
             <div className="p-5 border-b border-gray-100 flex justify-between items-center">
-              <h3 className="font-bold text-lg">Adicionar Nova Aula</h3>
-              <button onClick={() => setAddingLessonToMod(null)} className="text-gray-400 hover:text-gray-800 text-xl">&times;</button>
+              <h3 className="font-bold text-lg">{modalState.type === 'add' ? 'Adicionar Nova Aula' : 'Editar Aula'}</h3>
+              <button onClick={closeModal} className="text-gray-400 hover:text-gray-800 text-xl">&times;</button>
             </div>
-            <form onSubmit={handleCreateLesson} className="p-5 space-y-4">
+            <form onSubmit={handleSaveLesson} className="p-5 space-y-4">
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">Título da Aula</label>
                 <input type="text" required value={lessonTitle} onChange={e=>setLessonTitle(e.target.value)} className="w-full border border-gray-300 rounded p-2" placeholder="Ex: Macroeconomia Básica"/>

@@ -89,12 +89,25 @@ export const AcademyProvider = ({ children }) => {
     }));
   };
 
+  const editLesson = (moduleId, lessonId, updatedData) => {
+    setCourseModules(prev => prev.map(mod => {
+      if (mod.id === moduleId) {
+        return {
+          ...mod,
+          lessons: mod.lessons.map(l => l.id === lessonId ? { ...l, ...updatedData } : l)
+        };
+      }
+      return mod;
+    }));
+  };
+
   return (
     <AcademyContext.Provider value={{
       courseModules,
       addModule,
       addLesson,
-      deleteLesson
+      deleteLesson,
+      editLesson
     }}>
       {children}
     </AcademyContext.Provider>
