@@ -3,11 +3,11 @@ import { useUserProfile } from './UserProfileContext';
 import { DebtDestroyerCalc, FeeAuditorCalc } from './Calculators';
 
 export const QuickToolsBar = () => {
-    const { profile } = useUserProfile();
+    const { userProfile } = useUserProfile();
     const [activeTool, setActiveTool] = useState(null);
 
     // Determines tool access based on tier
-    const isBeginner = profile.tier === 'iniciante';
+    const isBeginner = userProfile === 'iniciante';
     
     // Tools definition
     const tools = [
