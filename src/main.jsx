@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createPortal } from 'react-dom';
 import './index.css';
-import '../styles.css'; // Legado
 
 // Importando componentes originais
 import { UserProfileProvider } from './components/UserProfileContext';
