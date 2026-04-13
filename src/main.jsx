@@ -9,7 +9,6 @@ import { ProfileOnboarding } from './components/ProfileOnboarding';
 import { DashboardWidgets } from './components/DashboardWidgets';
 import { SupportToolsGrid } from './components/SupportToolsGrid';
 import { DebtDestroyerCalc, FeeAuditorCalc } from './components/Calculators';
-import { QuickToolsBar } from './components/QuickToolsBar';
 
 // Importa o script vanilla JS antigo, garantindo que rode normalmente
 import '../app.js';
@@ -17,7 +16,6 @@ import '../app.js';
 // O componente App coordena onde renderizar cada funcionalidade React (Portals)
 const ReactApp = () => {
   const dashboardRoot = document.getElementById('react-dashboard-root');
-  const toolsBarRoot = document.getElementById('react-tools-bar-root');
   const toolsRoot = document.getElementById('react-tools-root');
 
   return (
@@ -32,16 +30,6 @@ const ReactApp = () => {
           <DashboardWidgets />
         </div>,
         dashboardRoot
-      )}
-
-      {/* 
-        Portal 1B: Quick Tools Bar no Dashboard
-      */}
-      {toolsBarRoot && createPortal(
-        <div className="mb-8">
-          <QuickToolsBar />
-        </div>,
-        toolsBarRoot
       )}
 
       {/* 
