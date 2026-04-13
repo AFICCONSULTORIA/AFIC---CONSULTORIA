@@ -3,6 +3,10 @@
 .env.local
 .env.*.local
 
+# Pastas de Dependências e Build (Vite/Node)
+node_modules/
+dist/
+
 # Pastas e arquivos do Sistema Operacional
 .DS_Store
 Thumbs.db

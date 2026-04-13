@@ -5,9 +5,24 @@ export const DebtDestroyerCalc = () => {
   const [interestRate, setInterestRate] = useState('3.5');
   const [monthlyPayment, setMonthlyPayment] = useState('1200');
 
-  // Cálculos viriam aqui (mocks para a casca visual)
-  const monthsToPayoff = 28;
-  const totalInterest = 8600;
+  let monthsToPayoff = 0;
+  let totalInterest = 0;
+  let isUnpayable = false;
+
+  const D = parseFloat(debtAmount) || 0;
+  const i = (parseFloat(interestRate) || 0) / 100;
+  const P = parseFloat(monthlyPayment) || 0;
+
+  if (D > 0 && i >= 0 && P > 0) {
+    if (i === 0) {
+      monthsToPayoff = Math.ceil(D / P);
+    } else if (P <= D * i) {
+      isUnpayable = true;
+    } else {
+      monthsToPayoff = Math.ceil(-Math.log(1 - (D * i) / P) / Math.log(1 + i));
+      totalInterest = (monthsToPayoff * P) - D;
+    }
+  }
 
   return (
     <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden max-w-4xl w-full text-left">
@@ -60,15 +75,23 @@ export const DebtDestroyerCalc = () => {
           <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6">Projeção Cruel</h3>
           
           <div className="space-y-5">
-            <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+            <div className={`bg-white p-5 rounded-xl border ${isUnpayable ? 'border-red-500' : 'border-gray-200'} shadow-sm`}>
               <p className="text-sm text-gray-500 font-semibold mb-1">Meses até a quitação</p>
-              <p className="text-4xl font-black text-blue-600">{monthsToPayoff}</p>
-              <p className="text-xs text-gray-400 mt-2 font-medium">Você ficará preso por ~{(monthsToPayoff / 12).toFixed(1)} anos</p>
+              <p className={`text-4xl font-black ${isUnpayable ? 'text-red-600' : 'text-blue-600'}`}>
+                {isUnpayable ? '∞' : monthsToPayoff}
+              </p>
+              <p className="text-xs text-gray-400 mt-2 font-medium">
+                {isUnpayable 
+                  ? 'A parcela não cobre os juros. A dívida será eterna.' 
+                  : `Você ficará preso por ~${(monthsToPayoff / 12).toFixed(1)} anos`}
+              </p>
             </div>
 
             <div className="bg-white p-5 rounded-xl border border-red-100 shadow-sm">
               <p className="text-sm text-gray-500 font-semibold mb-1">Total de juros pagos</p>
-              <p className="text-3xl font-bold text-red-500">R$ {totalInterest.toLocaleString('pt-BR')}</p>
+              <p className="text-3xl font-bold text-red-500">
+                {isUnpayable ? '---' : `R$ ${Math.max(0, totalInterest).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+              </p>
               <p className="text-xs text-red-400 mt-2 font-medium">Dinheiro que evapora 100% para o banco</p>
             </div>
           </div>
@@ -85,9 +108,18 @@ export const FeeAuditorCalc = () => {
   const [grossReturn, setGrossReturn] = useState('10');
   const [adminFee, setAdminFee] = useState('1.5');
 
-  // Cálculos viriam aqui (mocks)
-  const wealthLost = 215430;
-  const finalNetWealth = 457000;
+  const P = parseFloat(investedAmount) || 0;
+  const n = parseFloat(years) || 0;
+  const rGross = parseFloat(grossReturn) || 0;
+  const rFee = parseFloat(adminFee) || 0;
+
+  const rNet = Math.max(0, rGross - rFee);
+
+  const FV_gross = P * Math.pow(1 + (rGross / 100), n);
+  const FV_net = P * Math.pow(1 + (rNet / 100), n);
+
+  const wealthLost = FV_gross - FV_net;
+  const finalNetWealth = FV_net;
 
   return (
     <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden max-w-4xl w-full text-left mt-8">
@@ -149,13 +181,13 @@ export const FeeAuditorCalc = () => {
           <div className="space-y-8">
             <div>
               <p className="text-sm text-gray-400 font-semibold mb-1">Perda Total para Taxas</p>
-              <p className="text-4xl font-black text-red-400">R$ {wealthLost.toLocaleString('pt-BR')}</p>
+              <p className="text-4xl font-black text-red-400">R$ {wealthLost.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
               <p className="text-xs text-red-300 mt-2">Isto é dinheiro seu deixado na mesa.</p>
             </div>
 
             <div>
               <p className="text-sm text-gray-400 font-semibold mb-1">Patrimônio Líquido Final (no seu bolso)</p>
-              <p className="text-2xl font-bold text-emerald-400">R$ {finalNetWealth.toLocaleString('pt-BR')}</p>
+              <p className="text-2xl font-bold text-emerald-400">R$ {finalNetWealth.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             </div>
           </div>
         </div>
