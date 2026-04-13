@@ -13,6 +13,47 @@ export const AcademyAdmin = ({ onExit }) => {
   const [lessonDuration, setLessonDuration] = useState("");
   const [lessonVideoUrl, setLessonVideoUrl] = useState("");
   const [lessonPdfUrl, setLessonPdfUrl] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handlePdfUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!window.supabase) {
+      alert("Supabase SDK não detectado no Window.");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const supabaseUrl = 'https://sueyfodlqcviojivlxgv.supabase.co';
+      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN1ZXlmb2RscWN2aW9qaXZseGd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NzU4NTMsImV4cCI6MjA5MTI1MTg1M30.g40c4ko9uFKOdN2x4tvQQg-IuWx2ZB4K8_fsZpgeIDw';
+      const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `academy_pdf_${Date.now()}.${fileExt}`;
+      const filePath = `academy/${fileName}`;
+
+      const { data, error } = await supabaseClient.storage
+        .from('afic-data')
+        .upload(filePath, file);
+
+      if (error) {
+        console.error("Erro no upload:", error);
+        alert("Erro no upload ao conectar no Storage: " + error.message);
+      } else {
+        const { data: urlData } = supabaseClient.storage
+          .from('afic-data')
+          .getPublicUrl(filePath);
+        
+        setLessonPdfUrl(urlData.publicUrl);
+        alert("PDF enviado com sucesso! O formulário foi preenchido automaticamente.");
+      }
+    } catch (err) {
+       alert("Erro crítico ao enviar arquivo: " + err.message);
+    }
+    setIsUploading(false);
+  };
 
   const handleCreateModule = (e) => {
     e.preventDefault();
@@ -188,7 +229,13 @@ export const AcademyAdmin = ({ onExit }) => {
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">URL do Material de Apoio (PDF)</label>
-                <input type="url" value={lessonPdfUrl} onChange={e=>setLessonPdfUrl(e.target.value)} className="w-full border border-gray-300 rounded p-2" placeholder="Link do Google Drive (Opcional)"/>
+                <div className="flex gap-2 items-center">
+                  <input type="url" value={lessonPdfUrl} onChange={e=>setLessonPdfUrl(e.target.value)} className="w-full border border-gray-300 rounded p-2" placeholder="Link do Google Drive ou envie um arquivo 👉"/>
+                  <label className={`shrink-0 bg-gray-100 border border-gray-300 text-gray-700 px-4 py-2 rounded font-bold cursor-pointer hover:bg-gray-200 transition-colors ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                    {isUploading ? 'Enviando...' : '📁 Upload PDF'}
+                    <input type="file" accept=".pdf" className="hidden" onChange={handlePdfUpload} disabled={isUploading}/>
+                  </label>
+                </div>
               </div>
               <div className="pt-4">
                 <button type="submit" className="w-full bg-[#0a2540] text-white p-3 rounded font-bold hover:bg-blue-900">Salvar Aula</button>
