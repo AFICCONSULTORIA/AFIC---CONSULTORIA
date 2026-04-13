@@ -50,6 +50,54 @@ export const SovereignAcademy = () => {
     setNewComment("");
   };
 
+  const renderVideoPlayer = (url) => {
+    if (!url) return <div className="text-gray-400 font-medium">Link do vídeo não disponível.</div>;
+    
+    // YouTube
+    if (url.includes('youtube.com/watch') || url.includes('youtu.be/')) {
+      let videoId = '';
+      if (url.includes('youtube.com/watch')) {
+        videoId = new URLSearchParams(url.split('?')[1]).get('v');
+      } else {
+        videoId = url.split('youtu.be/')[1].split('?')[0];
+      }
+      return (
+        <iframe 
+          className="w-full h-full object-cover" 
+          src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`} 
+          title="YouTube video player" 
+          frameBorder="0" 
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+          allowFullScreen
+        ></iframe>
+      );
+    }
+    
+    // Vimeo
+    if (url.includes('vimeo.com/')) {
+      const videoId = url.split('vimeo.com/')[1].split(/[?/#]/)[0];
+      return (
+        <iframe 
+          className="w-full h-full object-cover" 
+          src={`https://player.vimeo.com/video/${videoId}`} 
+          frameBorder="0" 
+          allow="autoplay; fullscreen; picture-in-picture" 
+          allowFullScreen
+        ></iframe>
+      );
+    }
+
+    // Default HTML5 Video (.mp4)
+    return (
+      <video 
+        src={url} 
+        controls 
+        className="w-full h-full object-cover"
+        controlsList="nodownload"
+      />
+    );
+  };
+
   if (isAdminMode) {
     return <AcademyAdmin onExit={() => setIsAdminMode(false)} />;
   }
@@ -90,12 +138,7 @@ export const SovereignAcademy = () => {
         {/* Video Player Box */}
         <div className="bg-[#0f1419] rounded-xl overflow-hidden shadow-xl border border-[rgba(255,255,255,0.05)] aspect-video relative flex items-center justify-center">
             {activeLessonData ? (
-               <video 
-                  src={activeLessonData.videoUrl} 
-                  controls 
-                  className="w-full h-full object-cover"
-                  controlsList="nodownload"
-               />
+               renderVideoPlayer(activeLessonData.videoUrl)
             ) : (
                 <div className="text-gray-400 font-medium">Selecione uma aula para começar.</div>
             )}
