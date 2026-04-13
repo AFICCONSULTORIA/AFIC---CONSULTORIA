@@ -15,6 +15,9 @@ export const SovereignAcademy = () => {
   
   // Smart Note State
   const [smartNotes, setSmartNotes] = useState("");
+  // Rating State
+  const [lessonRating, setLessonRating] = useState(0);
+
   // Q&A State
   const [fakeCommunityComments, setFakeCommunityComments] = useState([]);
   const [newComment, setNewComment] = useState("");
@@ -31,9 +34,17 @@ export const SovereignAcademy = () => {
     if (unlockedState.includes(mod.id)) {
       setActiveModuleId(mod.id);
       setActiveLessonId(lesson.id);
-      // Ao mudar de aula, reseta as notas e comentarios mockados pra aula atual (Logica do MVP)
+      // Ao mudar de aula, reseta as notas, rating e comentarios mockados pra aula atual (Logica do MVP)
       setSmartNotes(localStorage.getItem(`note_${lesson.id}`) || "");
+      setLessonRating(Number(localStorage.getItem(`rating_${lesson.id}`)) || 0);
       setFakeCommunityComments([]);
+    }
+  };
+
+  const handleRateLesson = (ratingValue) => {
+    if(activeLessonData) {
+      setLessonRating(ratingValue);
+      localStorage.setItem(`rating_${activeLessonData.id}`, ratingValue);
     }
   };
 
@@ -150,7 +161,21 @@ export const SovereignAcademy = () => {
             <div className="flex items-start justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">{activeLessonData.title}</h2>
-                <p className="text-gray-500 text-sm">Escola Sovereign • Módulo {activeModuleId} • Duração: {activeLessonData.duration}</p>
+                <div className="flex items-center gap-4">
+                  <p className="text-gray-500 text-sm">Escola Sovereign • Módulo {activeModuleId} • Duração: {activeLessonData.duration}</p>
+                  <div className="flex items-center gap-1 bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
+                    <span className="text-xs font-bold text-gray-600 mr-1">Avaliação:</span>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button 
+                        key={star} 
+                        onClick={() => handleRateLesson(star)}
+                        className={`text-lg transition-colors hover:scale-110 ${star <= lessonRating ? 'text-[#cda434]' : 'text-gray-300'}`}
+                      >
+                        ★
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
               <button 
                 onClick={() => setIsAdminMode(true)}
