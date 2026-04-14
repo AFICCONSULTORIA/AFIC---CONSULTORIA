@@ -3,14 +3,77 @@ import { useCommunity } from './CommunityContext';
 
 const fmtDate = (iso) => new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
 
+// ──────────── Confirm Dialog (substitui window.confirm) ────────────
+const ConfirmDialog = ({ message, onConfirm, onCancel }) => (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" width="20" height="20">
+            <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          </svg>
+        </div>
+        <div>
+          <p className="font-black text-gray-900 text-sm">Excluir Tópico</p>
+          <p className="text-xs text-gray-500 mt-0.5">{message}</p>
+        </div>
+      </div>
+      <div className="flex gap-3">
+        <button onClick={onCancel} className="flex-1 py-2 px-4 rounded-lg border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
+          Cancelar
+        </button>
+        <button onClick={onConfirm} className="flex-1 py-2 px-4 rounded-lg bg-red-600 text-white text-sm font-bold hover:bg-red-700 transition-colors">
+          Excluir
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+// Hook para confirmação React
+const useConfirm = () => {
+  const [state, setState] = useState({ open: false, message: '', resolve: null });
+
+  const confirm = (message) => new Promise((resolve) => {
+    setState({ open: true, message, resolve });
+  });
+
+  const handleConfirm = () => {
+    state.resolve(true);
+    setState({ open: false, message: '', resolve: null });
+  };
+  const handleCancel = () => {
+    state.resolve(false);
+    setState({ open: false, message: '', resolve: null });
+  };
+
+  const Dialog = state.open
+    ? <ConfirmDialog message={state.message} onConfirm={handleConfirm} onCancel={handleCancel} />
+    : null;
+
+  return { confirm, Dialog };
+};
+
 // ──────────── Topic List (Home) ────────────
 const TopicList = ({ onOpenTopic, onNewTopic }) => {
-  const { topics, isLoaded, deleteTopic, userId } = useCommunity();
+  const { topics, isLoaded, deleteTopic } = useCommunity();
+  const { confirm, Dialog } = useConfirm();
+  const [deletingId, setDeletingId] = useState(null);
+
+  const handleDelete = async (topicId) => {
+    const ok = await confirm('Esta ação removerá o tópico, comentários e curtidas permanentemente.');
+    if (!ok) return;
+    setDeletingId(topicId);
+    await deleteTopic(topicId);
+    setDeletingId(null);
+  };
 
   if (!isLoaded) return <div className="text-center p-16 text-gray-400 font-bold animate-pulse">Sincronizando Inteligência Coletiva...</div>;
 
   return (
     <div className="max-w-5xl mx-auto w-full">
+      {Dialog}
+
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
@@ -33,12 +96,11 @@ const TopicList = ({ onOpenTopic, onNewTopic }) => {
         )}
 
         {topics.map(topic => {
-          const author = topic.profiles?.nickname || 'Membro AFIC';
+          const author = topic.nickname || 'Membro AFIC';
+          const isDeleting = deletingId === topic.id;
           return (
-            <div
-              key={topic.id}
-              className="bg-white rounded-xl border border-gray-100 p-6 transition-all hover:shadow-md hover:border-gray-200 group"
-            >
+            <div key={topic.id} className={`bg-white rounded-xl border border-gray-100 p-6 transition-all hover:shadow-md hover:border-gray-200 group ${isDeleting ? 'opacity-50' : ''}`}>
+              {/* Clickable content area */}
               <div className="flex items-start justify-between gap-4 cursor-pointer" onClick={() => onOpenTopic(topic.id)}>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-2">
@@ -59,15 +121,22 @@ const TopicList = ({ onOpenTopic, onNewTopic }) => {
                   </div>
                 </div>
               </div>
+
+              {/* Footer — NOT clickable for navigation */}
               <div className="flex items-center gap-4 mt-4 text-xs text-gray-400">
                 <span className="font-semibold text-gray-600">{author}</span>
                 <span>{fmtDate(topic.created_at)}</span>
                 <button
-                   onClick={() => { if(window.confirm('Excluir este tópico permanentemente?')) deleteTopic(topic.id); }}
-                   className="ml-auto p-2 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
-                   title="Excluir tópico"
+                  type="button"
+                  disabled={isDeleting}
+                  onClick={() => handleDelete(topic.id)}
+                  className="ml-auto p-2 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
+                  title="Excluir tópico"
                 >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  {isDeleting
+                    ? <svg className="animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16"><circle cx="12" cy="12" r="10" strokeOpacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round"/></svg>
+                    : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  }
                 </button>
               </div>
             </div>
@@ -154,13 +223,14 @@ const NewTopicModal = ({ isOpen, onClose }) => {
 
 // ──────────── Topic Detail ────────────
 const TopicDetail = ({ topicId, onBack }) => {
-  const { getTopicDetail, getComments, addComment, getLikes, toggleLike, deleteTopic, userId } = useCommunity();
+  const { getTopicDetail, getComments, addComment, getLikes, toggleLike, deleteTopic } = useCommunity();
   const [topic, setTopic] = useState(null);
   const [comments, setComments] = useState([]);
   const [likes, setLikes] = useState({ count: 0, userLiked: false });
   const [newComment, setNewComment] = useState('');
   const [sending, setSending] = useState(false);
-  const commentRef = useRef(null);
+  const [deleting, setDeleting] = useState(false);
+  const { confirm, Dialog } = useConfirm();
 
   useEffect(() => {
     async function load() {
@@ -193,12 +263,22 @@ const TopicDetail = ({ topicId, onBack }) => {
     setSending(false);
   };
 
+  const handleDelete = async () => {
+    const ok = await confirm('Esta ação removerá o tópico, comentários e curtidas permanentemente.');
+    if (!ok) return;
+    setDeleting(true);
+    await deleteTopic(topicId);
+    onBack();
+  };
+
   if (!topic) return <div className="text-center p-16 text-gray-400 animate-pulse font-bold">Carregando tese...</div>;
 
-  const author = topic.profiles?.nickname || 'Membro AFIC';
+  const author = topic.nickname || 'Membro AFIC';
 
   return (
     <div className="max-w-4xl mx-auto w-full">
+      {Dialog}
+
       {/* Back */}
       <button onClick={onBack} className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors mb-8 group">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
@@ -220,11 +300,13 @@ const TopicDetail = ({ topicId, onBack }) => {
             <span className="text-sm font-bold text-gray-700">{author}</span>
           </div>
           <button
-            onClick={async () => { if(window.confirm('Excluir este tópico e todos os seus comentários?')) { await deleteTopic(topicId); onBack(); } }}
-            className="flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-red-500 transition-colors bg-gray-50 hover:bg-red-50 px-4 py-2 rounded-lg"
+            type="button"
+            disabled={deleting}
+            onClick={handleDelete}
+            className="flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-red-500 transition-colors bg-gray-50 hover:bg-red-50 px-4 py-2 rounded-lg disabled:opacity-50"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-            Excluir Tópico
+            {deleting ? 'Excluindo...' : 'Excluir Tópico'}
           </button>
         </div>
       </div>
@@ -245,7 +327,7 @@ const TopicDetail = ({ topicId, onBack }) => {
 
       {/* Like */}
       <div className="flex items-center gap-4 mb-10 border-b border-gray-100 pb-6">
-        <button onClick={handleLike} className={`flex items-center gap-2 text-sm font-bold transition-colors ${likes.userLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-400'}`}>
+        <button type="button" onClick={handleLike} className={`flex items-center gap-2 text-sm font-bold transition-colors ${likes.userLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-400'}`}>
           <svg viewBox="0 0 24 24" fill={likes.userLiked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" width="20" height="20">
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
           </svg>
@@ -259,10 +341,8 @@ const TopicDetail = ({ topicId, onBack }) => {
       <div className="mb-10">
         <h3 className="text-lg font-black text-gray-900 mb-6">Discussão Institucional</h3>
 
-        {/* New Comment */}
         <form onSubmit={handleComment} className="mb-8">
           <textarea
-            ref={commentRef}
             className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg outline-none resize-none text-sm"
             rows="3"
             value={newComment}
@@ -276,13 +356,12 @@ const TopicDetail = ({ topicId, onBack }) => {
           </div>
         </form>
 
-        {/* Comment List */}
         <div className="space-y-6">
           {comments.length === 0 && (
             <p className="text-sm text-gray-400 text-center py-4">Nenhum comentário ainda. Seja o primeiro!</p>
           )}
           {comments.map(c => {
-            const cAuthor = c.profiles?.nickname || 'Membro';
+            const cAuthor = c.nickname || 'Membro';
             return (
               <div key={c.id} className="bg-white border border-gray-100 rounded-xl p-5">
                 <div className="flex items-center gap-3 mb-3">
@@ -304,7 +383,7 @@ const TopicDetail = ({ topicId, onBack }) => {
 
 // ──────────── Main Router ────────────
 export const CommunityForum = () => {
-  const [view, setView] = useState('list');   // 'list' | 'detail' | 'new'
+  const [view, setView] = useState('list');
   const [activeTopicId, setActiveTopicId] = useState(null);
   const [showModal, setShowModal] = useState(false);
 

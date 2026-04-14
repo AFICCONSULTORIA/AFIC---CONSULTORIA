@@ -1,7 +1,19 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 
 const CommunityContext = createContext();
 export const useCommunity = () => useContext(CommunityContext);
+
+// Singleton client — evita múltiplas instâncias
+let _sb = null;
+function getSupabase() {
+  if (_sb) return _sb;
+  if (!window.supabase) return null;
+  _sb = window.supabase.createClient(
+    'https://sueyfodlqcviojivlxgv.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN1ZXlmb2RscWN2aW9qaXZseGd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NzU4NTMsImV4cCI6MjA5MTI1MTg1M30.g40c4ko9uFKOdN2x4tvQQg-IuWx2ZB4K8_fsZpgeIDw'
+  );
+  return _sb;
+}
 
 export const CommunityProvider = ({ children }) => {
   const [topics, setTopics] = useState([]);
@@ -9,27 +21,16 @@ export const CommunityProvider = ({ children }) => {
   const [userId, setUserId] = useState(null);
   const [userNickname, setUserNickname] = useState(null);
 
-  const getSupabase = () => {
-    if (!window.supabase) return null;
-    return window.supabase.createClient(
-      'https://sueyfodlqcviojivlxgv.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN1ZXlmb2RscWN2aW9qaXZseGd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NzU4NTMsImV4cCI6MjA5MTI1MTg1M30.g40c4ko9uFKOdN2x4tvQQg-IuWx2ZB4K8_fsZpgeIDw'
-    );
-  };
-
   useEffect(() => {
     async function init() {
       const sb = getSupabase();
       if (!sb) return;
-
       const { data: { session } } = await sb.auth.getSession();
       if (session?.user) {
         setUserId(session.user.id);
-        // Try to get nickname
         const { data: profile } = await sb.from('profiles').select('nickname').eq('id', session.user.id).single();
         if (profile?.nickname) setUserNickname(profile.nickname);
       }
-
       await fetchTopics();
       setIsLoaded(true);
     }
@@ -39,24 +40,18 @@ export const CommunityProvider = ({ children }) => {
   const fetchTopics = useCallback(async () => {
     const sb = getSupabase();
     if (!sb) return;
-
-    let { data, error } = await sb
+    // Busca simples sem join para evitar erro 400
+    const { data, error } = await sb
       .from('community_topics')
-      .select('*, profiles:user_id(nickname)')
+      .select('*')
       .order('created_at', { ascending: false });
 
-    if (error) {
-      // Fallback without join
-      const fb = await sb.from('community_topics').select('*').order('created_at', { ascending: false });
-      if (!fb.error) data = fb.data;
-    }
-
-    setTopics(data || []);
+    if (!error && data) setTopics(data);
   }, []);
 
   const createTopic = async (title, content, category, file) => {
     const sb = getSupabase();
-    if (!sb || !userId) return;
+    if (!sb || !userId) return false;
 
     let attachmentUrl = null;
     if (file) {
@@ -77,33 +72,31 @@ export const CommunityProvider = ({ children }) => {
     return !error;
   };
 
+  const deleteTopic = async (topicId) => {
+    const sb = getSupabase();
+    if (!sb) return false;
+    // Cascade manual
+    await sb.from('community_comments').delete().eq('topic_id', topicId);
+    await sb.from('community_likes').delete().eq('topic_id', topicId);
+    const { error } = await sb.from('community_topics').delete().eq('id', topicId);
+    if (!error) await fetchTopics();
+    return !error;
+  };
+
   const getTopicDetail = async (topicId) => {
     const sb = getSupabase();
-    let { data, error } = await sb
-      .from('community_topics')
-      .select('*, profiles:user_id(nickname)')
-      .eq('id', topicId).single();
-
-    if (error) {
-      const fb = await sb.from('community_topics').select('*').eq('id', topicId).single();
-      if (!fb.error) data = fb.data;
-    }
-    return data;
+    const { data, error } = await sb.from('community_topics').select('*').eq('id', topicId).single();
+    return error ? null : data;
   };
 
   const getComments = async (topicId) => {
     const sb = getSupabase();
-    let { data, error } = await sb
+    const { data, error } = await sb
       .from('community_comments')
-      .select('*, profiles:user_id(nickname)')
+      .select('*')
       .eq('topic_id', topicId)
       .order('created_at', { ascending: true });
-
-    if (error) {
-      const fb = await sb.from('community_comments').select('*').eq('topic_id', topicId).order('created_at', { ascending: true });
-      if (!fb.error) data = fb.data;
-    }
-    return data || [];
+    return error ? [] : (data || []);
   };
 
   const addComment = async (topicId, content) => {
@@ -129,17 +122,6 @@ export const CommunityProvider = ({ children }) => {
     } else {
       await sb.from('community_likes').insert([{ topic_id: topicId, user_id: userId }]);
     }
-  };
-
-  const deleteTopic = async (topicId) => {
-    const sb = getSupabase();
-    if (!sb) return false;
-    // Cascade: remove comments and likes first
-    await sb.from('community_comments').delete().eq('topic_id', topicId);
-    await sb.from('community_likes').delete().eq('topic_id', topicId);
-    const { error } = await sb.from('community_topics').delete().eq('id', topicId);
-    if (!error) await fetchTopics();
-    return !error;
   };
 
   return (
