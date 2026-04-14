@@ -216,14 +216,22 @@ export const SovereignAcademy = () => {
               ></div>
             </div>
          </div>
-         {progressPercentage === 100 && (
+         <div className="flex items-center gap-4">
+           {progressPercentage === 100 && (
+             <button 
+               onClick={() => setShowCertificate(true)}
+               className="shrink-0 bg-[#cda434] hover:bg-yellow-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg flex items-center gap-2 transform transition-transform hover:scale-105"
+             >
+               🎓 Emitir Certificado
+             </button>
+           )}
            <button 
-             onClick={() => setShowCertificate(true)}
-             className="shrink-0 bg-[#cda434] hover:bg-yellow-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg flex items-center gap-2 transform transition-transform hover:scale-105"
+             onClick={() => setIsAdminMode(true)}
+             className="shrink-0 text-xs bg-gray-100 text-gray-800 hover:bg-gray-200 font-bold py-3 px-4 rounded-lg shadow-sm border border-gray-300 transition-colors"
            >
-             🎓 Emitir Certificado
+             ⚙️ Estúdio Gestor AFIC
            </button>
-         )}
+         </div>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">
@@ -267,12 +275,6 @@ export const SovereignAcademy = () => {
                     </div>
                   </div>
                 </div>
-                <button 
-                  onClick={() => setIsAdminMode(true)}
-                  className="text-xs bg-gray-100 text-gray-500 hover:text-black font-semibold py-1 px-3 rounded shadow-sm border border-gray-200"
-                >
-                  ⚙️ Estúdio Gestor AFIC
-                </button>
               </div>
               
               <div className="mt-8 pt-6 border-t border-gray-100 flex flex-wrap items-center justify-between gap-4">
