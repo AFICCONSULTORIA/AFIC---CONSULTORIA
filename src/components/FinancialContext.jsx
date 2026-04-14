@@ -13,14 +13,8 @@ export const FinancialProvider = ({ children }) => {
   const [creditCards, setCreditCards] = useState([]);
   const [emergencyFund, setEmergencyFund] = useState(null);
   
-  // Create a singleton instance of supabase for Financial Hub
-  const getSupabase = () => {
-    if (!window.supabase) return null;
-    return window.supabase.createClient(
-      'https://sueyfodlqcviojivlxgv.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN1ZXlmb2RscWN2aW9qaXZseGd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NzU4NTMsImV4cCI6MjA5MTI1MTg1M30.g40c4ko9uFKOdN2x4tvQQg-IuWx2ZB4K8_fsZpgeIDw'
-    );
-  };
+  // Reusa o cliente do app.js — evita múltiplas instâncias GoTrueClient
+  const getSupabase = () => window.aficSupabase || null;
 
   // ─── INITIALIZATION ───
   useEffect(() => {

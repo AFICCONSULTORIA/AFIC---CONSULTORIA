@@ -1,18 +1,12 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 const CommunityContext = createContext();
 export const useCommunity = () => useContext(CommunityContext);
 
-// Singleton client — evita múltiplas instâncias
-let _sb = null;
-function getSupabase() {
-  if (_sb) return _sb;
-  if (!window.supabase) return null;
-  _sb = window.supabase.createClient(
-    'https://sueyfodlqcviojivlxgv.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN1ZXlmb2RscWN2aW9qaXZseGd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NzU4NTMsImV4cCI6MjA5MTI1MTg1M30.g40c4ko9uFKOdN2x4tvQQg-IuWx2ZB4K8_fsZpgeIDw'
-  );
-  return _sb;
+// Reusa o cliente já criado pelo app.js (window.aficSupabase)
+// Sem criar novas instâncias — evita conflito de GoTrueClient
+function getSB() {
+  return window.aficSupabase || null;
 }
 
 export const CommunityProvider = ({ children }) => {
@@ -22,37 +16,41 @@ export const CommunityProvider = ({ children }) => {
   const [userNickname, setUserNickname] = useState(null);
 
   useEffect(() => {
-    async function init() {
-      const sb = getSupabase();
-      if (!sb) return;
-      const { data: { session } } = await sb.auth.getSession();
-      if (session?.user) {
-        setUserId(session.user.id);
-        const { data: profile } = await sb.from('profiles').select('nickname').eq('id', session.user.id).single();
-        if (profile?.nickname) setUserNickname(profile.nickname);
+    // app.js expõe window.aficSupabase no DOMContentLoaded
+    // Aguarda até ele estar disponível (máx 3s)
+    let attempts = 0;
+    const wait = setInterval(async () => {
+      const sb = getSB();
+      attempts++;
+      if (sb || attempts > 30) {
+        clearInterval(wait);
+        if (!sb) return;
+        const { data: { session } } = await sb.auth.getSession();
+        if (session?.user) {
+          setUserId(session.user.id);
+          const { data: profile } = await sb.from('profiles').select('nickname').eq('id', session.user.id).single();
+          if (profile?.nickname) setUserNickname(profile.nickname);
+        }
+        await fetchTopics();
+        setIsLoaded(true);
       }
-      await fetchTopics();
-      setIsLoaded(true);
-    }
-    init();
+    }, 100);
+    return () => clearInterval(wait);
   }, []);
 
   const fetchTopics = useCallback(async () => {
-    const sb = getSupabase();
+    const sb = getSB();
     if (!sb) return;
-    // Busca simples sem join para evitar erro 400
     const { data, error } = await sb
       .from('community_topics')
       .select('*')
       .order('created_at', { ascending: false });
-
     if (!error && data) setTopics(data);
   }, []);
 
   const createTopic = async (title, content, category, file) => {
-    const sb = getSupabase();
+    const sb = getSB();
     if (!sb || !userId) return false;
-
     let attachmentUrl = null;
     if (file) {
       const ext = file.name.split('.').pop();
@@ -63,59 +61,62 @@ export const CommunityProvider = ({ children }) => {
         attachmentUrl = urlData.publicUrl;
       }
     }
-
     const { error } = await sb.from('community_topics').insert([{
       user_id: userId, title, content, category, attachment_url: attachmentUrl
     }]);
-
     if (!error) await fetchTopics();
     return !error;
   };
 
   const deleteTopic = async (topicId) => {
-    const sb = getSupabase();
-    if (!sb) return false;
-    // Cascade manual
-    await sb.from('community_comments').delete().eq('topic_id', topicId);
-    await sb.from('community_likes').delete().eq('topic_id', topicId);
-    const { error } = await sb.from('community_topics').delete().eq('id', topicId);
-    if (!error) await fetchTopics();
-    return !error;
+    const sb = getSB();
+    if (!sb) { console.error('deleteTopic: Supabase client not ready'); return false; }
+    console.log('deleteTopic: deleting', topicId);
+    const r1 = await sb.from('community_comments').delete().eq('topic_id', topicId);
+    console.log('comments delete:', r1.error || 'OK');
+    const r2 = await sb.from('community_likes').delete().eq('topic_id', topicId);
+    console.log('likes delete:', r2.error || 'OK');
+    const r3 = await sb.from('community_topics').delete().eq('id', topicId);
+    console.log('topic delete:', r3.error || 'OK', 'status:', r3.status);
+    if (!r3.error) {
+      await fetchTopics();
+      return true;
+    }
+    return false;
   };
 
   const getTopicDetail = async (topicId) => {
-    const sb = getSupabase();
+    const sb = getSB();
+    if (!sb) return null;
     const { data, error } = await sb.from('community_topics').select('*').eq('id', topicId).single();
     return error ? null : data;
   };
 
   const getComments = async (topicId) => {
-    const sb = getSupabase();
-    const { data, error } = await sb
-      .from('community_comments')
-      .select('*')
-      .eq('topic_id', topicId)
-      .order('created_at', { ascending: true });
+    const sb = getSB();
+    if (!sb) return [];
+    const { data, error } = await sb.from('community_comments').select('*').eq('topic_id', topicId).order('created_at', { ascending: true });
     return error ? [] : (data || []);
   };
 
   const addComment = async (topicId, content) => {
-    const sb = getSupabase();
-    if (!userId) return false;
+    const sb = getSB();
+    if (!sb || !userId) return false;
     const { error } = await sb.from('community_comments').insert([{ topic_id: topicId, user_id: userId, content }]);
     return !error;
   };
 
   const getLikes = async (topicId) => {
-    const sb = getSupabase();
+    const sb = getSB();
+    if (!sb) return { count: 0, userLiked: false };
     const { data, count } = await sb.from('community_likes').select('*', { count: 'exact' }).eq('topic_id', topicId);
     const userLiked = (data || []).some(l => l.user_id === userId);
     return { count: count || 0, userLiked };
   };
 
   const toggleLike = async (topicId) => {
-    const sb = getSupabase();
-    if (!userId) return;
+    const sb = getSB();
+    if (!sb || !userId) return;
     const { data } = await sb.from('community_likes').select('id').eq('topic_id', topicId).eq('user_id', userId);
     if (data && data.length > 0) {
       await sb.from('community_likes').delete().eq('topic_id', topicId).eq('user_id', userId);
