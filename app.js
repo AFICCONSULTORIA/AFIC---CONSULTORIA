@@ -129,7 +129,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error('Erro ao sair:', error.message);
             } else {
                 currentUser = null;
-                checkAuthSession();
+                // Força o reload para calar vídeos, resetar states do React e limpar DOM.
+                window.location.reload();
             }
         });
     }
