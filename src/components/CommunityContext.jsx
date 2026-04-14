@@ -240,8 +240,13 @@ export const CommunityProvider = ({ children }) => {
         const sb = getSB();
         if (!sb) return false;
         const { error } = await sb.from('community_announcements').insert([{ content, is_priority: isPriority, user_id: userId }]);
-        if (!error) await fetchAnnouncements();
-        return !error;
+        if (error) {
+          console.error("Erro ao postar aviso:", error);
+          alert("Erro ao postar: " + error.message);
+          return false;
+        }
+        await fetchAnnouncements();
+        return true;
       },
       deleteAnnouncement: async (annId) => {
         const sb = getSB();
