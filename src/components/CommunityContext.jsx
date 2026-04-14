@@ -34,7 +34,7 @@ export const CommunityProvider = ({ children }) => {
         const session = await getCurrentSession();
         if (session?.user) {
           setUserId(session.user.id);
-          const { data: profile, error: pErr } = await sb.from('profiles').select('nickname, role').eq('id', session.user.id).single();
+          const { data: profile, error: pErr } = await sb.from('profiles').select('nickname, role').eq('id', session.user.id).maybeSingle();
           console.log("DEBUG: Perfil Carregado ->", profile, "Email ->", session.user.email);
           
           if (profile?.nickname) setUserNickname(profile.nickname);

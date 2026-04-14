@@ -34,7 +34,7 @@ export const FinancialProvider = ({ children }) => {
       const [txRes, ccRes, emRes] = await Promise.all([
         supabase.from('afic_financial_transactions').select('*').eq('user_id', uId).order('created_at', { ascending: false }),
         supabase.from('afic_credit_cards').select('*').eq('user_id', uId).order('created_at', { ascending: false }),
-        supabase.from('afic_emergency_fund').select('*').eq('user_id', uId).single()
+        supabase.from('afic_emergency_fund').select('*').eq('user_id', uId).maybeSingle()
       ]);
 
       if (!txRes.error) setTransactions(txRes.data || []);
