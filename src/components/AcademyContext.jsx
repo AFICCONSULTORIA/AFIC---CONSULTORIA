@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { supabase } from '../lib/supabase';
 
 const AcademyContext = createContext();
 
@@ -10,75 +11,64 @@ export const AcademyProvider = ({ children }) => {
   const [userId, setUserId] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   
-  // Reusa o cliente global do app.js para evitar conflitos de sessão (406)
-  const getSupabase = () => window.aficSupabase || null;
-
-  // ─── INIT ───
   useEffect(() => {
-    let attempts = 0;
-    const wait = setInterval(async () => {
-      attempts++;
-      const supabase = getSupabase();
-      
-      if (supabase || attempts > 30) {
-        clearInterval(wait);
-        if (!supabase) return;
+    async function init() {
+      if (!supabase) return;
 
-        // Identify existing logged in user
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          setUserId(session.user.id);
-          
-          // Regra Master de Admin: E-mail oficial ou Role no perfil
-          if (session.user.email === 'aficconsultoria@gmail.com') {
-            setIsAdmin(true);
-          } else {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('role')
-              .eq('id', session.user.id)
-              .maybeSingle();
-              
-            if (profile?.role === 'admin') {
-              setIsAdmin(true);
-            }
-          }
+      // Identify existing logged in user
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUserId(session.user.id);
+        
+        // Regra Master de Admin: E-mail oficial ou Role no perfil
+        if (session.user.email === 'aficconsultoria@gmail.com') {
+          setIsAdmin(true);
         } else {
-          setUserId('00000000-0000-0000-0000-000000000000');
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', session.user.id)
+            .maybeSingle();
+            
+          if (profile?.role === 'admin') {
+            setIsAdmin(true);
+          }
         }
-
-        // Fetch Modules & Lessons
-        const { data: modulesData, error } = await supabase
-          .from('academy_modules')
-          .select('*, academy_lessons(*)')
-          .order('created_at', { ascending: true });
-
-        if (error) {
-          console.error("Academy Context Error:", error);
-        }
-
-        if (!error && modulesData) {
-          const formattedModules = modulesData.map(mod => ({
-            id: mod.id,
-            title: mod.title,
-            isLocked: mod.locked_by_default,
-            lessons: (mod.academy_lessons || []).sort((a,b) => new Date(a.created_at) - new Date(b.created_at)).map(l => ({
-              id: l.id,
-              title: l.title,
-              duration: l.duration,
-              videoUrl: l.video_url,
-              pdfUrl: l.pdf_url,
-              isLive: l.is_live
-            })),
-            quiz: null
-          }));
-          setCourseModules(formattedModules);
-        }
-        setIsLoaded(true);
+      } else {
+        setUserId('00000000-0000-0000-0000-000000000000');
       }
-    }, 100);
+
+      // Fetch Modules & Lessons
+      const { data: modulesData, error } = await supabase
+        .from('academy_modules')
+        .select('*, academy_lessons(*)')
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error("Academy Context Error:", error);
+      }
+
+      if (!error && modulesData) {
+        const formattedModules = modulesData.map(mod => ({
+          id: mod.id,
+          title: mod.title,
+          isLocked: mod.locked_by_default,
+          lessons: (mod.academy_lessons || []).sort((a,b) => new Date(a.created_at) - new Date(b.created_at)).map(l => ({
+            id: l.id,
+            title: l.title,
+            duration: l.duration,
+            videoUrl: l.video_url,
+            pdfUrl: l.pdf_url,
+            isLive: l.is_live
+          })),
+          quiz: null
+        }));
+        setCourseModules(formattedModules);
+      }
+      setIsLoaded(true);
+    }
     
-    return () => clearInterval(wait);
+    init();
   }, []);
 
   // ─── PROGRESS SYNCING ───

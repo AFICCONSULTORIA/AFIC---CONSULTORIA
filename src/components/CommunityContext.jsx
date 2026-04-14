@@ -1,17 +1,14 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { supabase } from '../lib/supabase';
 
 const CommunityContext = createContext();
 export const useCommunity = () => useContext(CommunityContext);
 
 function getSB() {
   return window.aficSupabase || null;
-}
-
 // Busca sessão atualizada do Supabase — mais confiável que o state userId
 async function getCurrentSession() {
-  const sb = getSB();
-  if (!sb) return null;
-  const { data: { session } } = await sb.auth.getSession();
+  const { data: { session } } = await supabase.auth.getSession();
   return session || null;
 }
 
@@ -24,38 +21,32 @@ export const CommunityProvider = ({ children }) => {
   const [isAdmin, setIsAdmin] = useState(false); // [NOVO]
 
   useEffect(() => {
-    let attempts = 0;
-    const wait = setInterval(async () => {
-      const sb = getSB();
-      attempts++;
-      if (sb || attempts > 30) {
-        clearInterval(wait);
-        if (!sb) return;
-        const session = await getCurrentSession();
-        if (session?.user) {
-          setUserId(session.user.id);
-          const { data: profile, error: pErr } = await sb.from('profiles').select('nickname, role').eq('id', session.user.id).maybeSingle();
-          console.log("DEBUG: Perfil Carregado ->", profile, "Email ->", session.user.email);
-          
-          if (profile?.nickname) setUserNickname(profile.nickname);
-          
-          // Regra de Ouro: Admin por role no banco OU por e-mail fixo corporativo
-          if (profile?.role === 'admin' || session.user.email === 'aficconsultoria@gmail.com') {
-            setIsAdmin(true);
-          }
+    async function init() {
+      if (!supabase) return;
+
+      const session = await getCurrentSession();
+      if (session?.user) {
+        setUserId(session.user.id);
+        const { data: profile, error: pErr } = await supabase.from('profiles').select('nickname, role').eq('id', session.user.id).maybeSingle();
+        console.log("DEBUG: Perfil Carregado ->", profile, "Email ->", session.user.email);
+        
+        if (profile?.nickname) setUserNickname(profile.nickname);
+        
+        // Regra de Ouro: Admin por role no banco OU por e-mail fixo corporativo
+        if (profile?.role === 'admin' || session.user.email === 'aficconsultoria@gmail.com') {
+          setIsAdmin(true);
         }
-        await fetchAnnouncements();
-        await fetchTopics();
-        setIsLoaded(true);
       }
-    }, 100);
-    return () => clearInterval(wait);
-  }, []);
+      await fetchAnnouncements();
+      await fetchTopics();
+      setIsLoaded(true);
+    }
+    
+    init();
+  }, [fetchAnnouncements, fetchTopics]);
 
   const fetchAnnouncements = useCallback(async () => {
-    const sb = getSB();
-    if (!sb) return;
-    const { data, error } = await sb
+    const { data, error } = await supabase
       .from('community_announcements')
       .select('*')
       .eq('active', true)
@@ -64,41 +55,39 @@ export const CommunityProvider = ({ children }) => {
   }, []);
 
   const fetchTopics = useCallback(async () => {
-    const sb = getSB();
-    if (!sb) return;
-    const { data, error } = await sb
+    const { data, error } = await supabase
       .from('community_topics')
-      .select('*')
+      .select('*, profiles(nickname)')
       .order('created_at', { ascending: false });
-    if (!error && data) setTopics(data);
+    if (!error) setTopics(data || []);
   }, []);
 
-  // Upload a file to storage, returns public URL or null
   const uploadFile = async (bucket, folder, file) => {
-    const sb = getSB();
-    if (!sb || !file) return null;
+    if (!supabase || !file) return null;
     const ext = file.name.split('.').pop();
     const path = `${folder}/${Math.random().toString(36).substring(2)}.${ext}`;
-    const { error } = await sb.storage.from(bucket).upload(path, file);
+    const { data, error } = await supabase.storage.from(bucket).upload(path, file);
     if (error) return null;
-    const { data } = sb.storage.from(bucket).getPublicUrl(path);
-    return data.publicUrl;
+    const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(path);
+    return urlData.publicUrl;
   };
 
   const createTopic = async (title, content, category, pdfFile, coverFile) => {
-    const sb = getSB();
     const session = await getCurrentSession();
-    if (!sb || !session?.user) return false;
+    if (!supabase || !session?.user) return false;
 
-    const uid = session.user.id;
+    let attachmentUrl = null;
+    if (pdfFile) {
+      attachmentUrl = await uploadFile('community-attachments', 'pdfs', pdfFile);
+    }
 
-    const [attachmentUrl, coverImageUrl] = await Promise.all([
-      uploadFile('community-attachments', 'teses', pdfFile),
-      uploadFile('community-attachments', 'covers', coverFile),
-    ]);
+    let coverImageUrl = null;
+    if (coverFile) {
+      coverImageUrl = await uploadFile('community-attachments', 'covers', coverFile);
+    }
 
-    const { error } = await sb.from('community_topics').insert([{
-      user_id: uid, title, content, category,
+    const { error } = await supabase.from('community_topics').insert([{
+      user_id: session.user.id, title, content, category,
       attachment_url: attachmentUrl,
       cover_image_url: coverImageUrl,
     }]);
@@ -108,24 +97,21 @@ export const CommunityProvider = ({ children }) => {
   };
 
   const updateTopicCover = async (topicId, coverFile) => {
-    const sb = getSB();
-    if (!sb) return false;
+    if (!supabase) return false;
     const coverImageUrl = await uploadFile('community-attachments', 'covers', coverFile);
     if (!coverImageUrl) return false;
-    const { error } = await sb.from('community_topics').update({ cover_image_url: coverImageUrl }).eq('id', topicId);
+    const { error } = await supabase.from('community_topics').update({ cover_image_url: coverImageUrl }).eq('id', topicId);
     if (!error) await fetchTopics();
     return !error;
   };
 
   const deleteTopic = async (topicId) => {
-    const sb = getSB();
-    if (!sb) return false;
+    if (!supabase) return false;
     
-    // Primeiro limpamos dependências
-    await sb.from('community_comments').delete().eq('topic_id', topicId);
-    await sb.from('community_likes').delete().eq('topic_id', topicId);
+    await supabase.from('community_comments').delete().eq('topic_id', topicId);
+    await supabase.from('community_likes').delete().eq('topic_id', topicId);
     
-    const { data, error } = await sb
+    const { data, error } = await supabase
       .from('community_topics')
       .delete()
       .eq('id', topicId)
@@ -147,74 +133,58 @@ export const CommunityProvider = ({ children }) => {
   };
 
   const getTopicDetail = async (topicId) => {
-    const sb = getSB();
-    if (!sb) return null;
-    const { data, error } = await sb.from('community_topics').select('*').eq('id', topicId).single();
+    if (!supabase) return null;
+    const { data, error } = await supabase.from('community_topics').select('*').eq('id', topicId).maybeSingle();
     return error ? null : data;
   };
 
   const getComments = async (topicId) => {
-    const sb = getSB();
-    if (!sb) return [];
-    const { data, error } = await sb
+    if (!supabase) return [];
+    const { data, error } = await supabase
       .from('community_comments')
-      .select('*')
+      .select('*, profiles(nickname)')
       .eq('topic_id', topicId)
       .order('created_at', { ascending: true });
-    return error ? [] : (data || []);
+    return error ? [] : data;
   };
 
   const addComment = async (topicId, content) => {
-    const sb = getSB();
     const session = await getCurrentSession();
-    if (!sb || !session?.user) {
+    if (!supabase || !session?.user) {
       console.error('addComment: usuário não autenticado');
       return false;
     }
 
-    const uid = session.user.id;
+    const { data: profile } = await supabase.from('profiles').select('nickname').eq('id', session.user.id).maybeSingle();
+    const nickname = profile?.nickname || 'Membro AFIC';
 
-    // Busca nickname atualizado
-    const { data: profile } = await sb
-      .from('profiles')
-      .select('nickname')
-      .eq('id', uid)
-      .single();
-
-    const nickname = profile?.nickname || null;
-
-    const { error } = await sb.from('community_comments').insert([{
+    const { error } = await supabase.from('community_comments').insert([{
       topic_id: topicId,
-      user_id: uid,
+      user_id: session.user.id,
       content,
-      nickname,
+      user_nickname: nickname
     }]);
 
-    if (error) {
-      console.error('addComment error:', error.message, error.details);
-      return false;
-    }
-    return true;
+    return !error;
   };
 
   const getLikes = async (topicId) => {
-    const sb = getSB();
-    if (!sb) return { count: 0, userLiked: false };
+    if (!supabase) return { count: 0, userLiked: false };
 
     const session = await getCurrentSession();
-    const uid = session?.user?.id || null;
 
-    const { data, count } = await sb
+    const { data, count, error } = await supabase
       .from('community_likes')
-      .select('*', { count: 'exact' })
+      .select('user_id', { count: 'exact' })
       .eq('topic_id', topicId);
 
-    const userLiked = uid ? (data || []).some(l => l.user_id === uid) : false;
+    const userLiked = session?.user ? data?.some(l => l.user_id === session.user.id) : false;
+
     return { count: count || 0, userLiked };
   };
 
   const toggleLike = async (topicId) => {
-    const sb = getSB();
+    const getSB = () => supabase;
     const session = await getCurrentSession();
     if (!sb || !session?.user) {
       console.error('toggleLike: usuário não autenticado');

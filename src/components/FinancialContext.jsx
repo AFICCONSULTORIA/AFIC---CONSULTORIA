@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 
 const FinancialContext = createContext();
 
@@ -13,13 +14,9 @@ export const FinancialProvider = ({ children }) => {
   const [creditCards, setCreditCards] = useState([]);
   const [emergencyFund, setEmergencyFund] = useState(null);
   
-  // Reusa o cliente do app.js — evita múltiplas instâncias GoTrueClient
-  const getSupabase = () => window.aficSupabase || null;
-
   // ─── INITIALIZATION ───
   useEffect(() => {
     async function initData() {
-      const supabase = getSupabase();
       if (!supabase) return;
 
       const { data: { session } } = await supabase.auth.getSession();

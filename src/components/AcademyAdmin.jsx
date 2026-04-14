@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAcademy } from './AcademyContext';
+import { supabase } from '../lib/supabase';
 
 export const AcademyAdmin = ({ onExit }) => {
   const { courseModules, addModule, addLesson, deleteLesson, editLesson } = useAcademy();
@@ -20,25 +21,18 @@ export const AcademyAdmin = ({ onExit }) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (!window.supabase) {
-      alert("Supabase SDK não detectado no Window.");
+    if (!supabase) {
+      alert("Supabase SDK não detectado.");
       return;
     }
 
     setIsUploading(true);
     try {
-      const supabaseClient = window.aficSupabase;
-      if (!supabaseClient) {
-        alert("Cliente Supabase não inicializado.");
-        setIsUploading(false);
-        return;
-      }
-
       const fileExt = file.name.split('.').pop();
       const fileName = `academy_pdf_${Date.now()}.${fileExt}`;
       const filePath = `academy/${fileName}`;
 
-      const { data, error } = await supabaseClient.storage
+      const { data, error } = await supabase.storage
         .from('community-attachments')
         .upload(filePath, file);
 
@@ -46,7 +40,7 @@ export const AcademyAdmin = ({ onExit }) => {
         console.error("Erro no upload:", error);
         alert("Erro no upload ao conectar no Storage: " + error.message);
       } else {
-        const { data: urlData } = supabaseClient.storage
+        const { data: urlData } = supabase.storage
           .from('community-attachments')
           .getPublicUrl(filePath);
         
