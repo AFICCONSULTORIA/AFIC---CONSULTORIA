@@ -46,8 +46,16 @@ const CommunityAnnouncements = () => {
               <p className="text-sm font-semibold leading-relaxed">{ann.content}</p>
             </div>
             {isAdmin && (
-              <button onClick={() => deleteAnnouncement(ann.id)} className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all p-1">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              <button 
+                onClick={async () => {
+                   if (window.confirm('Deseja remover este comunicado institucional?')) {
+                     await deleteAnnouncement(ann.id);
+                   }
+                }} 
+                className="opacity-40 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all p-2 hover:bg-red-50 rounded-lg"
+                title="Excluir aviso"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
               </button>
             )}
           </div>

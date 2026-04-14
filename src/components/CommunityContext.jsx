@@ -252,8 +252,13 @@ export const CommunityProvider = ({ children }) => {
         const sb = getSB();
         if (!sb) return false;
         const { error } = await sb.from('community_announcements').delete().eq('id', annId);
-        if (!error) await fetchAnnouncements();
-        return !error;
+        if (error) {
+          console.error("Erro ao deletar aviso:", error);
+          alert("Erro ao deletar: " + error.message);
+          return false;
+        }
+        await fetchAnnouncements();
+        return true;
       }
     }}>
       {children}
