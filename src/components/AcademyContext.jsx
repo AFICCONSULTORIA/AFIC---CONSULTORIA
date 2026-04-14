@@ -29,22 +29,34 @@ export const AcademyProvider = ({ children }) => {
           setUserId('00000000-0000-0000-0000-000000000000');
         }
 
-        // Fetch Modules & Lessons
-        const { data: modulesData, error } = await supabase
+        // Fetch Modules & Lessons separately to avoid PGRST200 join errors
+        const { data: modulesData, error: modError } = await supabase
           .from('academy_modules')
-          .select('*, academy_lessons(*)')
+          .select('*')
           .order('created_at', { ascending: true });
 
-        if (!error && modulesData) {
-          const formattedModules = modulesData.map(mod => ({
-            id: mod.id,
-            title: mod.title,
-            isLocked: mod.locked_by_default,
-            lessons: (mod.academy_lessons || []).sort((a,b) => new Date(a.created_at) - new Date(b.created_at)).map(l => ({
-              id: l.id, title: l.title, duration: l.duration, videoUrl: l.video_url, pdfUrl: l.pdf_url, isLive: l.is_live
-            })),
-            quiz: null
-          }));
+        const { data: lessonsData, error: lesError } = await supabase
+          .from('academy_lessons')
+          .select('*')
+          .order('created_at', { ascending: true });
+
+        if (modError) {
+          console.error("Academy Context Module Error:", modError);
+        }
+
+        if (!modError && modulesData) {
+          const formattedModules = modulesData.map(mod => {
+            const modLessons = (lessonsData || []).filter(l => l.module_id === mod.id);
+            return {
+              id: mod.id,
+              title: mod.title,
+              isLocked: mod.locked_by_default,
+              lessons: modLessons.map(l => ({
+                id: l.id, title: l.title, duration: l.duration, videoUrl: l.video_url, pdfUrl: l.pdf_url, isLive: l.is_live
+              })),
+              quiz: null
+            };
+          });
           setCourseModules(formattedModules);
         }
       } catch (err) {

@@ -60,7 +60,7 @@ export const CommunityProvider = ({ children }) => {
   const fetchTopics = useCallback(async () => {
     const { data, error } = await supabase
       .from('community_topics')
-      .select('*, profiles(nickname)')
+      .select('*')
       .order('created_at', { ascending: false });
     if (!error) setTopics(data || []);
   }, []);

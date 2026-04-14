@@ -47,7 +47,7 @@ export const SovereignAcademy = () => {
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [debugClicks, setDebugClicks] = useState(0);
 
-  const [activeModuleId, setActiveModuleId] = useState(1);
+  const [activeModuleId, setActiveModuleId] = useState(null);
   const [activeLessonId, setActiveLessonId] = useState(null);
   
   // Real Data states
