@@ -251,12 +251,26 @@ export const CommunityProvider = ({ children }) => {
       deleteAnnouncement: async (annId) => {
         const sb = getSB();
         if (!sb) return false;
-        const { error } = await sb.from('community_announcements').delete().eq('id', annId);
+        
+        // Usamos .select() para confirmar se o banco realmente deletou a linha
+        const { data, error } = await sb
+          .from('community_announcements')
+          .delete()
+          .eq('id', annId)
+          .select();
+
         if (error) {
           console.error("Erro ao deletar aviso:", error);
-          alert("Erro ao deletar: " + error.message);
+          alert("Erro técnico ao deletar: " + error.message);
           return false;
         }
+
+        // Se data estiver vazio, o RLS bloqueou a exclusão silenciosamente
+        if (!data || data.length === 0) {
+          alert("⚠️ O banco de dados recusou a exclusão. Certifique-se de ter rodado o último comando SQL de permissões!");
+          return false;
+        }
+
         await fetchAnnouncements();
         return true;
       }
