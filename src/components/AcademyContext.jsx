@@ -150,12 +150,12 @@ export const AcademyProvider = ({ children }) => {
         is_live: lessonData.isLive || false
     };
 
-    const { data: lessonData, error } = await supabase
+    const { data: lessonInsertResult, error } = await supabase
       .from('academy_lessons')
       .insert([payload])
       .select()
       .limit(1);
-    const data = lessonData?.[0];
+    const data = lessonInsertResult?.[0];
 
     if(!error && data) {
        const mappedLesson = {

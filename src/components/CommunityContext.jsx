@@ -4,8 +4,6 @@ import { supabase } from '../lib/supabase';
 const CommunityContext = createContext();
 export const useCommunity = () => useContext(CommunityContext);
 
-function getSB() {
-  return window.aficSupabase || null;
 // Busca sessão atualizada do Supabase — mais confiável que o state userId
 async function getCurrentSession() {
   const { data: { session } } = await supabase.auth.getSession();
@@ -112,7 +110,7 @@ export const CommunityProvider = ({ children }) => {
     await supabase.from('community_comments').delete().eq('topic_id', topicId);
     await supabase.from('community_likes').delete().eq('topic_id', topicId);
     
-    const { data, error } = await supabase
+    const { data: deleteResult, error } = await supabase
       .from('community_topics')
       .delete()
       .eq('id', topicId)
@@ -124,7 +122,7 @@ export const CommunityProvider = ({ children }) => {
       return false;
     }
 
-    if (!data || data.length === 0) {
+    if (!deleteResult || deleteResult.length === 0) {
       alert("⚠️ Moderação recusada pelo banco. Verifique as permissões de acesso!");
       return false;
     }
