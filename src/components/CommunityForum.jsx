@@ -5,14 +5,14 @@ const fmtDate = (iso) => new Date(iso).toLocaleDateString('pt-BR', { day: '2-dig
 
 // ── Default cover images per category (served from /covers/) ──
 const DEFAULT_COVERS = {
-  'Discussão':         '/covers/cover_discussao.png',
+  'Discussão':         '/covers/afic_banner.png',
   'Deal Flow':         '/covers/cover_dealflow.png',
   'Tributário':        '/covers/cover_tributario.png',
   'Macro':             '/covers/cover_macro.png',
   'Tese de Investimento': '/covers/cover_tese.png',
   'Educação':          '/covers/cover_educacao.png',
 };
-const getCover = (topic) => topic.cover_image_url || DEFAULT_COVERS[topic.category] || '/covers/cover_discussao.png';
+const getCover = (topic) => topic.cover_image_url || DEFAULT_COVERS[topic.category] || '/covers/afic_banner.png';
 
 // ──────────── Confirm Dialog ────────────
 const ConfirmDialog = ({ message, onConfirm, onCancel }) => (
