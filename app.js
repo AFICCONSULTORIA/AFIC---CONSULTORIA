@@ -63,6 +63,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (authModal) authModal.classList.add('hidden');
                 console.log("User logged in: " + currentUser.email);
                 await loadSupabaseData();
+
+                // Forçar "Visão Geral" a abrir se a tela estiver branca
+                const hasActivePage = Array.from(document.querySelectorAll('.page-content')).some(p => !p.classList.contains('page-hidden'));
+                if (!hasActivePage) {
+                    if (typeof switchPage === 'function') switchPage('dashboard');
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                    const dashLink = document.querySelector('.nav-link[data-page="dashboard"]');
+                    if (dashLink) dashLink.classList.add('active');
+                }
             } else {
                 if (authModal) authModal.classList.remove('hidden');
                 console.log("No active session.");
