@@ -12,6 +12,8 @@ import { SovereignAcademy } from './components/SovereignAcademy';
 import { AcademyProvider } from './components/AcademyContext';
 import { FinancialProvider } from './components/FinancialContext';
 import { FinancialTools } from './components/FinancialTools';
+import { CommunityProvider } from './components/CommunityContext';
+import { CommunityForum } from './components/CommunityForum';
 
 // Importa o script vanilla JS antigo, garantindo que rode normalmente
 import '../app.js';
@@ -21,6 +23,7 @@ const ReactApp = () => {
   const dashboardRoot = document.getElementById('react-dashboard-root');
   const educationRoot = document.getElementById('react-education-root');
   const toolsRoot = document.getElementById('react-tools-root');
+  const communityRoot = document.getElementById('react-community-root');
 
   return (
     <UserProfileProvider>
@@ -58,6 +61,18 @@ const ReactApp = () => {
           </AcademyProvider>
         </div>,
         educationRoot
+      )}
+
+      {/* 
+        Portal 4: Comunidade Institucional
+      */}
+      {communityRoot && createPortal(
+        <div className="pt-2">
+          <CommunityProvider>
+            <CommunityForum />
+          </CommunityProvider>
+        </div>,
+        communityRoot
       )}
     </UserProfileProvider>
   );

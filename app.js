@@ -300,8 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'education': 'page-education',
         'community': 'page-community',
         'account': 'page-account',
-        'plans': 'page-plans',
-        'topic-details': 'page-topic-details'
+        'plans': 'page-plans'
     };
 
     function switchPage(pageName) {
