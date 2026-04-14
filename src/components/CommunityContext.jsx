@@ -27,7 +27,8 @@ export const CommunityProvider = ({ children }) => {
       const session = await getCurrentSession();
       if (session?.user) {
         setUserId(session.user.id);
-        const { data: profile, error: pErr } = await supabase.from('profiles').select('nickname, role').eq('id', session.user.id).maybeSingle();
+        const { data: profiles } = await supabase.from('profiles').select('nickname, role').eq('id', session.user.id).limit(1);
+        const profile = profiles?.[0];
         console.log("DEBUG: Perfil Carregado ->", profile, "Email ->", session.user.email);
         
         if (profile?.nickname) setUserNickname(profile.nickname);
@@ -134,8 +135,8 @@ export const CommunityProvider = ({ children }) => {
 
   const getTopicDetail = async (topicId) => {
     if (!supabase) return null;
-    const { data, error } = await supabase.from('community_topics').select('*').eq('id', topicId).maybeSingle();
-    return error ? null : data;
+    const { data } = await supabase.from('community_topics').select('*').eq('id', topicId).limit(1);
+    return data?.[0] || null;
   };
 
   const getComments = async (topicId) => {
@@ -155,7 +156,8 @@ export const CommunityProvider = ({ children }) => {
       return false;
     }
 
-    const { data: profile } = await supabase.from('profiles').select('nickname').eq('id', session.user.id).maybeSingle();
+    const { data: profiles } = await supabase.from('profiles').select('nickname').eq('id', session.user.id).limit(1);
+    const profile = profiles?.[0];
     const nickname = profile?.nickname || 'Membro AFIC';
 
     const { error } = await supabase.from('community_comments').insert([{
@@ -193,18 +195,15 @@ export const CommunityProvider = ({ children }) => {
 
     const uid = session.user.id;
 
-    const { data, error: selError } = await sb
+    const { data: existingLikes } = await sb
       .from('community_likes')
-      .select('id')
+      .select('*')
       .eq('topic_id', topicId)
-      .eq('user_id', uid);
+      .eq('user_id', uid)
+      .limit(1);
+    const existingLike = existingLikes?.[0];
 
-    if (selError) {
-      console.error('toggleLike select error:', selError.message);
-      return;
-    }
-
-    if (data && data.length > 0) {
+    if (existingLike) {
       const { error } = await sb
         .from('community_likes')
         .delete()

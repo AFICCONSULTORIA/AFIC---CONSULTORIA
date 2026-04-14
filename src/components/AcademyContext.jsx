@@ -24,11 +24,12 @@ export const AcademyProvider = ({ children }) => {
         if (session.user.email === 'aficconsultoria@gmail.com') {
           setIsAdmin(true);
         } else {
-          const { data: profile } = await supabase
+          const { data: profileData } = await supabase
             .from('profiles')
             .select('role')
             .eq('id', session.user.id)
-            .maybeSingle();
+            .limit(1);
+          const profile = profileData?.[0];
             
           if (profile?.role === 'admin') {
             setIsAdmin(true);
@@ -73,7 +74,6 @@ export const AcademyProvider = ({ children }) => {
 
   // ─── PROGRESS SYNCING ───
   const markLessonAsCompleted = async (lessonId) => {
-    const supabase = getSupabase();
     if (!supabase || !userId) return;
 
     const { error } = await supabase
@@ -84,7 +84,6 @@ export const AcademyProvider = ({ children }) => {
   };
 
   const saveLessonFeedback = async (lessonId, rating, note) => {
-    const supabase = getSupabase();
     if (!supabase || !userId) return;
 
     const payload = { user_id: userId, lesson_id: lessonId };
@@ -97,20 +96,18 @@ export const AcademyProvider = ({ children }) => {
   };
 
   const getLessonUserProgress = async (lessonId) => {
-    const supabase = getSupabase();
     if (!supabase || !userId) return null;
-    const { data } = await supabase
+    const { data: progressData } = await supabase
       .from('academy_user_progress')
       .select('*')
       .eq('user_id', userId)
       .eq('lesson_id', lessonId)
-      .single();
+      .limit(1);
     
-    return data;
+    return progressData?.[0] || null;
   };
 
   const getAllProgress = async () => {
-    const supabase = getSupabase();
     if (!supabase || !userId) return [];
     const { data } = await supabase
       .from('academy_user_progress')
@@ -122,14 +119,13 @@ export const AcademyProvider = ({ children }) => {
 
   // ─── ADMIN ACTIONS (CRUD MODULOS) ───
   const addModule = async (title) => {
-    const supabase = getSupabase();
     
-    // DB
-    const { data, error } = await supabase
+    const { data: modData, error } = await supabase
       .from('academy_modules')
       .insert([{ title, locked_by_default: courseModules.length > 0 }])
       .select()
-      .single();
+      .limit(1);
+    const data = modData?.[0];
 
     if(!error && data) {
        // Optimistic UI
@@ -154,11 +150,12 @@ export const AcademyProvider = ({ children }) => {
         is_live: lessonData.isLive || false
     };
 
-    const { data, error } = await supabase
+    const { data: lessonData, error } = await supabase
       .from('academy_lessons')
       .insert([payload])
       .select()
-      .single();
+      .limit(1);
+    const data = lessonData?.[0];
 
     if(!error && data) {
        const mappedLesson = {

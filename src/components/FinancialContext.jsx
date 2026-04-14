@@ -65,7 +65,7 @@ export const FinancialProvider = ({ children }) => {
        category,
        payment_method: method
     };
-    const { data, error } = await supabase.from('afic_financial_transactions').insert([payload]).select().single();
+    const { data, error } = await supabase.from('afic_financial_transactions').insert([payload]).select().maybeSingle();
     if(!error && data) {
        setTransactions(prev => [data, ...prev]);
     }
@@ -88,7 +88,7 @@ export const FinancialProvider = ({ children }) => {
        installments,
        start_month: startMonth
     };
-    const { data, error } = await supabase.from('afic_credit_cards').insert([payload]).select().single();
+    const { data, error } = await supabase.from('afic_credit_cards').insert([payload]).select().maybeSingle();
     if(!error && data) {
        setCreditCards(prev => [data, ...prev]);
     }
