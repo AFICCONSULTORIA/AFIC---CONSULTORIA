@@ -153,7 +153,7 @@ const useConfirm = () => {
 
 // ──────────── Topic List ────────────
 const TopicList = ({ onOpenTopic, onNewTopic }) => {
-  const { topics, isLoaded, deleteTopic, setIsAdmin, isAdmin, announcements } = useCommunity();
+  const { topics, isLoaded, deleteTopic, setIsAdmin, isAdmin, announcements, userId } = useCommunity();
   const { confirm, Dialog } = useConfirm();
   const [deletingId, setDeletingId] = useState(null);
   const [search, setSearch] = useState('');

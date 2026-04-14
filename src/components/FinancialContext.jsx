@@ -30,8 +30,8 @@ export const FinancialProvider = ({ children }) => {
 
         // Fetch parallelly using Promise.all - Use limit(1) instead of maybeSingle
         const [txRes, ccRes, emRes] = await Promise.all([
-          supabase.from('afic_financial_transactions').select('*').eq('user_id', uId).order('created_at', { ascending: false }),
-          supabase.from('afic_credit_cards').select('*').eq('user_id', uId).order('created_at', { ascending: false }),
+          supabase.from('budget_transactions').select('*').eq('user_id', uId).order('created_at', { ascending: false }),
+          supabase.from('credit_cards').select('*').eq('user_id', uId).order('created_at', { ascending: false }),
           supabase.from('afic_emergency_fund').select('*').eq('user_id', uId).limit(1)
         ]);
 
@@ -110,6 +110,22 @@ export const FinancialProvider = ({ children }) => {
     if(!error) setEmergencyFund(fundData);
   };
 
+  // Calcula resumo do orçamento
+  const getBudgetSummary = () => {
+    let incomes = 0;
+    let fixed = 0;
+    let varC = 0;
+    
+    transactions.forEach(tx => {
+      if (tx.category === 'income') incomes += tx.amount;
+      else if (tx.category === 'fixed') fixed += tx.amount;
+      else if (tx.category === 'variable') varC += tx.amount;
+    });
+    
+    const net = incomes - (fixed + varC);
+    return { incomes, fixed, varC, net };
+  };
+
   return (
     <FinancialContext.Provider value={{
       isLoaded,
@@ -119,7 +135,8 @@ export const FinancialProvider = ({ children }) => {
       addTransaction,
       deleteTransaction,
       addCreditCard,
-      updateEmergencyFund
+      updateEmergencyFund,
+      getBudgetSummary
     }}>
       {children}
     </FinancialContext.Provider>

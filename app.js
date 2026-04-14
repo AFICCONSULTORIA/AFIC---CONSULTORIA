@@ -303,25 +303,33 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     function switchPage(pageName) {
-        // Hide all pages
-        pages.forEach(p => p.classList.add('page-hidden'));
-        
-        // Show target page
-        const targetId = pageMap[pageName];
-        if (targetId) {
-            const targetPage = document.getElementById(targetId);
-            if (targetPage) {
-                targetPage.classList.remove('page-hidden');
-                // Re-trigger animations
-                targetPage.style.animation = 'none';
-                targetPage.offsetHeight; // force reflow
-                targetPage.style.animation = '';
+        try {
+            // Hide all pages
+            pages.forEach(p => p.classList.add('page-hidden'));
+            
+            // Show target page
+            const targetId = pageMap[pageName];
+            if (targetId) {
+                const targetPage = document.getElementById(targetId);
+                if (targetPage) {
+                    targetPage.classList.remove('page-hidden');
+                    // Re-trigger animations
+                    targetPage.style.animation = 'none';
+                    targetPage.offsetHeight; // force reflow
+                    targetPage.style.animation = '';
+                }
             }
-        }
 
-        // If switching to tools, auto-calculate 
-        if (pageName === 'tools') {
-            setTimeout(() => calculateCompound(), 100);
+            // If switching to tools, auto-calculate 
+            if (pageName === 'tools') {
+                setTimeout(() => {
+                    try { calculateCompound(); } catch(e) { console.error('Calc error:', e); }
+                }, 100);
+            }
+            
+            console.log('Switched to page:', pageName);
+        } catch(err) {
+            console.error('switchPage error:', err);
         }
     }
     

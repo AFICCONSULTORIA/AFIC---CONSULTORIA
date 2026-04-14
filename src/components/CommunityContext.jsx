@@ -10,6 +10,26 @@ async function getCurrentSession() {
   return session || null;
 }
 
+// Define as funções PRIMEIRO, antes do useEffect
+const fetchAnnouncements = async (setAnnouncements) => {
+  if (!supabase) return;
+  const { data, error } = await supabase
+    .from('community_announcements')
+    .select('*')
+    .eq('active', true)
+    .order('created_at', { ascending: false });
+  if (!error && data) setAnnouncements(data);
+};
+
+const fetchTopics = async (setTopics) => {
+  if (!supabase) return;
+  const { data, error } = await supabase
+    .from('community_topics')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (!error) setTopics(data || []);
+};
+
 export const CommunityProvider = ({ children }) => {
   const [topics, setTopics] = useState([]);
   const [announcements, setAnnouncements] = useState([]); // [NOVO]
@@ -17,12 +37,19 @@ export const CommunityProvider = ({ children }) => {
   const [userId, setUserId] = useState(null);
   const [userNickname, setUserNickname] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false); // [NOVO]
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     async function init() {
       try {
-        if (!supabase) return;
+        if (!supabase) {
+          console.warn("CommunityContext: supabase not ready yet");
+          setIsLoaded(true);
+          return;
+        }
 
+        console.log("CommunityContext: Initializing...");
+        
         const session = await getCurrentSession();
         if (session?.user) {
           setUserId(session.user.id);
@@ -36,8 +63,8 @@ export const CommunityProvider = ({ children }) => {
             setIsAdmin(true);
           }
         }
-        await fetchAnnouncements();
-        await fetchTopics();
+        await fetchAnnouncements(setAnnouncements);
+        await fetchTopics(setTopics);
       } catch (err) {
         console.error("Community Load Failure:", err);
       } finally {
@@ -46,24 +73,7 @@ export const CommunityProvider = ({ children }) => {
     }
     
     init();
-  }, [fetchAnnouncements, fetchTopics]);
-
-  const fetchAnnouncements = useCallback(async () => {
-    const { data, error } = await supabase
-      .from('community_announcements')
-      .select('*')
-      .eq('active', true)
-      .order('created_at', { ascending: false });
-    if (!error && data) setAnnouncements(data);
-  }, []);
-
-  const fetchTopics = useCallback(async () => {
-    const { data, error } = await supabase
-      .from('community_topics')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (!error) setTopics(data || []);
-  }, []);
+  }, []); // Dependências vazias - funções não recriam
 
   const uploadFile = async (bucket, folder, file) => {
     if (!supabase || !file) return null;
@@ -95,7 +105,7 @@ export const CommunityProvider = ({ children }) => {
       cover_image_url: coverImageUrl,
     }]);
 
-    if (!error) await fetchTopics();
+    if (!error) await fetchTopics(setTopics);
     return !error;
   };
 
@@ -104,7 +114,7 @@ export const CommunityProvider = ({ children }) => {
     const coverImageUrl = await uploadFile('community-attachments', 'covers', coverFile);
     if (!coverImageUrl) return false;
     const { error } = await supabase.from('community_topics').update({ cover_image_url: coverImageUrl }).eq('id', topicId);
-    if (!error) await fetchTopics();
+    if (!error) await fetchTopics(setTopics);
     return !error;
   };
 
@@ -131,7 +141,7 @@ export const CommunityProvider = ({ children }) => {
       return false;
     }
 
-    await fetchTopics();
+    await fetchTopics(setTopics);
     return true;
   };
 
@@ -235,7 +245,7 @@ export const CommunityProvider = ({ children }) => {
           alert("Erro ao postar: " + error.message);
           return false;
         }
-        await fetchAnnouncements();
+        await fetchAnnouncements(setAnnouncements);
         return true;
       },
       deleteAnnouncement: async (annId) => {
@@ -261,7 +271,7 @@ export const CommunityProvider = ({ children }) => {
           return false;
         }
 
-        await fetchAnnouncements();
+        await fetchAnnouncements(setAnnouncements);
         return true;
       }
     }}>
