@@ -13,62 +13,46 @@ export const AcademyProvider = ({ children }) => {
   
   useEffect(() => {
     async function init() {
-      if (!supabase) return;
-
-      // Identify existing logged in user
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        setUserId(session.user.id);
-        
-        // Regra Master de Admin: E-mail oficial ou Role no perfil
-        if (session.user.email === 'aficconsultoria@gmail.com') {
-          setIsAdmin(true);
-        } else {
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', session.user.id)
-            .limit(1);
-          const profile = profileData?.[0];
-            
-          if (profile?.role === 'admin') {
+      try {
+        // Identify existing logged in user
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          setUserId(session.user.id);
+          
+          if (session.user.email === 'aficconsultoria@gmail.com') {
             setIsAdmin(true);
+          } else {
+            const { data: profileData } = await supabase.from('profiles').select('role').eq('id', session.user.id).limit(1);
+            if (profileData?.[0]?.role === 'admin') setIsAdmin(true);
           }
+        } else {
+          setUserId('00000000-0000-0000-0000-000000000000');
         }
-      } else {
-        setUserId('00000000-0000-0000-0000-000000000000');
-      }
 
-      // Fetch Modules & Lessons
-      const { data: modulesData, error } = await supabase
-        .from('academy_modules')
-        .select('*, academy_lessons(*)')
-        .order('created_at', { ascending: true });
+        // Fetch Modules & Lessons
+        const { data: modulesData, error } = await supabase
+          .from('academy_modules')
+          .select('*, academy_lessons(*)')
+          .order('created_at', { ascending: true });
 
-      if (error) {
-        console.error("Academy Context Error:", error);
+        if (!error && modulesData) {
+          const formattedModules = modulesData.map(mod => ({
+            id: mod.id,
+            title: mod.title,
+            isLocked: mod.locked_by_default,
+            lessons: (mod.academy_lessons || []).sort((a,b) => new Date(a.created_at) - new Date(b.created_at)).map(l => ({
+              id: l.id, title: l.title, duration: l.duration, videoUrl: l.video_url, pdfUrl: l.pdf_url, isLive: l.is_live
+            })),
+            quiz: null
+          }));
+          setCourseModules(formattedModules);
+        }
+      } catch (err) {
+        console.error("Critical Academy Load Failure:", err);
+      } finally {
+        setIsLoaded(true);
       }
-
-      if (!error && modulesData) {
-        const formattedModules = modulesData.map(mod => ({
-          id: mod.id,
-          title: mod.title,
-          isLocked: mod.locked_by_default,
-          lessons: (mod.academy_lessons || []).sort((a,b) => new Date(a.created_at) - new Date(b.created_at)).map(l => ({
-            id: l.id,
-            title: l.title,
-            duration: l.duration,
-            videoUrl: l.video_url,
-            pdfUrl: l.pdf_url,
-            isLive: l.is_live
-          })),
-          quiz: null
-        }));
-        setCourseModules(formattedModules);
-      }
-      setIsLoaded(true);
     }
-    
     init();
   }, []);
 

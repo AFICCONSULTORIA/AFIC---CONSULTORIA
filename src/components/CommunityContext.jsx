@@ -20,25 +20,29 @@ export const CommunityProvider = ({ children }) => {
 
   useEffect(() => {
     async function init() {
-      if (!supabase) return;
+      try {
+        if (!supabase) return;
 
-      const session = await getCurrentSession();
-      if (session?.user) {
-        setUserId(session.user.id);
-        const { data: profiles } = await supabase.from('profiles').select('nickname, role').eq('id', session.user.id).limit(1);
-        const profile = profiles?.[0];
-        console.log("DEBUG: Perfil Carregado ->", profile, "Email ->", session.user.email);
-        
-        if (profile?.nickname) setUserNickname(profile.nickname);
-        
-        // Regra de Ouro: Admin por role no banco OU por e-mail fixo corporativo
-        if (profile?.role === 'admin' || session.user.email === 'aficconsultoria@gmail.com') {
-          setIsAdmin(true);
+        const session = await getCurrentSession();
+        if (session?.user) {
+          setUserId(session.user.id);
+          const { data: profiles } = await supabase.from('profiles').select('nickname, role').eq('id', session.user.id).limit(1);
+          const profile = profiles?.[0];
+          console.log("DEBUG: Perfil Carregado ->", profile, "Email ->", session.user.email);
+          
+          if (profile?.nickname) setUserNickname(profile.nickname);
+          
+          if (profile?.role === 'admin' || session.user.email === 'aficconsultoria@gmail.com') {
+            setIsAdmin(true);
+          }
         }
+        await fetchAnnouncements();
+        await fetchTopics();
+      } catch (err) {
+        console.error("Community Load Failure:", err);
+      } finally {
+        setIsLoaded(true);
       }
-      await fetchAnnouncements();
-      await fetchTopics();
-      setIsLoaded(true);
     }
     
     init();
