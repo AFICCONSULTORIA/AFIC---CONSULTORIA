@@ -10,6 +10,8 @@ import { DashboardWidgets } from './components/DashboardWidgets';
 import { DebtDestroyerCalc, FeeAuditorCalc } from './components/Calculators';
 import { SovereignAcademy } from './components/SovereignAcademy';
 import { AcademyProvider } from './components/AcademyContext';
+import { FinancialProvider } from './components/FinancialContext';
+import { FinancialTools } from './components/FinancialTools';
 
 // Importa o script vanilla JS antigo, garantindo que rode normalmente
 import '../app.js';
@@ -18,8 +20,7 @@ import '../app.js';
 const ReactApp = () => {
   const dashboardRoot = document.getElementById('react-dashboard-root');
   const educationRoot = document.getElementById('react-education-root');
-  const toolDebtRoot = document.getElementById('react-tool-debt-root');
-  const toolFeeRoot = document.getElementById('react-tool-fee-root');
+  const toolsRoot = document.getElementById('react-tools-root');
 
   return (
     <UserProfileProvider>
@@ -36,23 +37,15 @@ const ReactApp = () => {
       )}
 
       {/* 
-        Portal 3: Aba Destruidor de Dívidas
+        Portal 3: Aba de Ferramentas Integrada (Substitui as isoladas)
       */}
-      {toolDebtRoot && createPortal(
-        <div>
-          <DebtDestroyerCalc />
+      {toolsRoot && createPortal(
+        <div className="pt-6">
+          <FinancialProvider>
+            <FinancialTools />
+          </FinancialProvider>
         </div>,
-        toolDebtRoot
-      )}
-
-      {/* 
-        Portal 4: Aba Auditoria de Custos
-      */}
-      {toolFeeRoot && createPortal(
-        <div>
-          <FeeAuditorCalc />
-        </div>,
-        toolFeeRoot
+        toolsRoot
       )}
 
       {/* 
