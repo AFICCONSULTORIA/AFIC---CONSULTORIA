@@ -3,8 +3,6 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 const CommunityContext = createContext();
 export const useCommunity = () => useContext(CommunityContext);
 
-// Reusa o cliente já criado pelo app.js (window.aficSupabase)
-// Sem criar novas instâncias — evita conflito de GoTrueClient
 function getSB() {
   return window.aficSupabase || null;
 }
@@ -16,8 +14,6 @@ export const CommunityProvider = ({ children }) => {
   const [userNickname, setUserNickname] = useState(null);
 
   useEffect(() => {
-    // app.js expõe window.aficSupabase no DOMContentLoaded
-    // Aguarda até ele estar disponível (máx 3s)
     let attempts = 0;
     const wait = setInterval(async () => {
       const sb = getSB();
@@ -48,41 +44,55 @@ export const CommunityProvider = ({ children }) => {
     if (!error && data) setTopics(data);
   }, []);
 
-  const createTopic = async (title, content, category, file) => {
+  // Upload a file to storage, returns public URL or null
+  const uploadFile = async (bucket, folder, file) => {
+    const sb = getSB();
+    if (!sb || !file) return null;
+    const ext = file.name.split('.').pop();
+    const path = `${folder}/${Math.random().toString(36).substring(2)}.${ext}`;
+    const { error } = await sb.storage.from(bucket).upload(path, file);
+    if (error) return null;
+    const { data } = sb.storage.from(bucket).getPublicUrl(path);
+    return data.publicUrl;
+  };
+
+  const createTopic = async (title, content, category, pdfFile, coverFile) => {
     const sb = getSB();
     if (!sb || !userId) return false;
-    let attachmentUrl = null;
-    if (file) {
-      const ext = file.name.split('.').pop();
-      const path = `teses/${Math.random().toString(36).substring(2)}.${ext}`;
-      const { error: upErr } = await sb.storage.from('community-attachments').upload(path, file);
-      if (!upErr) {
-        const { data: urlData } = sb.storage.from('community-attachments').getPublicUrl(path);
-        attachmentUrl = urlData.publicUrl;
-      }
-    }
+
+    const [attachmentUrl, coverImageUrl] = await Promise.all([
+      uploadFile('community-attachments', 'teses', pdfFile),
+      uploadFile('community-attachments', 'covers', coverFile),
+    ]);
+
     const { error } = await sb.from('community_topics').insert([{
-      user_id: userId, title, content, category, attachment_url: attachmentUrl
+      user_id: userId, title, content, category,
+      attachment_url: attachmentUrl,
+      cover_image_url: coverImageUrl,
     }]);
+
+    if (!error) await fetchTopics();
+    return !error;
+  };
+
+  const updateTopicCover = async (topicId, coverFile) => {
+    const sb = getSB();
+    if (!sb) return false;
+    const coverImageUrl = await uploadFile('community-attachments', 'covers', coverFile);
+    if (!coverImageUrl) return false;
+    const { error } = await sb.from('community_topics').update({ cover_image_url: coverImageUrl }).eq('id', topicId);
     if (!error) await fetchTopics();
     return !error;
   };
 
   const deleteTopic = async (topicId) => {
     const sb = getSB();
-    if (!sb) { console.error('deleteTopic: Supabase client not ready'); return false; }
-    console.log('deleteTopic: deleting', topicId);
-    const r1 = await sb.from('community_comments').delete().eq('topic_id', topicId);
-    console.log('comments delete:', r1.error || 'OK');
-    const r2 = await sb.from('community_likes').delete().eq('topic_id', topicId);
-    console.log('likes delete:', r2.error || 'OK');
-    const r3 = await sb.from('community_topics').delete().eq('id', topicId);
-    console.log('topic delete:', r3.error || 'OK', 'status:', r3.status);
-    if (!r3.error) {
-      await fetchTopics();
-      return true;
-    }
-    return false;
+    if (!sb) return false;
+    await sb.from('community_comments').delete().eq('topic_id', topicId);
+    await sb.from('community_likes').delete().eq('topic_id', topicId);
+    const { error } = await sb.from('community_topics').delete().eq('id', topicId);
+    if (!error) await fetchTopics();
+    return !error;
   };
 
   const getTopicDetail = async (topicId) => {
@@ -128,8 +138,8 @@ export const CommunityProvider = ({ children }) => {
   return (
     <CommunityContext.Provider value={{
       topics, isLoaded, userId, userNickname,
-      fetchTopics, createTopic, deleteTopic, getTopicDetail,
-      getComments, addComment, getLikes, toggleLike
+      fetchTopics, createTopic, deleteTopic, updateTopicCover,
+      getTopicDetail, getComments, addComment, getLikes, toggleLike
     }}>
       {children}
     </CommunityContext.Provider>
