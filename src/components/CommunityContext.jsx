@@ -120,11 +120,30 @@ export const CommunityProvider = ({ children }) => {
   const deleteTopic = async (topicId) => {
     const sb = getSB();
     if (!sb) return false;
+    
+    // Primeiro limpamos dependências
     await sb.from('community_comments').delete().eq('topic_id', topicId);
     await sb.from('community_likes').delete().eq('topic_id', topicId);
-    const { error } = await sb.from('community_topics').delete().eq('id', topicId);
-    if (!error) await fetchTopics();
-    return !error;
+    
+    const { data, error } = await sb
+      .from('community_topics')
+      .delete()
+      .eq('id', topicId)
+      .select();
+
+    if (error) {
+      console.error('Moderation error:', error);
+      alert("Erro ao moderar tópico: " + error.message);
+      return false;
+    }
+
+    if (!data || data.length === 0) {
+      alert("⚠️ Moderação recusada pelo banco. Verifique as permissões de acesso!");
+      return false;
+    }
+
+    await fetchTopics();
+    return true;
   };
 
   const getTopicDetail = async (topicId) => {
