@@ -59,6 +59,19 @@ const TopicList = ({ onOpenTopic, onNewTopic }) => {
   const { topics, isLoaded, deleteTopic } = useCommunity();
   const { confirm, Dialog } = useConfirm();
   const [deletingId, setDeletingId] = useState(null);
+  const [search, setSearch] = useState('');
+  const [activeCategory, setActiveCategory] = useState('Todos');
+
+  const CATEGORIES = ['Todos', 'Discussão', 'Deal Flow', 'Tributário', 'Macro', 'Tese de Investimento', 'Educação'];
+
+  const filtered = topics.filter(t => {
+    const matchCat = activeCategory === 'Todos' || t.category === activeCategory;
+    const q = search.toLowerCase();
+    const matchSearch = !q || t.title.toLowerCase().includes(q) || t.content.toLowerCase().includes(q);
+    return matchCat && matchSearch;
+  });
+
+  const countFor = (cat) => cat === 'Todos' ? topics.length : topics.filter(t => t.category === cat).length;
 
   const handleDelete = async (topicId) => {
     const ok = await confirm('Esta ação removerá o tópico, comentários e curtidas permanentemente.');
@@ -75,7 +88,7 @@ const TopicList = ({ onOpenTopic, onNewTopic }) => {
       {Dialog}
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-black text-gray-900">Fórum AFIC</h2>
           <p className="text-sm text-gray-400 mt-1">Deal flow, debates e inteligência institucional.</p>
@@ -86,16 +99,70 @@ const TopicList = ({ onOpenTopic, onNewTopic }) => {
         </button>
       </div>
 
+      {/* Search Bar */}
+      <div className="relative mb-4">
+        <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input
+          type="text"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Buscar tópicos por título ou conteúdo..."
+          className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition-all"
+        />
+        {search && (
+          <button onClick={() => setSearch('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        )}
+      </div>
+
+      {/* Category Filter Chips */}
+      <div className="flex gap-2 flex-wrap mb-6">
+        {CATEGORIES.map(cat => {
+          const count = countFor(cat);
+          const isActive = activeCategory === cat;
+          return (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                isActive
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'bg-white border border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600'
+              }`}
+            >
+              {cat}
+              <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-400'}`}>
+                {count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Results summary */}
+      {(search || activeCategory !== 'Todos') && (
+        <p className="text-xs text-gray-400 mb-4">
+          {filtered.length} {filtered.length === 1 ? 'resultado' : 'resultados'}
+          {search && <span> para "<span className="font-semibold text-gray-600">{search}</span>"</span>}
+          {activeCategory !== 'Todos' && <span> em <span className="font-semibold text-blue-600">{activeCategory}</span></span>}
+        </p>
+      )}
+
       {/* Topic Cards */}
       <div className="space-y-4">
-        {topics.length === 0 && (
+        {filtered.length === 0 && (
           <div className="bg-white rounded-xl border border-gray-100 p-12 text-center">
             <p className="text-gray-400 font-semibold">Nenhuma publicação encontrada.</p>
-            <p className="text-xs text-gray-300 mt-2">Seja o primeiro a contribuir para a comunidade.</p>
+            <p className="text-xs text-gray-300 mt-2">
+              {search ? `Sem resultados para "${search}"` : 'Seja o primeiro a contribuir para a comunidade.'}
+            </p>
           </div>
         )}
 
-        {topics.map(topic => {
+        {filtered.map(topic => {
           const author = topic.nickname || 'Membro AFIC';
           const isDeleting = deletingId === topic.id;
           return (
