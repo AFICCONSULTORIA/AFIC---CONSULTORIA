@@ -37,10 +37,9 @@ const TopicList = ({ onOpenTopic, onNewTopic }) => {
           return (
             <div
               key={topic.id}
-              onClick={() => onOpenTopic(topic.id)}
-              className="bg-white rounded-xl border border-gray-100 p-6 cursor-pointer transition-all hover:shadow-md hover:border-gray-200 group"
+              className="bg-white rounded-xl border border-gray-100 p-6 transition-all hover:shadow-md hover:border-gray-200 group"
             >
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start justify-between gap-4 cursor-pointer" onClick={() => onOpenTopic(topic.id)}>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-2">
                     <span className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">{topic.category}</span>
@@ -64,11 +63,11 @@ const TopicList = ({ onOpenTopic, onNewTopic }) => {
                 <span className="font-semibold text-gray-600">{author}</span>
                 <span>{fmtDate(topic.created_at)}</span>
                 <button
-                   onClickCapture={(e) => { e.stopPropagation(); e.preventDefault(); e.nativeEvent.stopImmediatePropagation(); if(window.confirm('Excluir este tópico permanentemente?')) deleteTopic(topic.id); }}
-                   className="ml-auto p-2 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors relative z-10"
+                   onClick={() => { if(window.confirm('Excluir este tópico permanentemente?')) deleteTopic(topic.id); }}
+                   className="ml-auto p-2 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
                    title="Excluir tópico"
                 >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16" className="pointer-events-none"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                 </button>
               </div>
             </div>
