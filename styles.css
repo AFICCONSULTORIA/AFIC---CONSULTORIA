@@ -139,14 +139,27 @@ h1, h2, h3, h4, h5, h6 {
 
 .logo {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    gap: 2px;
 }
 
-.logo-image {
-    max-height: 80px;
-    width: auto;
-    object-fit: contain;
-    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.2));
+.logo-main {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--bg-white);
+    letter-spacing: -0.03em;
+    line-height: 1;
+}
+
+.logo-sub {
+    font-family: var(--font-display);
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--gold-rich);
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    margin-top: 4px;
 }
 
 /* ─── NAV LINKS ─── */
