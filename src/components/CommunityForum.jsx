@@ -5,7 +5,7 @@ const fmtDate = (iso) => new Date(iso).toLocaleDateString('pt-BR', { day: '2-dig
 
 // ──────────── Topic List (Home) ────────────
 const TopicList = ({ onOpenTopic, onNewTopic }) => {
-  const { topics, isLoaded } = useCommunity();
+  const { topics, isLoaded, deleteTopic, userId } = useCommunity();
 
   if (!isLoaded) return <div className="text-center p-16 text-gray-400 font-bold animate-pulse">Sincronizando Inteligência Coletiva...</div>;
 
@@ -63,6 +63,13 @@ const TopicList = ({ onOpenTopic, onNewTopic }) => {
               <div className="flex items-center gap-4 mt-4 text-xs text-gray-400">
                 <span className="font-semibold text-gray-600">{author}</span>
                 <span>{fmtDate(topic.created_at)}</span>
+                <button
+                   onClick={(e) => { e.stopPropagation(); if(window.confirm('Excluir este tópico permanentemente?')) deleteTopic(topic.id); }}
+                   className="ml-auto text-gray-300 hover:text-red-500 transition-colors"
+                   title="Excluir tópico"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
               </div>
             </div>
           );
@@ -148,7 +155,7 @@ const NewTopicModal = ({ isOpen, onClose }) => {
 
 // ──────────── Topic Detail ────────────
 const TopicDetail = ({ topicId, onBack }) => {
-  const { getTopicDetail, getComments, addComment, getLikes, toggleLike, userId } = useCommunity();
+  const { getTopicDetail, getComments, addComment, getLikes, toggleLike, deleteTopic, userId } = useCommunity();
   const [topic, setTopic] = useState(null);
   const [comments, setComments] = useState([]);
   const [likes, setLikes] = useState({ count: 0, userLiked: false });
@@ -206,11 +213,20 @@ const TopicDetail = ({ topicId, onBack }) => {
           <span className="text-xs text-gray-400">{fmtDate(topic.created_at)}</span>
         </div>
         <h1 className="text-3xl font-black text-gray-900 leading-tight">{topic.title}</h1>
-        <div className="flex items-center gap-3 mt-4">
-          <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-xs font-black text-gray-500">
-            {author.substring(0, 2).toUpperCase()}
+        <div className="flex items-center justify-between mt-4">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-xs font-black text-gray-500">
+              {author.substring(0, 2).toUpperCase()}
+            </div>
+            <span className="text-sm font-bold text-gray-700">{author}</span>
           </div>
-          <span className="text-sm font-bold text-gray-700">{author}</span>
+          <button
+            onClick={async () => { if(window.confirm('Excluir este tópico e todos os seus comentários?')) { await deleteTopic(topicId); onBack(); } }}
+            className="flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-red-500 transition-colors bg-gray-50 hover:bg-red-50 px-4 py-2 rounded-lg"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            Excluir Tópico
+          </button>
         </div>
       </div>
 

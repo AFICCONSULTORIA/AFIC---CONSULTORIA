@@ -131,10 +131,21 @@ export const CommunityProvider = ({ children }) => {
     }
   };
 
+  const deleteTopic = async (topicId) => {
+    const sb = getSupabase();
+    if (!sb) return false;
+    // Cascade: remove comments and likes first
+    await sb.from('community_comments').delete().eq('topic_id', topicId);
+    await sb.from('community_likes').delete().eq('topic_id', topicId);
+    const { error } = await sb.from('community_topics').delete().eq('id', topicId);
+    if (!error) await fetchTopics();
+    return !error;
+  };
+
   return (
     <CommunityContext.Provider value={{
       topics, isLoaded, userId, userNickname,
-      fetchTopics, createTopic, getTopicDetail,
+      fetchTopics, createTopic, deleteTopic, getTopicDetail,
       getComments, addComment, getLikes, toggleLike
     }}>
       {children}
