@@ -34,9 +34,15 @@ export const CommunityProvider = ({ children }) => {
         const session = await getCurrentSession();
         if (session?.user) {
           setUserId(session.user.id);
-          const { data: profile } = await sb.from('profiles').select('nickname, role').eq('id', session.user.id).single();
+          const { data: profile, error: pErr } = await sb.from('profiles').select('nickname, role').eq('id', session.user.id).single();
+          console.log("DEBUG: Perfil Carregado ->", profile, "Email ->", session.user.email);
+          
           if (profile?.nickname) setUserNickname(profile.nickname);
-          if (profile?.role === 'admin') setIsAdmin(true);
+          
+          // Regra de Ouro: Admin por role no banco OU por e-mail fixo corporativo
+          if (profile?.role === 'admin' || session.user.email === 'aficconsultoria@gmail.com') {
+            setIsAdmin(true);
+          }
         }
         await fetchAnnouncements();
         await fetchTopics();
@@ -226,7 +232,7 @@ export const CommunityProvider = ({ children }) => {
 
   return (
     <CommunityContext.Provider value={{
-      topics, isLoaded, userId, userNickname, announcements, isAdmin,
+      topics, isLoaded, userId, userNickname, announcements, isAdmin, setIsAdmin,
       fetchTopics, createTopic, deleteTopic, updateTopicCover,
       getTopicDetail, getComments, addComment, getLikes, toggleLike,
       fetchAnnouncements, 

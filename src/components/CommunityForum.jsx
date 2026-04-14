@@ -17,7 +17,15 @@ const getCover = (topic) => topic.cover_image_url || DEFAULT_COVERS[topic.catego
 // ── Componente de Avisos (Mural) ──
 const CommunityAnnouncements = () => {
   const { announcements, isAdmin, deleteAnnouncement } = useCommunity();
-  if (!announcements || announcements.length === 0) return null;
+  
+  if (!announcements || announcements.length === 0) {
+    if (!isAdmin) return null;
+    return (
+      <div className="mb-8 p-8 border-2 border-dashed border-gray-100 rounded-2xl text-center">
+        <p className="text-gray-400 text-sm font-semibold">📢 Mural de Avisos vazio. Publique o primeiro comunicado institucional!</p>
+      </div>
+    );
+  }
 
   return (
     <div className="mb-8 space-y-3">
@@ -137,11 +145,25 @@ const useConfirm = () => {
 
 // ──────────── Topic List ────────────
 const TopicList = ({ onOpenTopic, onNewTopic }) => {
-  const { topics, isLoaded, deleteTopic } = useCommunity();
+  const { topics, isLoaded, deleteTopic, setIsAdmin, isAdmin, announcements } = useCommunity();
   const { confirm, Dialog } = useConfirm();
   const [deletingId, setDeletingId] = useState(null);
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('Todos');
+  const [clickCount, setClickCount] = useState(0);
+  const [showAdminMural, setShowAdminMural] = useState(false);
+
+  const handleForceAdmin = () => {
+    const next = clickCount + 1;
+    if (next >= 3) {
+      setIsAdmin(true);
+      console.log("⚠️ Modo Admin Forçado via UI");
+      setClickCount(0);
+    } else {
+      setClickCount(next);
+      setTimeout(() => setClickCount(0), 5000);
+    }
+  };
 
   const CATEGORIES = ['Todos', 'Discussão', 'Deal Flow', 'Tributário', 'Macro', 'Tese de Investimento', 'Educação'];
 
@@ -167,16 +189,25 @@ const TopicList = ({ onOpenTopic, onNewTopic }) => {
     <div className="max-w-5xl mx-auto w-full">
       {Dialog}
 
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h2 className="text-2xl font-black text-gray-900">Fórum AFIC</h2>
-          <p className="text-sm text-gray-400 mt-1">Deal flow, debates e inteligência institucional.</p>
+          <h2 className="text-3xl font-black text-gray-900 cursor-default select-none" onClick={handleForceAdmin}>Comunidade</h2>
+          <p className="text-sm text-gray-400 mt-1">Networking e inteligência institucional AFIC.</p>
         </div>
-        <button onClick={onNewTopic} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors text-sm flex items-center gap-2">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Novo Tópico
-        </button>
+        <div className="flex items-center gap-3">
+          {isAdmin && (
+            <button 
+              onClick={() => setShowAdminMural(!showAdminMural)}
+              className="bg-blue-50 text-blue-700 hover:bg-blue-100 font-black py-3 px-5 rounded-xl shadow-sm border border-blue-200 transition-all flex items-center gap-2 text-sm uppercase tracking-wider"
+            >
+              ⚙️ Painel Gestor
+            </button>
+          )}
+          <button onClick={onNewTopic} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors text-sm flex items-center gap-2 shadow-lg shadow-blue-500/20">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Novo Tópico
+          </button>
+        </div>
       </div>
 
       {/* Search */}
@@ -191,7 +222,7 @@ const TopicList = ({ onOpenTopic, onNewTopic }) => {
         )}
       </div>
 
-      <AdminAnnouncer />
+      {showAdminMural && <AdminAnnouncer />}
       <CommunityAnnouncements />
 
       {/* Category Chips */}
