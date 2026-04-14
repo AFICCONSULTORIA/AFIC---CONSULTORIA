@@ -63,7 +63,10 @@ export const SovereignAcademy = () => {
   // Calcula Progresso Total
   let totalLessons = 0;
   courseModules?.forEach(m => { totalLessons += m.lessons.length });
-  const progressPercentage = totalLessons === 0 ? 0 : Math.round((completedLessonIds.length / totalLessons) * 100);
+  let progressPercentage = totalLessons === 0 ? 0 : Math.round((completedLessonIds.length / totalLessons) * 100);
+
+  // === MOCK PARA TESTE DO CERTIFICADO ===
+  progressPercentage = 100; 
 
   // Fallback initial lesson selection
   useEffect(() => {
