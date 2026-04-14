@@ -8,6 +8,7 @@ export const AcademyProvider = ({ children }) => {
   const [courseModules, setCourseModules] = useState([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [userId, setUserId] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   
   // Create a singleton instance of supabase for the Academy
   const getSupabase = () => {
@@ -28,6 +29,23 @@ export const AcademyProvider = ({ children }) => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         setUserId(session.user.id);
+        
+        // Regra Master de Admin: E-mail oficial ou Role no perfil
+        if (session.user.email === 'aficconsultoria@gmail.com') {
+          console.log("Academy: Admin Master identificado por e-mail.");
+          setIsAdmin(true);
+        } else {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', session.user.id)
+            .single();
+            
+          if (profile?.role === 'admin') {
+            console.log("Academy: Admin identificado por role.");
+            setIsAdmin(true);
+          }
+        }
       } else {
         // Mock ID for test/guest purposes temporarily to allow progress local
         setUserId('00000000-0000-0000-0000-000000000000');
@@ -207,6 +225,8 @@ export const AcademyProvider = ({ children }) => {
     <AcademyContext.Provider value={{
       courseModules,
       isLoaded,
+      isAdmin,
+      setIsAdmin,
       addModule,
       addLesson,
       deleteLesson,

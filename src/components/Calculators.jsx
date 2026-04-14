@@ -31,8 +31,8 @@ export const DebtDestroyerCalc = () => {
         {/* Área Esquerda (Inputs) */}
         <div className="md:col-span-3 p-8 border-b md:border-b-0 md:border-r border-gray-100">
           <div className="mb-8">
-            <h2 className="text-2xl font-black text-gray-900 tracking-tight">Destruidor de Dívidas</h2>
-            <p className="text-sm text-gray-500 mt-1">Insira os termos do banco e veja o real custo da espera.</p>
+            <h2 className="text-2xl font-black text-[#0a2540] tracking-tight uppercase">Destruidor de Dívidas</h2>
+            <p className="text-xs text-gray-400 mt-1 font-bold uppercase tracking-widest">Auditoria de Passivos Financeiros</p>
           </div>
 
           <div className="space-y-6">
@@ -71,13 +71,14 @@ export const DebtDestroyerCalc = () => {
         </div>
 
         {/* Área Direita (Resultados de Alto Impacto) */}
-        <div className="md:col-span-2 bg-gray-50 p-8 flex flex-col justify-center border-t md:border-t-0 md:border-l border-gray-200">
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6">Projeção Cruel</h3>
+        <div className="md:col-span-2 bg-[#0a2540] p-8 flex flex-col justify-center border-t md:border-t-0 border-white/10 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 -rotate-45 translate-x-16 -translate-y-16 pointer-events-none" />
+          <h3 className="text-[10px] font-black text-amber-500/50 uppercase tracking-[0.2em] mb-6">Projeção Estratégica</h3>
           
           <div className="space-y-5">
-            <div className={`bg-white p-5 rounded-xl border ${isUnpayable ? 'border-red-500' : 'border-gray-200'} shadow-sm`}>
-              <p className="text-sm text-gray-500 font-semibold mb-1">Meses até a quitação</p>
-              <p className={`text-4xl font-black ${isUnpayable ? 'text-red-600' : 'text-blue-600'}`}>
+            <div className={`bg-white/5 backdrop-blur-md p-5 rounded-xl border ${isUnpayable ? 'border-red-500/50' : 'border-white/10'} shadow-xl`}>
+              <p className="text-xs text-white/50 font-bold uppercase tracking-wider mb-2">Meses até a quitação</p>
+              <p className={`text-5xl font-black ${isUnpayable ? 'text-red-500' : 'text-amber-500'}`}>
                 {isUnpayable ? '∞' : monthsToPayoff}
               </p>
               <p className="text-xs text-gray-400 mt-2 font-medium">
@@ -87,12 +88,12 @@ export const DebtDestroyerCalc = () => {
               </p>
             </div>
 
-            <div className="bg-white p-5 rounded-xl border border-red-100 shadow-sm">
-              <p className="text-sm text-gray-500 font-semibold mb-1">Total de juros pagos</p>
-              <p className="text-3xl font-bold text-red-500">
+            <div className="bg-red-500/10 backdrop-blur-md p-5 rounded-xl border border-red-500/20 shadow-xl">
+              <p className="text-xs text-red-200/50 font-bold uppercase tracking-wider mb-2">Total de juros pagos</p>
+              <p className="text-3xl font-black text-red-500">
                 {isUnpayable ? '---' : `R$ ${Math.max(0, totalInterest).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
               </p>
-              <p className="text-xs text-red-400 mt-2 font-medium">Dinheiro que evapora 100% para o banco</p>
+              <p className="text-[10px] text-red-400/60 mt-2 font-bold uppercase tracking-tight">Vazamento de Capital para o Banco</p>
             </div>
           </div>
         </div>
@@ -128,8 +129,8 @@ export const FeeAuditorCalc = () => {
         {/* Área Esquerda (Inputs) */}
         <div className="md:col-span-3 p-8 border-b md:border-b-0 md:border-r border-gray-100">
           <div className="mb-8">
-            <h2 className="text-2xl font-black text-gray-900 tracking-tight">Auditoria de Custos Ocultos</h2>
-            <p className="text-sm text-gray-500 mt-1">Exponha o roubo silencioso escondido em taxas que parecem inofensivas.</p>
+            <h2 className="text-2xl font-black text-[#0a2540] tracking-tight uppercase">Auditoria de Custos</h2>
+            <p className="text-[10px] text-gray-400 mt-1 font-bold uppercase tracking-[0.2em]">Expondo a Ineficiência de Taxas</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -175,8 +176,9 @@ export const FeeAuditorCalc = () => {
         </div>
 
         {/* Área Direita (Modo Contraste para o Choque) */}
-        <div className="md:col-span-2 bg-gray-900 text-white p-8 flex flex-col justify-center">
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6 border-b border-gray-800 pb-2">O Impacto Real</h3>
+        <div className="md:col-span-2 bg-[#0a2540] text-white p-8 flex flex-col justify-center relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#cda434]/5 -rotate-45 translate-x-16 -translate-y-16 pointer-events-none" />
+          <h3 className="text-[10px] font-black text-amber-500/50 uppercase tracking-[0.2em] mb-6 border-b border-white/5 pb-2">Análise de Impacto</h3>
           
           <div className="space-y-8">
             <div>

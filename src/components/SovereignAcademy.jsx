@@ -43,8 +43,9 @@ const CertificateModal = ({ onClose, progress }) => {
 };
 
 export const SovereignAcademy = () => {
-  const { courseModules, isLoaded, markLessonAsCompleted, saveLessonFeedback, getLessonUserProgress, getAllProgress } = useAcademy();
+  const { courseModules, isLoaded, isAdmin, setIsAdmin, markLessonAsCompleted, saveLessonFeedback, getLessonUserProgress, getAllProgress } = useAcademy();
   const [isAdminMode, setIsAdminMode] = useState(false);
+  const [debugClicks, setDebugClicks] = useState(0);
 
   const [activeModuleId, setActiveModuleId] = useState(1);
   const [activeLessonId, setActiveLessonId] = useState(null);
@@ -203,7 +204,19 @@ export const SovereignAcademy = () => {
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8 flex flex-col md:flex-row items-center justify-between gap-6">
          <div className="flex-1 w-full relative">
             <div className="flex justify-between text-sm font-bold text-gray-600 mb-2">
-               <span>Seu Progresso de Formação</span>
+               <span 
+                 onClick={() => {
+                   setDebugClicks(prev => prev + 1);
+                   if (debugClicks >= 2) {
+                     setIsAdmin(true);
+                     alert("Acesso Administrativo (Debug) habilitado nesta sessão.");
+                     setDebugClicks(0);
+                   }
+                 }}
+                 className="cursor-default select-none"
+               >
+                 Seu Progresso de Formação
+               </span>
                <span className={progressPercentage === 100 ? "text-[#cda434]" : ""}>{progressPercentage}% Concluído</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-3">
@@ -222,12 +235,14 @@ export const SovereignAcademy = () => {
                🎓 Emitir Certificado
              </button>
            )}
-           <button 
-             onClick={() => setIsAdminMode(true)}
-             className="shrink-0 text-xs bg-gray-100 text-gray-800 hover:bg-gray-200 font-bold py-3 px-4 rounded-lg shadow-sm border border-gray-300 transition-colors"
-           >
-             ⚙️ Estúdio Gestor AFIC
-           </button>
+            {isAdmin && (
+              <button 
+                onClick={() => setIsAdminMode(true)}
+                className="shrink-0 text-xs bg-[#0a2540] text-amber-500 hover:bg-blue-900 font-bold py-3 px-4 rounded-lg shadow-sm border border-[#cda434]/30 transition-colors"
+              >
+                ⚙️ Estúdio Gestor AFIC
+              </button>
+            )}
          </div>
       </div>
 

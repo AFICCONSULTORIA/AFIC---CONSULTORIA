@@ -63,7 +63,7 @@ const BudgetTab = () => {
                     </select>
                  </div>
               </div>
-              <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">Lançar Movimentação</button>
+              <button type="submit" className="w-full bg-[#0a2540] hover:bg-blue-900 text-amber-500 font-bold py-3 px-4 rounded-lg transition-all shadow-md transform hover:-translate-y-0.5">Lançar Movimentação</button>
            </form>
          </div>
 
@@ -91,11 +91,12 @@ const BudgetTab = () => {
        </div>
 
        <div>
-         <div className="bg-blue-50 border border-blue-100 rounded-xl p-6 mb-6">
-            <p className="text-sm text-blue-600 font-bold mb-1">Resultado Líquido</p>
-            <h2 className="text-4xl font-black text-blue-900">R$ {fmtBR(net)}</h2>
-            <p className="text-xs text-blue-500 mt-2">Diferença Custo/Receita (Mês Atual)</p>
-         </div>
+          <div className="bg-[#0a2540] border border-[#cda434]/20 rounded-xl p-6 mb-6 shadow-xl relative overflow-hidden">
+             <div className="absolute top-0 right-0 w-32 h-32 bg-[#cda434]/5 -rotate-45 translate-x-16 -translate-y-16 pointer-events-none" />
+             <p className="text-sm text-amber-500/80 font-bold mb-1 uppercase tracking-widest">Resultado Líquido</p>
+             <h2 className="text-4xl font-black text-white">R$ {fmtBR(net)}</h2>
+             <p className="text-xs text-amber-500/40 mt-2 font-medium">Diferença Custo/Receita (Mês Atual)</p>
+          </div>
 
          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <h3 className="text-lg font-bold text-gray-900 mb-4">Algoritmo 50/30/20</h3>
@@ -174,7 +175,7 @@ const CreditCardTab = () => {
                         <input type="month" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={month} onChange={e=>setMonth(e.target.value)} required/>
                      </div>
                   </div>
-                  <button type="submit" className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">Assumir Dívida</button>
+                   <button type="submit" className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition-all shadow-md transform hover:-translate-y-0.5">Assumir Dívida</button>
                </form>
             </div>
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
@@ -248,15 +249,15 @@ const EmergencyTab = () => {
                   <label className="block text-sm font-semibold text-gray-700 mb-1">Aporte Mensal Destinado (R$)</label>
                   <input type="number" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={aporte} onChange={e=>setAporte(e.target.value)}/>
                </div>
-               <button onClick={handleSave} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg transition-colors mt-2">Gravar Barreira</button>
+                <button onClick={handleSave} className="w-full bg-[#0a2540] hover:bg-blue-900 text-amber-500 font-bold py-3 px-4 rounded-lg transition-all shadow-md mt-2">Gravar Barreira</button>
             </div>
          </div>
-         <div>
-            <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-6 mb-6">
-               <p className="text-sm text-emerald-600 font-bold mb-1">Tamanho Matemático Ideal</p>
-               <h2 className="text-4xl font-black text-emerald-900">R$ {fmtBR(tgt)}</h2>
-               <p className="text-xs text-emerald-500 mt-2">Muralha anti-falência baseada no custo fixo.</p>
-            </div>
+          <div>
+             <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-6 mb-6 shadow-sm">
+                <p className="text-sm text-emerald-600 font-bold mb-1 uppercase tracking-wider">Tamanho Matemático Ideal</p>
+                <h2 className="text-4xl font-black text-emerald-900">R$ {fmtBR(tgt)}</h2>
+                <p className="text-xs text-emerald-500 mt-2">Muralha anti-falência baseada no custo fixo.</p>
+             </div>
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                <h3 className="text-sm font-bold text-gray-700 mb-2">Progresso do Sistema Defensivo ({pct.toFixed(1)}%)</h3>
                <div className="w-full bg-gray-200 rounded-full h-4 mb-4">
@@ -357,14 +358,14 @@ const CompoundInterestTab = () => {
          </div>
 
          <div>
-            {/* Crossover */}
-            <div className="bg-amber-50 border border-amber-100 rounded-xl p-6 mb-6">
-               <p className="text-sm text-amber-600 font-bold mb-1">Ponto de Ignição (Crossover)</p>
-               <h2 className="text-4xl font-black text-amber-900">
-                  {crossoverYear ? `Ano ${crossoverYear}` : `Acima de ${years} anos`}
-               </h2>
-               <p className="text-xs text-amber-500 mt-2">Quando os juros superam o valor investido do bolso.</p>
-            </div>
+             {/* Crossover */}
+             <div className="bg-[#cda434] border border-[#b8860b] rounded-xl p-6 mb-6 shadow-lg text-[#0a2540]">
+                <p className="text-sm font-black mb-1 uppercase tracking-widest opacity-70">Ponto de Ignição (Crossover)</p>
+                <h2 className="text-4xl font-black">
+                   {crossoverYear ? `Ano ${crossoverYear}` : `Acima de ${years} anos`}
+                </h2>
+                <p className="text-xs mt-2 font-bold opacity-60">Quando os juros superam o valor investido do bolso.</p>
+             </div>
 
             <div className="grid grid-cols-2 gap-4 mb-6">
                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
@@ -430,15 +431,15 @@ export const FinancialTools = () => {
    return (
      <div className="max-w-6xl mx-auto w-full">
          <div className="mb-8 border-b border-gray-200 flex overflow-x-auto no-scrollbar">
-            {tabs.map(tab => (
-               <button 
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`px-6 py-4 text-sm font-bold whitespace-nowrap transition-colors border-b-2 ${activeTab === tab.id ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-900 border-b-transparent hover:border-gray-200'}`}
-               >
-                  {tab.label}
-               </button>
-            ))}
+             {tabs.map(tab => (
+                <button 
+                   key={tab.id}
+                   onClick={() => setActiveTab(tab.id)}
+                   className={`px-6 py-4 text-xs font-black uppercase tracking-widest whitespace-nowrap transition-all border-b-2 ${activeTab === tab.id ? 'border-[#cda434] text-[#0a2540] bg-gray-50' : 'border-transparent text-gray-400 hover:text-gray-900 border-b-transparent hover:bg-gray-50'}`}
+                >
+                   {tab.label}
+                </button>
+             ))}
          </div>
 
          <div className="w-full">
