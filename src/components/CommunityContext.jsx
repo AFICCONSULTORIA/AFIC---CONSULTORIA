@@ -7,6 +7,14 @@ function getSB() {
   return window.aficSupabase || null;
 }
 
+// Busca sessão atualizada do Supabase — mais confiável que o state userId
+async function getCurrentSession() {
+  const sb = getSB();
+  if (!sb) return null;
+  const { data: { session } } = await sb.auth.getSession();
+  return session || null;
+}
+
 export const CommunityProvider = ({ children }) => {
   const [topics, setTopics] = useState([]);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -21,7 +29,7 @@ export const CommunityProvider = ({ children }) => {
       if (sb || attempts > 30) {
         clearInterval(wait);
         if (!sb) return;
-        const { data: { session } } = await sb.auth.getSession();
+        const session = await getCurrentSession();
         if (session?.user) {
           setUserId(session.user.id);
           const { data: profile } = await sb.from('profiles').select('nickname').eq('id', session.user.id).single();
@@ -58,7 +66,10 @@ export const CommunityProvider = ({ children }) => {
 
   const createTopic = async (title, content, category, pdfFile, coverFile) => {
     const sb = getSB();
-    if (!sb || !userId) return false;
+    const session = await getCurrentSession();
+    if (!sb || !session?.user) return false;
+
+    const uid = session.user.id;
 
     const [attachmentUrl, coverImageUrl] = await Promise.all([
       uploadFile('community-attachments', 'teses', pdfFile),
@@ -66,7 +77,7 @@ export const CommunityProvider = ({ children }) => {
     ]);
 
     const { error } = await sb.from('community_topics').insert([{
-      user_id: userId, title, content, category,
+      user_id: uid, title, content, category,
       attachment_url: attachmentUrl,
       cover_image_url: coverImageUrl,
     }]);
@@ -105,33 +116,96 @@ export const CommunityProvider = ({ children }) => {
   const getComments = async (topicId) => {
     const sb = getSB();
     if (!sb) return [];
-    const { data, error } = await sb.from('community_comments').select('*').eq('topic_id', topicId).order('created_at', { ascending: true });
+    const { data, error } = await sb
+      .from('community_comments')
+      .select('*')
+      .eq('topic_id', topicId)
+      .order('created_at', { ascending: true });
     return error ? [] : (data || []);
   };
 
   const addComment = async (topicId, content) => {
     const sb = getSB();
-    if (!sb || !userId) return false;
-    const { error } = await sb.from('community_comments').insert([{ topic_id: topicId, user_id: userId, content }]);
-    return !error;
+    const session = await getCurrentSession();
+    if (!sb || !session?.user) {
+      console.error('addComment: usuário não autenticado');
+      return false;
+    }
+
+    const uid = session.user.id;
+
+    // Busca nickname atualizado
+    const { data: profile } = await sb
+      .from('profiles')
+      .select('nickname')
+      .eq('id', uid)
+      .single();
+
+    const nickname = profile?.nickname || null;
+
+    const { error } = await sb.from('community_comments').insert([{
+      topic_id: topicId,
+      user_id: uid,
+      content,
+      nickname,
+    }]);
+
+    if (error) {
+      console.error('addComment error:', error.message, error.details);
+      return false;
+    }
+    return true;
   };
 
   const getLikes = async (topicId) => {
     const sb = getSB();
     if (!sb) return { count: 0, userLiked: false };
-    const { data, count } = await sb.from('community_likes').select('*', { count: 'exact' }).eq('topic_id', topicId);
-    const userLiked = (data || []).some(l => l.user_id === userId);
+
+    const session = await getCurrentSession();
+    const uid = session?.user?.id || null;
+
+    const { data, count } = await sb
+      .from('community_likes')
+      .select('*', { count: 'exact' })
+      .eq('topic_id', topicId);
+
+    const userLiked = uid ? (data || []).some(l => l.user_id === uid) : false;
     return { count: count || 0, userLiked };
   };
 
   const toggleLike = async (topicId) => {
     const sb = getSB();
-    if (!sb || !userId) return;
-    const { data } = await sb.from('community_likes').select('id').eq('topic_id', topicId).eq('user_id', userId);
+    const session = await getCurrentSession();
+    if (!sb || !session?.user) {
+      console.error('toggleLike: usuário não autenticado');
+      return;
+    }
+
+    const uid = session.user.id;
+
+    const { data, error: selError } = await sb
+      .from('community_likes')
+      .select('id')
+      .eq('topic_id', topicId)
+      .eq('user_id', uid);
+
+    if (selError) {
+      console.error('toggleLike select error:', selError.message);
+      return;
+    }
+
     if (data && data.length > 0) {
-      await sb.from('community_likes').delete().eq('topic_id', topicId).eq('user_id', userId);
+      const { error } = await sb
+        .from('community_likes')
+        .delete()
+        .eq('topic_id', topicId)
+        .eq('user_id', uid);
+      if (error) console.error('toggleLike delete error:', error.message);
     } else {
-      await sb.from('community_likes').insert([{ topic_id: topicId, user_id: userId }]);
+      const { error } = await sb
+        .from('community_likes')
+        .insert([{ topic_id: topicId, user_id: uid }]);
+      if (error) console.error('toggleLike insert error:', error.message);
     }
   };
 
