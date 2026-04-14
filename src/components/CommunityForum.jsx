@@ -64,11 +64,11 @@ const TopicList = ({ onOpenTopic, onNewTopic }) => {
                 <span className="font-semibold text-gray-600">{author}</span>
                 <span>{fmtDate(topic.created_at)}</span>
                 <button
-                   onClick={(e) => { e.stopPropagation(); if(window.confirm('Excluir este tópico permanentemente?')) deleteTopic(topic.id); }}
-                   className="ml-auto text-gray-300 hover:text-red-500 transition-colors"
+                   onClickCapture={(e) => { e.stopPropagation(); e.preventDefault(); e.nativeEvent.stopImmediatePropagation(); if(window.confirm('Excluir este tópico permanentemente?')) deleteTopic(topic.id); }}
+                   className="ml-auto p-2 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors relative z-10"
                    title="Excluir tópico"
                 >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16" className="pointer-events-none"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                 </button>
               </div>
             </div>
