@@ -13,6 +13,7 @@ export const AcademyAdmin = ({ onExit }) => {
   const [lessonDuration, setLessonDuration] = useState("");
   const [lessonVideoUrl, setLessonVideoUrl] = useState("");
   const [lessonPdfUrl, setLessonPdfUrl] = useState("");
+  const [lessonIsLive, setLessonIsLive] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
   const handlePdfUpload = async (e) => {
@@ -69,35 +70,39 @@ export const AcademyAdmin = ({ onExit }) => {
     if (modalState.type === 'add') {
       addLesson(modalState.moduleId, {
         title: lessonTitle,
-        duration: lessonDuration || "00:00",
+        duration: lessonDuration,
         videoUrl: lessonVideoUrl,
-        pdfUrl: lessonPdfUrl || "#"
+        pdfUrl: lessonPdfUrl,
+        isLive: lessonIsLive
       });
     } else if (modalState.type === 'edit') {
       editLesson(modalState.moduleId, modalState.lesson.id, {
         title: lessonTitle,
-        duration: lessonDuration || "00:00",
+        duration: lessonDuration,
         videoUrl: lessonVideoUrl,
-        pdfUrl: lessonPdfUrl || "#"
+        pdfUrl: lessonPdfUrl,
+        isLive: lessonIsLive
       });
     }
 
     closeModal();
   };
 
-  const openAddModal = (moduleId) => {
+  const openAddLesson = (moduleId) => {
     setLessonTitle("");
     setLessonDuration("");
     setLessonVideoUrl("");
     setLessonPdfUrl("");
+    setLessonIsLive(false);
     setModalState({ type: 'add', moduleId });
   };
 
-  const openEditModal = (moduleId, lesson) => {
+  const openEditLesson = (moduleId, lesson) => {
     setLessonTitle(lesson.title);
     setLessonDuration(lesson.duration);
     setLessonVideoUrl(lesson.videoUrl);
-    setLessonPdfUrl(lesson.pdfUrl);
+    setLessonPdfUrl(lesson.pdfUrl || "");
+    setLessonIsLive(lesson.isLive || false);
     setModalState({ type: 'edit', moduleId, lesson });
   };
 
@@ -151,7 +156,7 @@ export const AcademyAdmin = ({ onExit }) => {
                 <div className="bg-gray-50 p-4 border-b border-gray-200 flex justify-between items-center">
                   <h4 className="font-bold text-gray-900 text-lg">{mod.title}</h4>
                   <button 
-                    onClick={() => openAddModal(mod.id)}
+                    onClick={() => openAddLesson(mod.id)}
                     className="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-bold hover:bg-blue-200"
                   >
                     + Nova Aula
@@ -174,7 +179,7 @@ export const AcademyAdmin = ({ onExit }) => {
                             <td className="p-3 text-right">
                               <div className="flex gap-3 justify-end">
                                 <button 
-                                  onClick={() => openEditModal(mod.id, lesson)}
+                                  onClick={() => openEditLesson(mod.id, lesson)}
                                   className="text-gray-500 hover:text-gray-800 font-bold text-sm"
                                 >
                                   Editar
@@ -237,6 +242,12 @@ export const AcademyAdmin = ({ onExit }) => {
                   </label>
                 </div>
               </div>
+              
+              <div className="flex items-center gap-2 mt-4 bg-red-50 p-3 rounded border border-red-100">
+                <input type="checkbox" id="check-islive" checked={lessonIsLive} onChange={e=>setLessonIsLive(e.target.checked)} className="w-5 h-5 text-red-600 rounded focus:ring-red-500 border-gray-300 cursor-pointer"/>
+                <label htmlFor="check-islive" className="text-sm font-bold text-red-900 cursor-pointer select-none">🚨 Marcar como Evento/Live (Aparecerá com selo pulsante)</label>
+              </div>
+
               <div className="pt-4">
                 <button type="submit" className="w-full bg-[#0a2540] text-white p-3 rounded font-bold hover:bg-blue-900">Salvar Aula</button>
               </div>
