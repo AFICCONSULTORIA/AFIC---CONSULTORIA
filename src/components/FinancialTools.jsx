@@ -271,6 +271,145 @@ const EmergencyTab = () => {
    );
 };
 
+const CompoundInterestTab = () => {
+   const [initial, setInitial] = useState(50000);
+   const [monthly, setMonthly] = useState(2000);
+   const [years, setYears] = useState(10);
+   const [rate, setRate] = useState(12);
+
+   // Math engine
+   const monthlyRate = (rate / 100) / 12;
+   const totalMonths = years * 12;
+   const yearData = [];
+
+   let balance = initial;
+   let totalInvested = initial;
+   let crossoverYear = null;
+
+   for (let y = 1; y <= years; y++) {
+      for (let m = 0; m < 12; m++) {
+         balance = balance * (1 + monthlyRate) + monthly;
+         totalInvested += monthly;
+      }
+      const interest = balance - totalInvested;
+      if (!crossoverYear && interest > totalInvested) crossoverYear = y;
+      yearData.push({ year: y, invested: totalInvested, interest, balance });
+   }
+
+   const finalInvested = totalInvested;
+   const finalInterest = balance - totalInvested;
+   const maxBalance = yearData.length > 0 ? yearData[yearData.length - 1].balance : 1;
+
+   return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left mt-6">
+         <div>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+               <h3 className="text-lg font-bold text-gray-900 mb-4">Parâmetros da Simulação</h3>
+               <div className="space-y-4">
+                  <div>
+                     <label className="block text-sm font-semibold text-gray-700 mb-1">Investimento Inicial (R$)</label>
+                     <input type="number" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={initial} onChange={e => setInitial(Number(e.target.value))} />
+                  </div>
+                  <div>
+                     <label className="block text-sm font-semibold text-gray-700 mb-1">Aporte Mensal (R$)</label>
+                     <input type="number" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={monthly} onChange={e => setMonthly(Number(e.target.value))} />
+                  </div>
+                  <div className="flex gap-4">
+                     <div className="w-1/2">
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Tempo (Anos)</label>
+                        <input type="number" min="1" max="50" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={years} onChange={e => setYears(Number(e.target.value))} />
+                     </div>
+                     <div className="w-1/2">
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Taxa Anual (%)</label>
+                        <input type="number" step="0.1" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={rate} onChange={e => setRate(Number(e.target.value))} />
+                     </div>
+                  </div>
+               </div>
+               <p className="text-xs text-gray-400 mt-4">Simulação baseada em capitalização mensal composta. Resultados são projeções e não garantem rentabilidade futura.</p>
+            </div>
+
+            {/* Evolução Anual */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+               <h3 className="text-lg font-bold text-gray-900 mb-4">Evolução Anual</h3>
+               <div className="max-h-72 overflow-y-auto">
+                  <table className="w-full text-sm">
+                     <thead>
+                        <tr className="text-gray-500 border-b border-gray-100">
+                           <th className="py-2 text-left font-semibold">Ano</th>
+                           <th className="py-2 text-right font-semibold">Investido</th>
+                           <th className="py-2 text-right font-semibold">Juros</th>
+                           <th className="py-2 text-right font-semibold">Saldo</th>
+                        </tr>
+                     </thead>
+                     <tbody>
+                        {yearData.map(d => (
+                           <tr key={d.year} className="border-b border-gray-50 hover:bg-gray-50">
+                              <td className="py-2 font-bold text-gray-700">{d.year}º</td>
+                              <td className="py-2 text-right text-gray-600">R$ {fmtBR(d.invested)}</td>
+                              <td className="py-2 text-right text-amber-600 font-semibold">R$ {fmtBR(d.interest)}</td>
+                              <td className="py-2 text-right text-gray-900 font-bold">R$ {fmtBR(d.balance)}</td>
+                           </tr>
+                        ))}
+                     </tbody>
+                  </table>
+               </div>
+            </div>
+         </div>
+
+         <div>
+            {/* Crossover */}
+            <div className="bg-amber-50 border border-amber-100 rounded-xl p-6 mb-6">
+               <p className="text-sm text-amber-600 font-bold mb-1">Ponto de Ignição (Crossover)</p>
+               <h2 className="text-4xl font-black text-amber-900">
+                  {crossoverYear ? `Ano ${crossoverYear}` : `Acima de ${years} anos`}
+               </h2>
+               <p className="text-xs text-amber-500 mt-2">Quando os juros superam o valor investido do bolso.</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 mb-6">
+               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                  <p className="text-sm text-gray-500 font-semibold mb-1">Total do seu Bolso</p>
+                  <p className="text-2xl font-black text-gray-900">R$ {fmtBR(finalInvested)}</p>
+                  <p className="text-xs text-gray-400 mt-1">Capital + Aportes</p>
+               </div>
+               <div className="bg-white rounded-xl shadow-sm border border-amber-100 p-5">
+                  <p className="text-sm text-amber-600 font-semibold mb-1">Bola de Neve</p>
+                  <p className="text-2xl font-black text-amber-600">R$ {fmtBR(finalInterest)}</p>
+                  <p className="text-xs text-amber-400 mt-1">Rendimento passivo</p>
+               </div>
+            </div>
+
+            {/* Visual Chart */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+               <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-sm font-bold text-gray-700">Projeção de Crescimento</h3>
+                  <div className="flex gap-4 text-xs">
+                     <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-blue-400 inline-block"></span> Investido</span>
+                     <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-amber-400 inline-block"></span> Juros</span>
+                  </div>
+               </div>
+               <div className="flex items-end gap-1" style={{ height: '200px' }}>
+                  {yearData.map(d => {
+                     const totalH = (d.balance / maxBalance) * 100;
+                     const investedH = (d.invested / maxBalance) * 100;
+                     const interestH = totalH - investedH;
+                     return (
+                        <div key={d.year} className="flex-1 flex flex-col justify-end items-center" title={`Ano ${d.year}: R$ ${fmtBR(d.balance)}`}>
+                           <div className="w-full rounded-t bg-amber-400" style={{ height: `${Math.max(interestH, 0)}%` }}></div>
+                           <div className="w-full bg-blue-400" style={{ height: `${Math.max(investedH, 1)}%` }}></div>
+                           {d.year % Math.max(1, Math.floor(years / 10)) === 0 && (
+                              <span className="text-[9px] text-gray-400 mt-1">{d.year}</span>
+                           )}
+                        </div>
+                     );
+                  })}
+               </div>
+            </div>
+         </div>
+      </div>
+   );
+};
+
 export const FinancialTools = () => {
    const { isLoaded } = useFinancial();
    const [activeTab, setActiveTab] = useState('budget');
@@ -283,7 +422,8 @@ export const FinancialTools = () => {
       { id: 'budget', label: 'Orçamento 50/30' },
       { id: 'cards', label: 'Matador de Cartões' },
       { id: 'emergency', label: 'Fundo Blindado' },
-      { id: 'debt_calc', label: 'Calculadora de Dívida' },
+      { id: 'snowball', label: 'Bola de Neve' },
+      { id: 'debt_calc', label: 'Destruidor de Dívidas' },
       { id: 'fee_calc', label: 'Auditoria de Taxas' },
    ];
 
@@ -305,6 +445,7 @@ export const FinancialTools = () => {
             {activeTab === 'budget' && <BudgetTab />}
             {activeTab === 'cards' && <CreditCardTab />}
             {activeTab === 'emergency' && <EmergencyTab />}
+            {activeTab === 'snowball' && <CompoundInterestTab />}
             {activeTab === 'debt_calc' && <div className="mt-8 flex justify-center"><DebtDestroyerCalc /></div>}
             {activeTab === 'fee_calc' && <div className="mt-8 flex justify-center"><FeeAuditorCalc /></div>}
          </div>
