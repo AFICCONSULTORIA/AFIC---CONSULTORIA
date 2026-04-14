@@ -17,9 +17,11 @@ async function getCurrentSession() {
 
 export const CommunityProvider = ({ children }) => {
   const [topics, setTopics] = useState([]);
+  const [announcements, setAnnouncements] = useState([]); // [NOVO]
   const [isLoaded, setIsLoaded] = useState(false);
   const [userId, setUserId] = useState(null);
   const [userNickname, setUserNickname] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false); // [NOVO]
 
   useEffect(() => {
     let attempts = 0;
@@ -32,14 +34,27 @@ export const CommunityProvider = ({ children }) => {
         const session = await getCurrentSession();
         if (session?.user) {
           setUserId(session.user.id);
-          const { data: profile } = await sb.from('profiles').select('nickname').eq('id', session.user.id).single();
+          const { data: profile } = await sb.from('profiles').select('nickname, role').eq('id', session.user.id).single();
           if (profile?.nickname) setUserNickname(profile.nickname);
+          if (profile?.role === 'admin') setIsAdmin(true);
         }
+        await fetchAnnouncements();
         await fetchTopics();
         setIsLoaded(true);
       }
     }, 100);
     return () => clearInterval(wait);
+  }, []);
+
+  const fetchAnnouncements = useCallback(async () => {
+    const sb = getSB();
+    if (!sb) return;
+    const { data, error } = await sb
+      .from('community_announcements')
+      .select('*')
+      .eq('active', true)
+      .order('created_at', { ascending: false });
+    if (!error && data) setAnnouncements(data);
   }, []);
 
   const fetchTopics = useCallback(async () => {
@@ -211,9 +226,24 @@ export const CommunityProvider = ({ children }) => {
 
   return (
     <CommunityContext.Provider value={{
-      topics, isLoaded, userId, userNickname,
+      topics, isLoaded, userId, userNickname, announcements, isAdmin,
       fetchTopics, createTopic, deleteTopic, updateTopicCover,
-      getTopicDetail, getComments, addComment, getLikes, toggleLike
+      getTopicDetail, getComments, addComment, getLikes, toggleLike,
+      fetchAnnouncements, 
+      addAnnouncement: async (content, isPriority) => {
+        const sb = getSB();
+        if (!sb) return false;
+        const { error } = await sb.from('community_announcements').insert([{ content, is_priority: isPriority, user_id: userId }]);
+        if (!error) await fetchAnnouncements();
+        return !error;
+      },
+      deleteAnnouncement: async (annId) => {
+        const sb = getSB();
+        if (!sb) return false;
+        const { error } = await sb.from('community_announcements').delete().eq('id', annId);
+        if (!error) await fetchAnnouncements();
+        return !error;
+      }
     }}>
       {children}
     </CommunityContext.Provider>
