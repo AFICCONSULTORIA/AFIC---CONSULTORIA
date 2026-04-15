@@ -713,9 +713,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ═══════════════════════════════════════════════════════════
     // BUDGET TRACKER DYNAMIC (Supabase Sync)
-    // ═══════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════
     let budgetData = {};
     let currentBudgetMonth = new Date(); // Date object
+    // Configurações personalizadas do orçamento (padrão 50/30/20)
+    let budgetFixedLimit = 50;
+    let budgetVarLimit = 30;
+    let budgetSaveLimit = 20;
 
     function getMonthKey(date) {
         return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
@@ -726,8 +730,47 @@ document.addEventListener('DOMContentLoaded', () => {
         return `${months[date.getMonth()]} ${date.getFullYear()}`;
     }
 
-    async function saveBudgetDataTx(monthKey, desc, value, type, method) {
+    async function loadBudgetSettings() {
         if (!currentUser) return;
+        const { data, error } = await supabase.from('budget_settings').select('*').eq('user_id', currentUser.id).limit(1);
+        if (!error && data && data.length > 0) {
+            budgetFixedLimit = data[0].fixed_limit_pct || 50;
+            budgetVarLimit = data[0].var_limit_pct || 30;
+            budgetSaveLimit = data[0].save_limit_pct || 20;
+            
+            // Atualizar campos no formulário
+            document.getElementById('budget-fixed-pct').value = budgetFixedLimit;
+            document.getElementById('budget-var-pct').value = budgetVarLimit;
+            document.getElementById('budget-save-pct').value = budgetSaveLimit;
+            updateBudgetTotalPct();
+        }
+    }
+
+    function updateBudgetTotalPct() {
+        const fixedPct = parseInt(document.getElementById('budget-fixed-pct')?.value || 0);
+        const varPct = parseInt(document.getElementById('budget-var-pct')?.value || 0);
+        const savePct = parseInt(document.getElementById('budget-save-pct')?.value || 0);
+        const total = fixedPct + varPct + savePct;
+        const totalEl = document.getElementById('budget-total-pct');
+        const msgEl = document.getElementById('budget-total-msg');
+        if (totalEl) totalEl.textContent = total;
+        if (msgEl) {
+            if (total === 100) {
+                msgEl.textContent = '✓ Configuração válida';
+                msgEl.style.color = 'var(--gold-rich)';
+            } else {
+                msgEl.textContent = '⚠ Total deve ser 100%';
+                msgEl.style.color = '#ff4d4f';
+            }
+        }
+    }
+
+    async function saveBudgetDataTx(monthKey, desc, value, type, method) {
+        if (!currentUser) {
+            alert("É necessário fazer login para salvar!");
+            return;
+        }
+        console.log("Saving budget tx:", { monthKey, desc, value, type, method, userId: currentUser.id });
         const { error } = await supabase.from('budget_transactions').insert([{
             user_id: currentUser.id,
             month_key: monthKey,
@@ -736,14 +779,19 @@ document.addEventListener('DOMContentLoaded', () => {
             type: type,
             method: method
         }]);
-        if (error) console.error("Error saving TX:", error);
+        if (error) {
+            console.error("Error saving TX:", error);
+            alert("Erro ao salvar: " + error.message);
+        }
         await reloadBudgetData();
     }
 
     async function reloadBudgetData() {
         if (!currentUser) return;
-        const { data, error } = await supabase.from('budget_transactions').select('*');
+        console.log("Loading budget data for user:", currentUser.id);
+        const { data, error } = await supabase.from('budget_transactions').select('*').eq('user_id', currentUser.id);
         if (!error && data) {
+            console.log("Budget data loaded:", data.length, "transactions");
             budgetData = {};
             data.forEach(row => {
                 if (!budgetData[row.month_key]) budgetData[row.month_key] = [];
@@ -760,7 +808,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function deleteBudgetDataTx(dbId) {
-        const { error } = await supabase.from('budget_transactions').delete().eq('id', dbId);
+        const { error } = await supabase.from('budget_transactions').delete().eq('id', dbId).eq('user_id', currentUser.id);
         if (!error) await reloadBudgetData();
     }
 
@@ -768,6 +816,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadSupabaseData() {
         await reloadCCData();
         await reloadBudgetData();
+        await loadBudgetSettings();
         await loadUserProfile();
         await loadCommunityThreads();
         initializeRealtime();
@@ -931,17 +980,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (pctVarEl) pctVarEl.textContent = `${varPct}%`;
         if (barVarEl) barVarEl.style.width = `${varPct > 100 ? 100 : varPct}%`;
 
-        // Warning Colors
-        if (barFixedEl) barFixedEl.style.backgroundColor = fixPct > 50 ? '#ff4d4f' : 'var(--navy-deep)';
-        if (barVarEl) barVarEl.style.backgroundColor = varPct > 30 ? '#ff4d4f' : 'var(--navy-medium)';
+        // Warning Colors - usando config personalizados
+        if (barFixedEl) barFixedEl.style.backgroundColor = fixPct > budgetFixedLimit ? '#ff4d4f' : 'var(--navy-deep)';
+        if (barVarEl) barVarEl.style.backgroundColor = varPct > budgetVarLimit ? '#ff4d4f' : 'var(--navy-medium)';
 
         const insightEl = document.getElementById('budget-tracker-insight');
         if (insightEl) {
             if (totalIncome === 0) {
                 insightEl.innerHTML = "Adicione sua renda e despesas para iniciar a análise institucional.";
                 insightEl.style.borderLeftColor = "var(--gold-dry)";
-            } else if (fixPct > 50 || varPct > 30) {
-                insightEl.innerHTML = "<b>Alerta:</b> Você estourou os limites do benchmark 50/30/20. Reveja suas despesas marcadas em vermelho para proteger sua capacidade de aporte.";
+            } else if (fixPct > budgetFixedLimit || varPct > budgetVarLimit) {
+                insightEl.innerHTML = `<b>Alerta:</b> Você estourou os limites do ${budgetFixedLimit}/${budgetVarLimit}/${budgetSaveLimit}. Reveja suas despesas marcadas em vermelho para proteger sua capacidade de aporte.`;
                 insightEl.style.borderLeftColor = "#ff4d4f";
             } else {
                 insightEl.innerHTML = "<b>Excelente!</b> Custos sob controle. Você preservou uma alta capacidade poupança mensal. Direcione este lucro para seus investimentos institucionais.";
@@ -1503,6 +1552,59 @@ document.addEventListener('DOMContentLoaded', () => {
                     showToast('Foto removida!');
                 }
             }
+        });
+    }
+
+    // Budget Settings Form
+    const budgetSettingsForm = document.getElementById('form-budget-settings');
+    if (budgetSettingsForm) {
+        // Atualizar total quando os campos mudarem
+        ['budget-fixed-pct', 'budget-var-pct', 'budget-save-pct'].forEach(id => {
+            const input = document.getElementById(id);
+            if (input) {
+                input.addEventListener('input', updateBudgetTotalPct);
+            }
+        });
+        
+        budgetSettingsForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentUser) {
+                alert("Faça login para salvar!");
+                return;
+            }
+            
+            const fixedPct = parseInt(document.getElementById('budget-fixed-pct')?.value || 0);
+            const varPct = parseInt(document.getElementById('budget-var-pct')?.value || 0);
+            const savePct = parseInt(document.getElementById('budget-save-pct')?.value || 0);
+            const total = fixedPct + varPct + savePct;
+            
+            if (total !== 100) {
+                alert("Os percentuais devem somar 100%!");
+                return;
+            }
+            
+            const { error } = await supabase.from('budget_settings').upsert({
+                user_id: currentUser.id,
+                fixed_limit_pct: fixedPct,
+                var_limit_pct: varPct,
+                save_limit_pct: savePct,
+                updated_at: new Date()
+            }, { onConflict: 'user_id' });
+            
+            const msgEl = document.getElementById('budget-settings-msg');
+            if (!error) {
+                budgetFixedLimit = fixedPct;
+                budgetVarLimit = varPct;
+                budgetSaveLimit = savePct;
+                msgEl.textContent = "Configurações salvas!";
+                msgEl.style.color = "#388e3c";
+                showToast("Configurações do orçamento salvas!");
+            } else {
+                msgEl.textContent = "Erro: " + error.message;
+                msgEl.style.color = "#ff4d4f";
+            }
+            msgEl.style.display = 'block';
+            setTimeout(() => msgEl.style.display = 'none', 3000);
         });
     }
 

@@ -532,6 +532,44 @@
                 </div>
             </div>
 
+            <!-- Configurações do Orçamento -->
+            <div class="card" style="max-width: 800px; margin-top: 24px;">
+                <div class="card-label">Configurações do Orçamento (50/30/20)</div>
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">Defina seus próprios percentuais para a regra 50/30/20 ou personalize conforme sua realidade.</p>
+                
+                <form id="form-budget-settings" class="auth-form">
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+                        <div class="param-group">
+                            <label class="param-label" for="budget-fixed-pct">Gastos Fixos (%)</label>
+                            <input type="number" class="param-input" id="budget-fixed-pct" min="0" max="100" value="50">
+                            <p class="param-help" style="font-size: 10px; color: var(--text-muted);">% da renda para necessidades</p>
+                        </div>
+                        
+                        <div class="param-group">
+                            <label class="param-label" for="budget-var-pct">Gastos Variáveis (%)</label>
+                            <input type="number" class="param-input" id="budget-var-pct" min="0" max="100" value="30">
+                            <p class="param-help" style="font-size: 10px; color: var(--text-muted);">% da renda para desejos</p>
+                        </div>
+                        
+                        <div class="param-group">
+                            <label class="param-label" for="budget-save-pct">Poupança (%)</label>
+                            <input type="number" class="param-input" id="budget-save-pct" min="0" max="100" value="20">
+                            <p class="param-help" style="font-size: 10px; color: var(--text-muted);">% da renda para investimentos</p>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 12px; padding: 12px; background: var(--bg-light-blue); border-radius: 8px;">
+                        <p style="font-size: 13px; color: var(--text-primary);">
+                            <strong>Total:</strong> <span id="budget-total-pct">100</span>% 
+                            <span id="budget-total-msg" style="color: var(--gold-rich); margin-left: 8px;">✓ Configuração válida</span>
+                        </p>
+                    </div>
+                    
+                    <button type="submit" class="btn-calculate" style="width: auto; padding: 10px 24px; margin-top: 12px;">Salvar Configurações</button>
+                    <p id="budget-settings-msg" style="font-size: 13px; margin-top: 12px; display: none;"></p>
+                </form>
+            </div>
+
             <div class="card" style="max-width: 800px; margin-top: 24px;">
                 <div class="card-label">Informações do Perfil</div>
                 <form id="form-profile" class="auth-form">
