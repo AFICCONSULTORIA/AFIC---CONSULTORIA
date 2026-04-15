@@ -56,24 +56,35 @@ document.addEventListener('DOMContentLoaded', () => {
     async function checkAuthSession() {
         console.log("Checking session...");
         try {
+            // Primeiro mostrar landing page por padrão
+            const landingRoot = document.getElementById('react-landing-root');
+            if (landingRoot && typeof switchPage === 'function') {
+                switchPage('home');
+            }
+            
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
                 currentUser = session.user;
                 if (authModal) authModal.classList.add('hidden');
                 console.log("User logged in: " + currentUser.email);
                 await loadSupabaseData();
-
-                // Forçar "Visão Geral" a abrir se a tela estiver branca
-                const hasActivePage = Array.from(document.querySelectorAll('.page-content')).some(p => !p.classList.contains('page-hidden'));
-                if (!hasActivePage) {
-                    if (typeof switchPage === 'function') switchPage('dashboard');
-                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-                    const dashLink = document.querySelector('.nav-link[data-page="dashboard"]');
-                    if (dashLink) dashLink.classList.add('active');
-                }
+                // Usuário logado - ir para dashboard
+                switchPage('dashboard');
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                const dashLink = document.querySelector('.nav-link[data-page="dashboard"]');
+                if (dashLink) dashLink.classList.add('active');
             } else {
-                if (authModal) authModal.classList.remove('hidden');
-                console.log("No active session.");
+                // Não logado - garantir que está na landing page
+                switchPage('home');
+                // Esconder sidebar/menu quando não logado
+                const sidebar = document.querySelector('.sidebar');
+                if (sidebar) sidebar.style.display = 'none';
+            }
+            
+            // Mostrar/esconder menu baseado em currentUser
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar) {
+                sidebar.style.display = currentUser ? 'flex' : 'none';
             }
         } catch (e) {
             console.error("Auth check failed:", e);
@@ -294,6 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Page map: data-page value → page element ID
     const pageMap = {
+        'home': 'page-home',
         'dashboard': 'page-dashboard',
         'tools': 'page-tools',
         'education': 'page-education',

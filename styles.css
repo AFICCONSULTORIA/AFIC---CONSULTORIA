@@ -2804,14 +2804,17 @@ h1, h2, h3, h4, h5, h6 {
    AUTH MODAL
    ═══════════════════════════════════════════════════════════════ */
 .auth-modal {
+    display: none;
     position: fixed;
-    top: 0; left: 0; width: 100vw; height: 100vh;
-    background: rgba(5, 24, 69, 0.95);
-    backdrop-filter: blur(8px);
-    z-index: 10000;
-    display: flex;
-    justify-content: center;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 2000;
     align-items: center;
+    justify-content: center;
+}
+
+.auth-modal.hidden {
+    display: none;
 }
 
 .auth-modal.hidden {
@@ -2827,8 +2830,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .auth-header {
-    margin-bottom: var(--space-xl);
-    text-align: center;
+    margin-bottom: var(--space-lg);
 }
 
 .auth-header h2 {
@@ -2836,11 +2838,13 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--navy-deep);
     font-size: 24px;
     margin-bottom: 8px;
+    text-align: center;
 }
 
 .auth-header p {
     font-size: 14px;
     color: var(--text-secondary);
+    text-align: center;
 }
 
 .auth-form {
