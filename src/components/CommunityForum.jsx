@@ -401,18 +401,43 @@ const TopicDetail = ({ topicId, onBack }) => {
   const [sending, setSending] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
+  const [loadingError, setLoadingError] = useState(null);
   const { confirm, Dialog } = useConfirm();
 
   useEffect(() => {
     async function load() {
-      const t = await getTopicDetail(topicId);
-      setTopic(t);
-      const [c, l] = await Promise.all([getComments(topicId), getLikes(topicId)]);
-      setComments(c);
-      setLikes(l);
+      setLoadingError(null);
+      try {
+        if (!topicId) {
+          onBack();
+          return;
+        }
+        const t = await getTopicDetail(topicId);
+        if (!t) {
+          console.error('Topic not found:', topicId);
+          onBack();
+          return;
+        }
+        setTopic(t);
+        const [c, l] = await Promise.all([getComments(topicId), getLikes(topicId)]);
+        setComments(c);
+        setLikes(l);
+      } catch (err) {
+        console.error('Error loading topic:', err);
+        setLoadingError(err.message);
+      }
     }
     load();
   }, [topicId]);
+
+  if (loadingError) {
+    return (
+      <div className="max-w-4xl mx-auto w-full p-8 text-center">
+        <p className="text-red-500 font-bold">Erro ao carregar tópico: {loadingError}</p>
+        <button onClick={onBack} className="mt-4 text-blue-600 underline">Voltar ao Fórum</button>
+      </div>
+    );
+  }
 
   const handleLike = async () => {
     await toggleLike(topicId);
