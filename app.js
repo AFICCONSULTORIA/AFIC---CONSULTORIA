@@ -2,13 +2,15 @@
    AFIC CONSULTORIA — Application Logic
    ═══════════════════════════════════════════════════════════════ */
 
-document.addEventListener('DOMContentLoaded', () => {
+// Função de inicialização chamada após DOM estar pronto
+window.initApp = function() {
+  console.log("AFIC App Initializing...");
+  
   try {
     // ─── SUPABASE INITIALIZATION ───
-    // Singleton shared with React modules via window.aficSupabase
     const supabase = window.aficSupabase;
     let currentUser = null;
-    let currentUserProfile = null; // Store nickname and other profile data
+    let currentUserProfile = null;
 
     // ─── AUTHENTICATION HANDLERS ───
     console.log("AFIC Auth Bridge Initializing...");
@@ -56,10 +58,8 @@ document.addEventListener('DOMContentLoaded', () => {
     async function checkAuthSession() {
         console.log("Checking session...");
         try {
-            // Primeiro mostrar landing page por padrão
-            const landingRoot = document.getElementById('react-landing-root');
-            if (landingRoot && typeof switchPage === 'function') {
-                switchPage('home');
+            if (typeof switchPage === 'function') {
+                switchPage('dashboard');
             }
             
             const { data: { session } } = await supabase.auth.getSession();
@@ -68,23 +68,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (authModal) authModal.classList.add('hidden');
                 console.log("User logged in: " + currentUser.email);
                 await loadSupabaseData();
-                // Usuário logado - ir para dashboard
                 switchPage('dashboard');
                 document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
                 const dashLink = document.querySelector('.nav-link[data-page="dashboard"]');
                 if (dashLink) dashLink.classList.add('active');
             } else {
-                // Não logado - garantir que está na landing page
-                switchPage('home');
-                // Esconder sidebar/menu quando não logado
-                const sidebar = document.querySelector('.sidebar');
-                if (sidebar) sidebar.style.display = 'none';
-            }
-            
-            // Mostrar/esconder menu baseado em currentUser
-            const sidebar = document.querySelector('.sidebar');
-            if (sidebar) {
-                sidebar.style.display = currentUser ? 'flex' : 'none';
+                switchPage('dashboard');
+                // Mostrar modal de login quando não logado
+                if (authModal) {
+                    authModal.classList.remove('hidden');
+                    authModal.style.display = 'flex';
+                }
             }
         } catch (e) {
             console.error("Auth check failed:", e);
@@ -316,6 +310,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function switchPage(pageName) {
         try {
+            const pages = document.querySelectorAll('.page-content');
             // Hide all pages
             pages.forEach(p => p.classList.add('page-hidden'));
             
@@ -2033,4 +2028,11 @@ document.addEventListener('DOMContentLoaded', () => {
   } catch(err) {
     console.error('AFIC INIT ERROR:', err);
   }
-});
+}
+
+// Inicializa quando o DOM estiver pronto
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', window.initApp);
+} else {
+  window.initApp();
+}

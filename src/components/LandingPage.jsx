@@ -19,6 +19,12 @@ export const LandingPage = ({ onEnterSystem }) => {
     setLoading(false);
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!email) return;
+    setSubmitted(true);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0a2540] via-[#051845] to-[#001020] text-white">
       {/* Inline Login Modal */}

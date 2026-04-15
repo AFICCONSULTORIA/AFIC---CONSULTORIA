@@ -452,6 +452,7 @@ h1, h2, h3, h4, h5, h6 {
    PAGE CONTENT
    ═══════════════════════════════════════════════════════════════ */
 .page-content {
+    margin-left: var(--sidebar-width);
     padding: var(--space-2xl);
     padding-top: var(--space-xl);
     max-width: 100%;
