@@ -393,7 +393,7 @@ const NewTopicModal = ({ isOpen, onClose }) => {
 
 // ──────────── Topic Detail ────────────
 const TopicDetail = ({ topicId, onBack }) => {
-  const { getTopicDetail, getComments, addComment, getLikes, toggleLike, deleteComment, deleteTopic, updateTopicCover, userId } = useCommunity();
+  const { getTopicDetail, getComments, addComment, getLikes, toggleLike, deleteComment, deleteTopic, updateTopicCover, userId, isAdmin } = useCommunity();
   const [topic, setTopic] = useState(null);
   const [comments, setComments] = useState([]);
   const [likes, setLikes] = useState({ count: 0, userLiked: false });
