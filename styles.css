@@ -130,6 +130,56 @@ body {
     background: var(--bg-off-white);
     line-height: 1.6;
     overflow-x: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ─── THEME TOGGLE ─── */
+.theme-toggle {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    padding: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff !important;
+    transition: all 0.2s ease;
+    margin-top: 16px;
+}
+
+.theme-toggle:hover {
+    background: rgba(212, 175, 55, 0.3);
+    border-color: #D4AF37;
+}
+
+.theme-toggle svg {
+    fill: none;
+    stroke: #ffffff !important;
+    color: #ffffff !important;
+}
+
+.theme-toggle .sun-icon {
+    display: block;
+}
+
+.theme-toggle .moon-icon {
+    display: none;
+}
+
+/* Dark mode - show moon (currently dark), hide sun */
+:root.dark .theme-toggle .sun-icon {
+    display: none;
+}
+
+:root.dark .theme-toggle .moon-icon {
+    display: block;
+}
+
+:root.dark .theme-toggle {
+    color: #ffffff !important;
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.2);
 }
 
 /* ─── TYPOGRAPHY ─── */
@@ -175,6 +225,9 @@ h1, h2, h3, h4, h5, h6 {
 .sidebar-header {
     padding: var(--space-xl) var(--space-lg);
     padding-top: var(--space-2xl);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
 }
 
 .logo {
@@ -190,6 +243,15 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--bg-white);
     letter-spacing: -0.03em;
     line-height: 1;
+}
+
+/* Dark mode - logo white */
+:root.dark .logo-main {
+    color: #ffffff !important;
+}
+
+:root.dark .logo-sub {
+    color: #D4AF37 !important;
 }
 
 .logo-sub {
