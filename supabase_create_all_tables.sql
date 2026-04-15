@@ -58,12 +58,23 @@ CREATE TABLE IF NOT EXISTS public.community_likes (
     UNIQUE(topic_id, user_id)
 );
 
+-- 6. Tabela de Reserva de Emergência (Fundo Blindado)
+CREATE TABLE IF NOT EXISTS public.afic_emergency_fund (
+    user_id UUID PRIMARY KEY,
+    fixed_cost NUMERIC(10, 2) DEFAULT 0,
+    coverage_months INTEGER DEFAULT 6,
+    current_reserve NUMERIC(10, 2) DEFAULT 0,
+    expected_deposit NUMERIC(10, 2) DEFAULT 0,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
 -- DESATIVAR RLS PARA TESTE (MVP)
 ALTER TABLE public.budget_transactions DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.budget_settings DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.profiles DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.community_comments DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.community_likes DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.afic_emergency_fund DISABLE ROW LEVEL SECURITY;
 
 -- Confirmar criação
 SELECT 'Tabelas criadas com sucesso!' as mensagem;

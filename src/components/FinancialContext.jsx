@@ -101,8 +101,14 @@ export const FinancialProvider = ({ children }) => {
     }
   };
 
-  const updateEmergencyFund = async (fundData) => {
+  const updateEmergencyFund = async (fixedCost, coverageMonths, currentReserve, expectedDeposit) => {
     if (!supabase || !userId) return;
+    const fundData = {
+      fixed_cost: parseFloat(fixedCost) || 0,
+      coverage_months: parseInt(coverageMonths) || 6,
+      current_reserve: parseFloat(currentReserve) || 0,
+      expected_deposit: parseFloat(expectedDeposit) || 0
+    };
     const { error } = await supabase
       .from('afic_emergency_fund')
       .upsert({ ...fundData, user_id: userId }, { onConflict: 'user_id' });
@@ -136,6 +142,7 @@ export const FinancialProvider = ({ children }) => {
       deleteTransaction,
       addCreditCard,
       updateEmergencyFund,
+      saveEmergencyFund: updateEmergencyFund,
       getBudgetSummary
     }}>
       {children}
