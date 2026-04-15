@@ -256,6 +256,7 @@ const EmergencyTab = () => {
    const [months, setMonths] = useState(emergencyFund?.coverage_months || 6);
    const [atual, setAtual] = useState(fmtReal(emergencyFund?.current_reserve || 0));
    const [aporte, setAporte] = useState(fmtReal(emergencyFund?.expected_deposit || 0));
+   const [showSuccess, setShowSuccess] = useState(false);
 
    const tgt = parseReal(fixo) * months;
    const pct = tgt > 0 ? (parseReal(atual) / tgt) * 100 : 0;
@@ -264,6 +265,8 @@ const EmergencyTab = () => {
 
    const handleSave = () => {
       saveEmergencyFund(parseReal(fixo), months, parseReal(atual), parseReal(aporte));
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
    };
 
    return (
@@ -285,9 +288,12 @@ const EmergencyTab = () => {
                </div>
                <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">Aporte Mensal Destinado (R$)</label>
-                  <input type="text" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={aporte} onChange={formatInput(setAporte)}/>
-               </div>
-                <button onClick={handleSave} className="w-full bg-[#0a2540] hover:bg-blue-900 text-amber-500 font-bold py-3 px-4 rounded-lg transition-all shadow-md mt-2">Gravar Barreira</button>
+                <input type="text" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={aporte} onChange={formatInput(setAporte)}/>
+                </div>
+                 <button onClick={handleSave} className="w-full bg-[#0a2540] hover:bg-blue-900 text-amber-500 font-bold py-3 px-4 rounded-lg transition-all shadow-md mt-2">Gravar Barreira</button>
+                 {showSuccess && (
+                   <p className="text-green-600 text-sm font-bold text-center mt-2">✓ Salvo com sucesso!</p>
+                 )}
             </div>
          </div>
           <div>
