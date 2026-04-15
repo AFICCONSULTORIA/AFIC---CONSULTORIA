@@ -41,7 +41,7 @@ const parseReal = (str) => {
 };
 
 const BudgetTab = () => {
-  const { transactions, addTransaction, deleteTransaction, getBudgetSummary } = useFinancial();
+  const { transactions, addTransaction, deleteTransaction, getBudgetSummary, budgetLimits } = useFinancial();
   const [desc, setDesc] = useState('');
   const [amount, setAmount] = useState('');
   const [cat, setCat] = useState('income');
@@ -50,6 +50,9 @@ const BudgetTab = () => {
   const { incomes, fixed, varC, net } = getBudgetSummary();
   const pctFixed = incomes > 0 ? ((fixed / incomes) * 100).toFixed(0) : 0;
   const pctVar = incomes > 0 ? ((varC / incomes) * 100).toFixed(0) : 0;
+
+  const limitFixed = budgetLimits.fixed;
+  const limitVar = budgetLimits.variable;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -134,33 +137,33 @@ const BudgetTab = () => {
           </div>
 
          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Algoritmo 50/30/20</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Algoritmo {limitFixed}/{limitVar}/{budgetLimits.save}</h3>
             
             <div className="mb-4">
                <div className="flex justify-between text-sm mb-1">
                   <span className="font-bold text-gray-700">Custos Fixos ({pctFixed}%)</span>
-                  <span className="text-gray-400">Teto Ideal: 50%</span>
+                  <span className="text-gray-400">Teto Ideal: {limitFixed}%</span>
                </div>
                <div className="w-full bg-gray-200 rounded-full h-3 relative">
-                  <div className="absolute right-1/2 w-[2px] h-4 bg-gray-400 top-0"></div>
-                  <div className="bg-red-500 h-3 rounded-full" style={{ width: `${Math.min(pctFixed, 100)}%` }}></div>
+                  <div className="absolute" style={{ left: `${limitFixed}%`, width: '2px', height: '16px', backgroundColor: '#6b7280', position: 'absolute', top: '-4px' }}></div>
+                  <div className={`h-3 rounded-full ${pctFixed > limitFixed ? 'bg-red-500' : 'bg-green-500'}`} style={{ width: `${Math.min(pctFixed, 100)}%` }}></div>
                </div>
             </div>
 
             <div className="mb-4">
                <div className="flex justify-between text-sm mb-1">
                   <span className="font-bold text-gray-700">Custos Variáveis ({pctVar}%)</span>
-                  <span className="text-gray-400">Teto Ideal: 30%</span>
+                  <span className="text-gray-400">Teto Ideal: {limitVar}%</span>
                </div>
                <div className="w-full bg-gray-200 rounded-full h-3 relative">
-                  <div className="absolute left-[30%] w-[2px] h-4 bg-gray-400 top-0"></div>
-                  <div className="bg-orange-500 h-3 rounded-full" style={{ width: `${Math.min(pctVar, 100)}%` }}></div>
+                  <div className="absolute" style={{ left: `${limitVar}%`, width: '2px', height: '16px', backgroundColor: '#6b7280', position: 'absolute', top: '-4px' }}></div>
+                  <div className={`h-3 rounded-full ${pctVar > limitVar ? 'bg-red-500' : 'bg-green-500'}`} style={{ width: `${Math.min(pctVar, 100)}%` }}></div>
                </div>
             </div>
             
             <p className="text-sm text-gray-500 mt-4 leading-relaxed font-medium bg-gray-50 p-4 border border-gray-100 rounded-lg">
-               {(pctFixed > 50 || pctVar > 30) 
-                 ? "Alerta: Você está vazando capital pela regra 50/30/20. Reveja suas categorias urgentes." 
+               {(pctFixed > limitFixed || pctVar > limitVar) 
+                 ? `Alerta: Você está vazando capital pela regra ${limitFixed}/${limitVar}/${budgetLimits.save}. Reveja suas categorias urgentes.` 
                  : "Engenharia blindada: Seus custos estão dentro da métrica de enriquecimento programado."}
             </p>
          </div>

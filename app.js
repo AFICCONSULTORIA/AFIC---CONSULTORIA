@@ -1535,6 +1535,16 @@ window.initApp = function() {
                 msgEl.textContent = "Configurações salvas!";
                 msgEl.style.color = "#388e3c";
                 showToast("Configurações do orçamento salvas!");
+                
+                // Atualiza a visualização do orçamento imediatamente
+                if (typeof renderBudgetManager === 'function') {
+                    renderBudgetManager();
+                }
+                
+                // Emite evento para o React atualizar
+                window.dispatchEvent(new CustomEvent('budget-settings-updated', {
+                    detail: { fixed: fixedPct, variable: varPct, save: savePct }
+                }));
             } else {
                 msgEl.textContent = "Erro: " + error.message;
                 msgEl.style.color = "#ff4d4f";

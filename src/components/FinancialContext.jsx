@@ -9,6 +9,13 @@ export const FinancialProvider = ({ children }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [userId, setUserId] = useState(null);
 
+  // Budget limits from user settings
+  const [budgetLimits, setBudgetLimits] = useState({
+    fixed: 50,
+    variable: 30,
+    save: 20
+  });
+  
   // Data states
   const [transactions, setTransactions] = useState([]);
   const [creditCards, setCreditCards] = useState([]);
@@ -27,6 +34,17 @@ export const FinancialProvider = ({ children }) => {
           uId = session.user.id;
         }
         setUserId(uId);
+
+        // Fetch budget settings
+        const settingsRes = await supabase.from('budget_settings').select('*').eq('user_id', uId).limit(1);
+        if (!settingsRes.error && settingsRes.data && settingsRes.data.length > 0) {
+          const s = settingsRes.data[0];
+          setBudgetLimits({
+            fixed: s.fixed_limit_pct || 50,
+            variable: s.var_limit_pct || 30,
+            save: s.save_limit_pct || 20
+          });
+        }
 
         // Fetch parallelly using Promise.all - Use limit(1) instead of maybeSingle
         const [txRes, ccRes, emRes] = await Promise.all([
@@ -132,18 +150,75 @@ export const FinancialProvider = ({ children }) => {
     return { incomes, fixed, varC, net };
   };
 
+  // Update budget limits (called when user saves new settings)
+  const updateBudgetLimits = async (fixed, variable, save) => {
+    if (!supabase || !userId) return;
+    
+    const { error } = await supabase.from('budget_settings').upsert({
+      user_id: userId,
+      fixed_limit_pct: fixed,
+      var_limit_pct: variable,
+      save_limit_pct: save
+    }, { onConflict: 'user_id' });
+    
+    if (!error) {
+      setBudgetLimits({ fixed, variable, save });
+    }
+  };
+
+  // Listen for budget settings changes (realtime + custom event from vanilla JS)
+  useEffect(() => {
+    // Listener for Supabase realtime
+    if (supabase && userId && userId !== '00000000-0000-0000-0000-000000000000') {
+      const channel = supabase
+        .channel('budget_settings_changes')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'budget_settings',
+          filter: `user_id=eq.${userId}`
+        }, (payload) => {
+          if (payload.new) {
+            setBudgetLimits({
+              fixed: payload.new.fixed_limit_pct || 50,
+              variable: payload.new.var_limit_pct || 30,
+              save: payload.new.save_limit_pct || 20
+            });
+          }
+        })
+        .subscribe();
+        
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [userId, supabase]);
+
+  // Listen for custom event from vanilla JS (instant update without page reload)
+  useEffect(() => {
+    const handleSettingsUpdate = (e) => {
+      const { fixed, variable, save } = e.detail;
+      setBudgetLimits({ fixed, variable, save });
+    };
+    
+    window.addEventListener('budget-settings-updated', handleSettingsUpdate);
+    return () => window.removeEventListener('budget-settings-updated', handleSettingsUpdate);
+  }, []);
+
   return (
     <FinancialContext.Provider value={{
       isLoaded,
       transactions,
       creditCards,
       emergencyFund,
+      budgetLimits,
       addTransaction,
       deleteTransaction,
       addCreditCard,
       updateEmergencyFund,
       saveEmergencyFund: updateEmergencyFund,
-      getBudgetSummary
+      getBudgetSummary,
+      updateBudgetLimits
     }}>
       {children}
     </FinancialContext.Provider>
