@@ -1,17 +1,37 @@
 import React, { useState } from 'react';
 
+const formatReal = (val) => {
+  if (!val && val !== 0) return '';
+  const v = String(val).replace(/[^\d]/g, '');
+  if (!v) return '';
+  const num = Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+  return 'R$ ' + num;
+};
+
+const parseReal = (str) => {
+  if (!str) return 0;
+  return parseFloat(String(str).replace(/[^\d]/g, '')) / 100 || 0;
+};
+
+const onMoneyChange = (setter) => (e) => {
+  const v = e.target.value.replace(/[^\d]/g, '');
+  if (!v) { setter(''); return; }
+  const num = Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+  setter('R$ ' + num);
+};
+
 export const DebtDestroyerCalc = () => {
-  const [debtAmount, setDebtAmount] = useState('25000');
+  const [debtAmount, setDebtAmount] = useState(formatReal(25000));
   const [interestRate, setInterestRate] = useState('3.5');
-  const [monthlyPayment, setMonthlyPayment] = useState('1200');
+  const [monthlyPayment, setMonthlyPayment] = useState(formatReal(1200));
 
   let monthsToPayoff = 0;
   let totalInterest = 0;
   let isUnpayable = false;
 
-  const D = parseFloat(debtAmount) || 0;
+  const D = parseReal(debtAmount);
   const i = (parseFloat(interestRate) || 0) / 100;
-  const P = parseFloat(monthlyPayment) || 0;
+  const P = parseReal(monthlyPayment);
 
   if (D > 0 && i >= 0 && P > 0) {
     if (i === 0) {
@@ -39,9 +59,9 @@ export const DebtDestroyerCalc = () => {
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">Valor Total da Dívida Atual (R$)</label>
               <input 
-                type="number" 
+                type="text" 
                 value={debtAmount}
-                onChange={(e) => setDebtAmount(e.target.value)}
+                onChange={onMoneyChange(setDebtAmount)}
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" 
               />
             </div>
@@ -60,9 +80,9 @@ export const DebtDestroyerCalc = () => {
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Pagamento Mensal (R$)</label>
                 <input 
-                  type="number" 
+                  type="text" 
                   value={monthlyPayment}
-                  onChange={(e) => setMonthlyPayment(e.target.value)}
+                  onChange={onMoneyChange(setMonthlyPayment)}
                   className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" 
                 />
               </div>
@@ -104,12 +124,12 @@ export const DebtDestroyerCalc = () => {
 };
 
 export const FeeAuditorCalc = () => {
-  const [investedAmount, setInvestedAmount] = useState('100000');
+  const [investedAmount, setInvestedAmount] = useState(formatReal(100000));
   const [years, setYears] = useState('20');
   const [grossReturn, setGrossReturn] = useState('10');
   const [adminFee, setAdminFee] = useState('1.5');
 
-  const P = parseFloat(investedAmount) || 0;
+  const P = parseReal(investedAmount);
   const n = parseFloat(years) || 0;
   const rGross = parseFloat(grossReturn) || 0;
   const rFee = parseFloat(adminFee) || 0;
@@ -137,9 +157,9 @@ export const FeeAuditorCalc = () => {
             <div className="sm:col-span-2">
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">Capital Inicial Investido (R$)</label>
               <input 
-                type="number" 
+                type="text" 
                 value={investedAmount}
-                onChange={(e) => setInvestedAmount(e.target.value)}
+                onChange={onMoneyChange(setInvestedAmount)}
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all" 
               />
             </div>

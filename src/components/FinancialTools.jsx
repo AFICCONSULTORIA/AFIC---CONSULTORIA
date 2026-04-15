@@ -3,7 +3,38 @@ import { useFinancial } from './FinancialContext';
 import { DebtDestroyerCalc, FeeAuditorCalc } from './Calculators';
 
 // Helper de Moeda Real
-const fmtBR = (num) => Number(num).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+const fmtBR = (num) => {
+  if (num === null || num === undefined || isNaN(num)) return 'R$ 0,00';
+  if (num === 0) return 'R$ 0,00';
+  return 'R$ ' + Number(num).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+};
+
+const fmtInput = (val) => {
+  if (!val) return '';
+  const num = String(val).replace(/\D/g, '');
+  if (!num) return '';
+  return Number(num) / 100;
+};
+
+const onAmountChange = (e) => {
+  const v = e.target.value.replace(/[^\d]/g, '');
+  if (!v) { setAmount(''); return; }
+  const num = Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+  setAmount('R$ ' + num);
+};
+
+const formatReal = (val) => {
+  if (!val && val !== 0) return '';
+  const v = String(val).replace(/[^\d]/g, '');
+  if (!v) return '';
+  const num = Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+  return 'R$ ' + num;
+};
+
+const parseReal = (str) => {
+  if (!str) return 0;
+  return parseFloat(String(str).replace(/[^\d]/g, '')) / 100 || 0;
+};
 
 const BudgetTab = () => {
   const { transactions, addTransaction, deleteTransaction, getBudgetSummary } = useFinancial();
@@ -19,7 +50,7 @@ const BudgetTab = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if(desc && amount) {
-       addTransaction(desc, parseFloat(amount.replace(/\./g, '').replace(',', '.')) || 0, cat, method);
+       addTransaction(desc, parseReal(amount), cat, method);
        setDesc('');
        setAmount('');
     }
@@ -43,7 +74,7 @@ const BudgetTab = () => {
               </div>
               <div>
                  <label className="block text-sm font-semibold text-gray-700 mb-1">Valor (R$)</label>
-                 <input className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={amount} onChange={e=>setAmount(e.target.value)} placeholder="0.00" required/>
+                 <input className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={amount} onChange={onAmountChange} placeholder="R$ 0,00" required/>
               </div>
               <div className="flex gap-4">
                  <div className="w-1/2">
@@ -81,7 +112,7 @@ const BudgetTab = () => {
                         </div>
                      </div>
                      <div className="flex items-center gap-3">
-                        <span className={`font-bold ${t.category === 'income' ? 'text-green-600' : 'text-gray-900'}`}>R$ {fmtBR(t.amount)}</span>
+                        <span className={`font-bold ${t.category === 'income' ? 'text-green-600' : 'text-gray-900'}`}>{fmtBR(t.amount)}</span>
                         <button onClick={() => deleteTransaction(t.id)} className="text-red-400 hover:text-red-600 font-bold" title="Deletar">✖</button>
                      </div>
                   </div>
@@ -94,7 +125,7 @@ const BudgetTab = () => {
           <div className="bg-[#0a2540] border border-[#cda434]/20 rounded-xl p-6 mb-6 shadow-xl relative overflow-hidden">
              <div className="absolute top-0 right-0 w-32 h-32 bg-[#cda434]/5 -rotate-45 translate-x-16 -translate-y-16 pointer-events-none" />
              <p className="text-sm text-amber-500/80 font-bold mb-1 uppercase tracking-widest">Resultado Líquido</p>
-             <h2 className="text-4xl font-black text-white">R$ {fmtBR(net)}</h2>
+             <h2 className="text-4xl font-black text-white">{fmtBR(net)}</h2>
              <p className="text-xs text-amber-500/40 mt-2 font-medium">Diferença Custo/Receita (Mês Atual)</p>
           </div>
 
@@ -144,7 +175,7 @@ const CreditCardTab = () => {
    const handleSubmit = (e) => {
      e.preventDefault();
      if(desc && val && month) {
-        addCreditCardBuy(desc, parseFloat(val.replace(/\./g, '').replace(',', '.')) || 0, parseInt(install), month);
+        addCreditCardBuy(desc, parseReal(val), parseInt(install), month);
         setDesc(''); setVal('');
      }
    };
@@ -163,7 +194,7 @@ const CreditCardTab = () => {
                   </div>
                   <div>
                      <label className="block text-sm font-semibold text-gray-700 mb-1">Valor Total Devido (R$)</label>
-                     <input className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={val} onChange={e=>setVal(e.target.value)} placeholder="0.00" required/>
+                     <input className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={val} onChange={e=>setVal(formatReal(e.target.value))} placeholder="R$ 0,00" required/>
                   </div>
                   <div className="flex gap-4">
                      <div className="w-1/2">
@@ -190,8 +221,8 @@ const CreditCardTab = () => {
                         </div>
                         <div className="flex items-center gap-3">
                            <div className="text-right">
-                              <p className="font-bold text-gray-900">R$ {fmtBR(cc.total_amount)}</p>
-                              <p className="text-xs text-red-500">R$ {fmtBR(cc.total_amount / cc.installments)}/mês</p>
+                              <p className="font-bold text-gray-900">{fmtBR(cc.total_amount)}</p>
+                              <p className="text-xs text-red-500">{fmtBR(cc.total_amount / cc.installments)}/mês</p>
                            </div>
                            <button onClick={() => deleteCreditCardBuy(cc.id)} className="text-red-400 hover:text-red-600 font-bold" title="Remover">✖</button>
                         </div>
@@ -203,7 +234,7 @@ const CreditCardTab = () => {
          <div>
             <div className="bg-red-50 border border-red-100 rounded-xl p-6 mb-6">
                <p className="text-sm text-red-600 font-bold mb-1">Comprometimento Mensal Calculado</p>
-               <h2 className="text-4xl font-black text-red-900">R$ {fmtBR(billThisMonth)}</h2>
+               <h2 className="text-4xl font-black text-red-900">{fmtBR(billThisMonth)}</h2>
                <p className="text-xs text-red-500 mt-2">Corrói a sua taxa de entrada de dinheiro vital.</p>
             </div>
          </div>
@@ -214,18 +245,18 @@ const CreditCardTab = () => {
 const EmergencyTab = () => {
    const { emergencyFund, saveEmergencyFund } = useFinancial();
    
-   const [fixo, setFixo] = useState(emergencyFund?.fixed_cost || 0);
+   const [fixo, setFixo] = useState(formatReal(emergencyFund?.fixed_cost || 0));
    const [months, setMonths] = useState(emergencyFund?.coverage_months || 6);
-   const [atual, setAtual] = useState(emergencyFund?.current_reserve || 0);
-   const [aporte, setAporte] = useState(emergencyFund?.expected_deposit || 0);
+   const [atual, setAtual] = useState(formatReal(emergencyFund?.current_reserve || 0));
+   const [aporte, setAporte] = useState(formatReal(emergencyFund?.expected_deposit || 0));
 
-   const tgt = fixo * months;
-   const pct = tgt > 0 ? (atual / tgt) * 100 : 0;
-   const missing = Math.max(tgt - atual, 0);
-   const time = (aporte > 0 && missing > 0) ? Math.ceil(missing / aporte) : 0;
+   const tgt = parseReal(fixo) * months;
+   const pct = tgt > 0 ? (parseReal(atual) / tgt) * 100 : 0;
+   const missing = Math.max(tgt - parseReal(atual), 0);
+   const time = (parseReal(aporte) > 0 && missing > 0) ? Math.ceil(missing / parseReal(aporte)) : 0;
 
    const handleSave = () => {
-      saveEmergencyFund(fixo, months, atual, aporte);
+      saveEmergencyFund(parseReal(fixo), months, parseReal(atual), parseReal(aporte));
    };
 
    return (
@@ -235,7 +266,7 @@ const EmergencyTab = () => {
             <div className="space-y-4">
                <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">Custo Fixo Mensal Calculado (R$)</label>
-                  <input type="number" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={fixo} onChange={e=>setFixo(e.target.value)}/>
+                  <input type="text" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={fixo} onChange={e=>setFixo(formatReal(e.target.value))}/>
                </div>
                <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">Meses Desejados de Escudo</label>
@@ -243,11 +274,11 @@ const EmergencyTab = () => {
                </div>
                <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">Reserva Atual Salva (R$)</label>
-                  <input type="number" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={atual} onChange={e=>setAtual(e.target.value)}/>
+                  <input type="text" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={atual} onChange={e=>setAtual(formatReal(e.target.value))}/>
                </div>
                <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">Aporte Mensal Destinado (R$)</label>
-                  <input type="number" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={aporte} onChange={e=>setAporte(e.target.value)}/>
+                  <input type="text" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={aporte} onChange={e=>setAporte(formatReal(e.target.value))}/>
                </div>
                 <button onClick={handleSave} className="w-full bg-[#0a2540] hover:bg-blue-900 text-amber-500 font-bold py-3 px-4 rounded-lg transition-all shadow-md mt-2">Gravar Barreira</button>
             </div>
@@ -255,7 +286,7 @@ const EmergencyTab = () => {
           <div>
              <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-6 mb-6 shadow-sm">
                 <p className="text-sm text-emerald-600 font-bold mb-1 uppercase tracking-wider">Tamanho Matemático Ideal</p>
-                <h2 className="text-4xl font-black text-emerald-900">R$ {fmtBR(tgt)}</h2>
+                <h2 className="text-4xl font-black text-emerald-900">{fmtBR(tgt)}</h2>
                 <p className="text-xs text-emerald-500 mt-2">Muralha anti-falência baseada no custo fixo.</p>
              </div>
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
@@ -273,25 +304,27 @@ const EmergencyTab = () => {
 };
 
 const CompoundInterestTab = () => {
-   const [initial, setInitial] = useState(50000);
-   const [monthly, setMonthly] = useState(2000);
+   const [initial, setInitial] = useState(formatReal(50000));
+   const [monthly, setMonthly] = useState(formatReal(2000));
    const [years, setYears] = useState(10);
    const [rate, setRate] = useState(12);
 
    // Math engine
+   const initialVal = parseReal(initial);
+   const monthlyVal = parseReal(monthly);
    const monthlyRate = (rate / 100) / 12;
    const totalMonths = years * 12;
    const yearData = [];
 
-   let balance = initial;
-   let totalInvested = initial;
+   let balance = initialVal;
+   let totalInvested = initialVal;
    let crossoverYear = null;
 
-   for (let y = 1; y <= years; y++) {
-      for (let m = 0; m < 12; m++) {
-         balance = balance * (1 + monthlyRate) + monthly;
-         totalInvested += monthly;
-      }
+for (let y = 1; y <= years; y++) {
+       for (let m = 0; m < 12; m++) {
+          balance = balance * (1 + monthlyRate) + monthlyVal;
+          totalInvested += monthlyVal;
+       }
       const interest = balance - totalInvested;
       if (!crossoverYear && interest > totalInvested) crossoverYear = y;
       yearData.push({ year: y, invested: totalInvested, interest, balance });
@@ -309,11 +342,11 @@ const CompoundInterestTab = () => {
                <div className="space-y-4">
                   <div>
                      <label className="block text-sm font-semibold text-gray-700 mb-1">Investimento Inicial (R$)</label>
-                     <input type="number" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={initial} onChange={e => setInitial(Number(e.target.value))} />
+                     <input type="text" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={initial} onChange={e => setInitial(formatReal(e.target.value))} />
                   </div>
                   <div>
                      <label className="block text-sm font-semibold text-gray-700 mb-1">Aporte Mensal (R$)</label>
-                     <input type="number" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={monthly} onChange={e => setMonthly(Number(e.target.value))} />
+                     <input type="text" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={monthly} onChange={e => setMonthly(formatReal(e.target.value))} />
                   </div>
                   <div className="flex gap-4">
                      <div className="w-1/2">
@@ -346,9 +379,9 @@ const CompoundInterestTab = () => {
                         {yearData.map(d => (
                            <tr key={d.year} className="border-b border-gray-50 hover:bg-gray-50">
                               <td className="py-2 font-bold text-gray-700">{d.year}º</td>
-                              <td className="py-2 text-right text-gray-600">R$ {fmtBR(d.invested)}</td>
-                              <td className="py-2 text-right text-amber-600 font-semibold">R$ {fmtBR(d.interest)}</td>
-                              <td className="py-2 text-right text-gray-900 font-bold">R$ {fmtBR(d.balance)}</td>
+<td className="py-2 text-right text-gray-600">{fmtBR(d.invested)}</td>
+                               <td className="py-2 text-right text-amber-600 font-semibold">{fmtBR(d.interest)}</td>
+                               <td className="py-2 text-right text-gray-900 font-bold">{fmtBR(d.balance)}</td>
                            </tr>
                         ))}
                      </tbody>
@@ -370,12 +403,12 @@ const CompoundInterestTab = () => {
             <div className="grid grid-cols-2 gap-4 mb-6">
                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
                   <p className="text-sm text-gray-500 font-semibold mb-1">Total do seu Bolso</p>
-                  <p className="text-2xl font-black text-gray-900">R$ {fmtBR(finalInvested)}</p>
+                  <p className="text-2xl font-black text-gray-900">{fmtBR(finalInvested)}</p>
                   <p className="text-xs text-gray-400 mt-1">Capital + Aportes</p>
                </div>
                <div className="bg-white rounded-xl shadow-sm border border-amber-100 p-5">
                   <p className="text-sm text-amber-600 font-semibold mb-1">Bola de Neve</p>
-                  <p className="text-2xl font-black text-amber-600">R$ {fmtBR(finalInterest)}</p>
+                  <p className="text-2xl font-black text-amber-600">{fmtBR(finalInterest)}</p>
                   <p className="text-xs text-amber-400 mt-1">Rendimento passivo</p>
                </div>
             </div>

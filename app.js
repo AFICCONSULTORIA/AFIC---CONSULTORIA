@@ -1851,24 +1851,19 @@ document.addEventListener('DOMContentLoaded', () => {
         container.innerHTML = '<p style="color:var(--text-muted); font-size:13px;">Carregando debate...</p>';
 
         try {
-            let { data, error } = await supabase
+            const { data: comments, error: commentsError } = await supabase
                 .from('community_comments')
-                .select('*, profiles:user_id(nickname)')
+                .select('*')
                 .eq('topic_id', topicId)
                 .order('created_at', { ascending: true });
-
-            // FALLBACK: Se o join falhar, busca apenas os comentários
-            if (error) {
-                console.warn("Comments join failed, attempting fallback...", error.message);
-                const fallback = await supabase
-                    .from('community_comments')
-                    .select('*')
-                    .eq('topic_id', topicId)
-                    .order('created_at', { ascending: true });
-                
-                if (fallback.error) throw fallback.error;
-                data = fallback.data;
-            }
+            
+            if (commentsError) throw commentsError;
+            
+            const { data: profiles } = await supabase.from('profiles').select('id, nickname');
+            const profileMap = {};
+            profiles?.forEach(p => profileMap[p.id] = p.nickname || 'Membro');
+            
+            let data = comments.map(c => ({ ...c, profiles: { nickname: profileMap[c.user_id] } }));
 
             container.innerHTML = data.length === 0 ? '<p style="color:var(--text-muted); font-size:13px; text-align:center;">Nenhum comentário ainda. Seja o primeiro a contribuir!</p>' : '';
             

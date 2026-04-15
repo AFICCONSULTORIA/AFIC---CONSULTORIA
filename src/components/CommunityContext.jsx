@@ -153,12 +153,16 @@ export const CommunityProvider = ({ children }) => {
 
   const getComments = async (topicId) => {
     if (!supabase) return [];
-    const { data, error } = await supabase
+    const { data: comments } = await supabase
       .from('community_comments')
-      .select('*, profiles(nickname)')
+      .select('*')
       .eq('topic_id', topicId)
       .order('created_at', { ascending: true });
-    return error ? [] : data;
+    if (!comments) return [];
+    const { data: profiles } = await supabase.from('profiles').select('id, nickname');
+    const map = {};
+    profiles?.forEach(p => map[p.id] = p.nickname || 'Membro');
+    return comments.map(c => ({ ...c, profiles: { nickname: map[c.user_id] } }));
   };
 
   const addComment = async (topicId, content) => {
@@ -175,8 +179,7 @@ export const CommunityProvider = ({ children }) => {
     const { error } = await supabase.from('community_comments').insert([{
       topic_id: topicId,
       user_id: session.user.id,
-      content,
-      user_nickname: nickname
+      content
     }]);
 
     return !error;
@@ -198,16 +201,15 @@ export const CommunityProvider = ({ children }) => {
   };
 
   const toggleLike = async (topicId) => {
-    const getSB = () => supabase;
     const session = await getCurrentSession();
-    if (!sb || !session?.user) {
+    if (!supabase || !session?.user) {
       console.error('toggleLike: usuário não autenticado');
       return;
     }
 
     const uid = session.user.id;
 
-    const { data: existingLikes } = await sb
+    const { data: existingLikes } = await supabase
       .from('community_likes')
       .select('*')
       .eq('topic_id', topicId)
@@ -216,25 +218,34 @@ export const CommunityProvider = ({ children }) => {
     const existingLike = existingLikes?.[0];
 
     if (existingLike) {
-      const { error } = await sb
+      const { error } = await supabase
         .from('community_likes')
         .delete()
         .eq('topic_id', topicId)
         .eq('user_id', uid);
       if (error) console.error('toggleLike delete error:', error.message);
     } else {
-      const { error } = await sb
+      const { error } = await supabase
         .from('community_likes')
         .insert([{ topic_id: topicId, user_id: uid }]);
       if (error) console.error('toggleLike insert error:', error.message);
     }
   };
 
+  const deleteComment = async (commentId) => {
+    const session = await getCurrentSession();
+    if (!supabase || !session?.user) return false;
+    const { data } = await supabase.from('community_comments').select('user_id').eq('id', commentId).limit(1);
+    if (data?.[0]?.user_id !== session.user.id) return false;
+    const { error } = await supabase.from('community_comments').delete().eq('id', commentId);
+    return !error;
+  };
+
   return (
     <CommunityContext.Provider value={{
       topics, isLoaded, userId, userNickname, announcements, isAdmin, setIsAdmin,
       fetchTopics, createTopic, deleteTopic, updateTopicCover,
-      getTopicDetail, getComments, addComment, getLikes, toggleLike,
+      getTopicDetail, getComments, addComment, getLikes, toggleLike, deleteComment,
       fetchAnnouncements, 
       addAnnouncement: async (content, isPriority) => {
         const sb = getSB();

@@ -405,7 +405,7 @@ const NewTopicModal = ({ isOpen, onClose }) => {
 
 // ──────────── Topic Detail ────────────
 const TopicDetail = ({ topicId, onBack }) => {
-  const { getTopicDetail, getComments, addComment, getLikes, toggleLike, deleteTopic, updateTopicCover, userId } = useCommunity();
+  const { getTopicDetail, getComments, addComment, getLikes, toggleLike, deleteComment, deleteTopic, updateTopicCover, userId } = useCommunity();
   const [topic, setTopic] = useState(null);
   const [comments, setComments] = useState([]);
   const [likes, setLikes] = useState({ count: 0, userLiked: false });
@@ -556,13 +556,20 @@ const TopicDetail = ({ topicId, onBack }) => {
         <div className="space-y-6">
           {comments.length === 0 && <p className="text-sm text-gray-400 text-center py-4">Nenhum comentário ainda. Seja o primeiro!</p>}
           {comments.map(c => {
-            const cAuthor = c.nickname || 'Membro';
+            const cAuthor = c.profiles?.nickname || 'Membro';
+            const isOwner = c.user_id === userId;
             return (
               <div key={c.id} className="bg-white border border-gray-100 rounded-xl p-5">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-black text-gray-500">{cAuthor.substring(0, 2).toUpperCase()}</div>
                   <span className="text-sm font-bold text-gray-700">{cAuthor}</span>
                   <span className="text-xs text-gray-400">{fmtDate(c.created_at)}</span>
+                  {isOwner && (
+                    <button
+                      onClick={async () => { if (confirm('Apagar comentário?')) { await deleteComment(c.id); setComments(await getComments(topicId)); }}}
+                      className="ml-auto text-xs text-red-500 hover:text-red-700"
+                    >🗑️</button>
+                  )}
                 </div>
                 <p className="text-sm text-gray-600 leading-relaxed">{c.content}</p>
               </div>
