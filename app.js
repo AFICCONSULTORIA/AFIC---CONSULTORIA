@@ -1362,25 +1362,89 @@ document.addEventListener('DOMContentLoaded', () => {
             const nicknameInput = document.getElementById('user-nickname');
             if (nicknameInput) nicknameInput.value = data.nickname || '';
             
+            // Preencher todos os campos do perfil
+            if (document.getElementById('user-email')) document.getElementById('user-email').value = data.email_public || '';
+            if (document.getElementById('user-about')) document.getElementById('user-about').value = data.about || '';
+            if (document.getElementById('user-linkedin')) document.getElementById('user-linkedin').value = data.linkedin || '';
+            if (document.getElementById('user-instagram')) document.getElementById('user-instagram').value = data.instagram || '';
+            
+            // Atualizar preview
+            updateProfilePreview(data);
+            
+            // Atualizar foto de perfil se existir
+            if (data.avatar_url) {
+                const img = document.getElementById('avatar-img');
+                const preview = document.getElementById('avatar-preview');
+                const initials = document.getElementById('avatar-initials');
+                if (img && preview && initials) {
+                    img.src = data.avatar_url;
+                    img.style.display = 'block';
+                    initials.style.display = 'none';
+                }
+            }
+            
             // Update UI with nickname if needed
             const userDisplay = document.querySelector('.user-name');
             if (userDisplay && data.nickname) userDisplay.textContent = data.nickname;
         }
     }
 
+    function updateProfilePreview(data) {
+        const previewNickname = document.getElementById('preview-nickname');
+        const previewAbout = document.getElementById('preview-about');
+        const previewSocial = document.getElementById('preview-social');
+        const previewLinkedin = document.getElementById('preview-linkedin');
+        const previewInitials = document.getElementById('preview-initials');
+        
+        if (previewNickname) previewNickname.textContent = data.nickname || 'Seu Nickname';
+        if (previewAbout) previewAbout.textContent = data.about || 'Sua biografia aparecerá aqui...';
+        
+        if (data.linkedin) {
+            if (previewLinkedin) {
+                previewLinkedin.href = data.linkedin;
+                previewLinkedin.style.display = 'block';
+            }
+        }
+    }
+
     const formProfile = document.getElementById('form-profile');
     if (formProfile) {
+        console.log('Profile form found, adding listener...');
         formProfile.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const nickname = document.getElementById('user-nickname').value.trim();
+            console.log('Profile form submitted!');
+            const nickname = document.getElementById('user-nickname')?.value.trim();
+            const emailPublic = document.getElementById('user-email')?.value.trim() || null;
+            const about = document.getElementById('user-about')?.value.trim() || null;
+            const linkedin = document.getElementById('user-linkedin')?.value.trim() || null;
+            const instagram = document.getElementById('user-instagram')?.value.trim() || null;
             const profileMsg = document.getElementById('profile-msg');
             
-            if (!nickname) return;
+            console.log('Saving profile:', { nickname, emailPublic, about, linkedin, instagram });
+            
+            if (!nickname) {
+                alert('Por favor, preencha o apelido!');
+                return;
+            }
+
+            if (!currentUser) {
+                alert('Usuário não está logado!');
+                return;
+            }
 
             const { error } = await supabase
                 .from('profiles')
-                .upsert({ id: currentUser.id, nickname: nickname, updated_at: new Date() });
+                .upsert({ 
+                    id: currentUser.id, 
+                    nickname: nickname, 
+                    email_public: emailPublic,
+                    about: about,
+                    linkedin: linkedin,
+                    instagram: instagram,
+                    updated_at: new Date() 
+                });
 
+            console.log('Save result:', error);
             if (error) {
                 profileMsg.textContent = "Erro ao salvar: " + error.message;
                 profileMsg.style.color = "#ff4d4f";
@@ -1391,6 +1455,54 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             profileMsg.style.display = 'block';
             setTimeout(() => profileMsg.style.display = 'none', 3000);
+        });
+    }
+
+    // Avatar upload handler
+    const avatarFileInput = document.getElementById('user-avatar-file');
+    if (avatarFileInput) {
+        avatarFileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            // Preview local
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                const img = document.getElementById('avatar-img');
+                const initials = document.getElementById('avatar-initials');
+                if (img) {
+                    img.src = evt.target.result;
+                    img.style.display = 'block';
+                    if (initials) initials.style.display = 'none';
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Botão remover foto
+    const btnRemoveAvatar = document.getElementById('btn-remove-avatar');
+    if (btnRemoveAvatar) {
+        btnRemoveAvatar.addEventListener('click', async () => {
+            if (!currentUser) return;
+            
+            if (confirm('Tem certeza que deseja remover a foto de perfil?')) {
+                const { error } = await supabase
+                    .from('profiles')
+                    .update({ avatar_url: null })
+                    .eq('id', currentUser.id);
+                
+                if (!error) {
+                    const img = document.getElementById('avatar-img');
+                    const initials = document.getElementById('avatar-initials');
+                    if (img) {
+                        img.src = '';
+                        img.style.display = 'none';
+                    }
+                    if (initials) initials.style.display = 'flex';
+                    showToast('Foto removida!');
+                }
+            }
         });
     }
 
