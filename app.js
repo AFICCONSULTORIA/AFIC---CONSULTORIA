@@ -361,23 +361,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // ─── SEARCH INPUT FOCUS STATE ───
-    const searchInput = document.getElementById('search-input');
-    const searchContainer = searchInput?.closest('.search-container');
-    
-    if (searchInput && searchContainer) {
-        searchInput.addEventListener('focus', () => {
-            searchContainer.style.background = 'var(--bg-light-blue)';
-            searchContainer.style.padding = '4px 12px';
-            searchContainer.style.transition = 'all 0.3s cubic-bezier(0.22, 1, 0.36, 1)';
-        });
-        
-        searchInput.addEventListener('blur', () => {
-            searchContainer.style.background = 'transparent';
-            searchContainer.style.padding = '0';
-        });
-    }
-
     // ─── NOTIFICATION BUTTON ───
     const notifBtn = document.getElementById('notification-btn');
     if (notifBtn) {
@@ -1251,61 +1234,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, duration);
     }
 
-    // ─── 1. SEARCH INPUT (Top Bar) ───
-    if (searchInput) {
-        searchInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && searchInput.value.trim()) {
-                const query = searchInput.value.trim().toLowerCase();
-                const searchMap = {
-                    'orçamento': 'budget', 'orcamento': 'budget', 'budget': 'budget',
-                    'cartão': 'cards', 'cartao': 'cards', 'cartões': 'cards', 'cartoes': 'cards', 'crédito': 'cards', 'credito': 'cards',
-                    'bola': 'compound', 'juros': 'compound', 'composto': 'compound', 'neve': 'compound',
-                    'emergência': 'emergency', 'emergencia': 'emergency', 'reserva': 'emergency',
-                    'educação': null, 'educacao': null, 'academy': null, 'curso': null,
-                    'comunidade': null, 'community': null, 'forum': null,
-                    'plano': null, 'planos': null, 'premium': null, 'elite': null,
-                };
-                let matched = false;
-                for (const [keyword, tool] of Object.entries(searchMap)) {
-                    if (query.includes(keyword)) {
-                        matched = true;
-                        if (tool) {
-                            // Navigate to tools page and activate sub-tab
-                            navLinks.forEach(l => l.classList.remove('active'));
-                            document.getElementById('nav-tools')?.classList.add('active');
-                            switchPage('tools');
-                            // Activate the right tool tab
-                            toolTabs.forEach(t => t.classList.remove('active'));
-                            toolViews.forEach(v => v.classList.add('tool-hidden'));
-                            const tab = document.querySelector(`.tool-tab[data-tool="${tool}"]`);
-                            const view = document.getElementById(`tool-${tool}`);
-                            if (tab) tab.classList.add('active');
-                            if (view) view.classList.remove('tool-hidden');
-                        } else if (['educação','educacao','academy','curso'].some(k => query.includes(k))) {
-                            navLinks.forEach(l => l.classList.remove('active'));
-                            document.getElementById('nav-education')?.classList.add('active');
-                            switchPage('education');
-                        } else if (['comunidade','community','forum'].some(k => query.includes(k))) {
-                            navLinks.forEach(l => l.classList.remove('active'));
-                            document.getElementById('nav-community')?.classList.add('active');
-                            switchPage('community');
-                        } else if (['plano','planos','premium','elite'].some(k => query.includes(k))) {
-                            navLinks.forEach(l => l.classList.remove('active'));
-                            document.getElementById('nav-account')?.classList.add('active');
-                            switchPage('plans');
-                        }
-                        showToast(`Navegando para: "${keyword}"`);
-                        break;
-                    }
-                }
-                if (!matched) {
-                    showToast('Nenhum resultado encontrado para: "' + query + '"');
-                }
-                searchInput.value = '';
-                searchInput.blur();
-            }
-        });
-    }
+    
 
     // ─── 2. USER PROFILE CLICK → Account Page ───
     const userProfile = document.getElementById('user-profile');
