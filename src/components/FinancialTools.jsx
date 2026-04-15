@@ -397,9 +397,9 @@ for (let y = 1; y <= years; y++) {
             </div>
          </div>
 
-         <div>
-             {/* Crossover */}
-             <div className="bg-[#cda434] border border-[#b8860b] rounded-xl p-6 mb-6 shadow-lg text-[#0a2540]">
+          <div>
+              {/* Crossover */}
+              <div className="bg-[#cda434] border border-[#b8860b] rounded-xl p-6 mb-6 shadow-lg text-[#0a2540] dark:text-white">
                 <p className="text-sm font-black mb-1 uppercase tracking-widest opacity-70">Ponto de Ignição (Crossover)</p>
                 <h2 className="text-4xl font-black">
                    {crossoverYear ? `Ano ${crossoverYear}` : `Acima de ${years} anos`}

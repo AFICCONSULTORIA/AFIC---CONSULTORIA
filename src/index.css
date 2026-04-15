@@ -109,4 +109,30 @@
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     transition-duration: 300ms;
   }
+  
+  /* Tool tabs active state - Dark mode */
+  .dark .border-b-2 {
+    border-color: transparent !important;
+  }
+  
+  .dark .border-b-2.border-\[\#cda434\] {
+    border-color: #D4AF37 !important;
+  }
+  
+  .dark .text-\[\#0a2540\],
+  .dark .text-gray-900 {
+    color: #D4AF37 !important;
+  }
+  
+  /* Snowball Crossover - Dark mode */
+  .dark .bg-\[\#cda434\] {
+    background-color: #1a1a2e !important;
+    border-color: #D4AF37 !important;
+    opacity: 0.9;
+  }
+  
+  .dark .bg-\[\#cda434\]\.text-\[\#0a2540\],
+  .dark .bg-\[\#cda434\] .text-\[\#0a2540\] {
+    color: #ffffff !important;
+  }
 }

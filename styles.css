@@ -1596,6 +1596,23 @@ h1, h2, h3, h4, h5, h6 {
     transform: scaleX(1);
 }
 
+/* Dark mode - tool tabs */
+:root.dark .tool-tab {
+    color: #8892a0;
+}
+
+:root.dark .tool-tab:hover {
+    color: #ffffff;
+}
+
+:root.dark .tool-tab.active {
+    color: #D4AF37 !important;
+}
+
+:root.dark .tool-tab::after {
+    background: #D4AF37;
+}
+
 .tool-hidden {
     display: none !important;
 }
