@@ -16,24 +16,28 @@ const fmtInput = (val) => {
   return Number(num) / 100;
 };
 
-const onAmountChange = (e) => {
-  const v = e.target.value.replace(/[^\d]/g, '');
-  if (!v) { setAmount(''); return; }
-  const num = Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-  setAmount('R$ ' + num);
+const formatCurrency = (setter) => (e) => {
+  let val = e.target.value;
+  val = val.replace('R$', '').trim();
+  const raw = val.replace(/[^\d]/g, '');
+  if (!raw) { setter(''); return; }
+  if (raw.length > 16) return;
+  const num = Number(raw) / 100;
+  if (isNaN(num)) { setter(''); return; }
+  setter('R$ ' + num.toLocaleString('pt-BR', { minimumFractionDigits: 2 }));
 };
 
-const formatReal = (val) => {
-  if (!val && val !== 0) return '';
-  const v = String(val).replace(/[^\d]/g, '');
-  if (!v) return '';
-  const num = Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-  return 'R$ ' + num;
+const formatInput = formatCurrency;
+
+const fmtReal = (num) => {
+  if (!num && num !== 0) return 'R$ 0,00';
+  return 'R$ ' + Number(num).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
 };
 
 const parseReal = (str) => {
   if (!str) return 0;
-  return parseFloat(String(str).replace(/[^\d]/g, '')) / 100 || 0;
+  const clean = String(str).replace('R$', '').replace(/\./g, '').replace(',', '.');
+  return parseFloat(clean) || 0;
 };
 
 const BudgetTab = () => {
@@ -74,7 +78,7 @@ const BudgetTab = () => {
               </div>
               <div>
                  <label className="block text-sm font-semibold text-gray-700 mb-1">Valor (R$)</label>
-                 <input className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={amount} onChange={onAmountChange} placeholder="R$ 0,00" required/>
+                 <input className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={amount} onChange={formatCurrency(setAmount)} placeholder="R$ 0,00" required/>
               </div>
               <div className="flex gap-4">
                  <div className="w-1/2">
@@ -194,7 +198,7 @@ const CreditCardTab = () => {
                   </div>
                   <div>
                      <label className="block text-sm font-semibold text-gray-700 mb-1">Valor Total Devido (R$)</label>
-                     <input className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={val} onChange={e=>setVal(formatReal(e.target.value))} placeholder="R$ 0,00" required/>
+                     <input className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={val} onChange={formatInput(setVal)} placeholder="R$ 0,00" required/>
                   </div>
                   <div className="flex gap-4">
                      <div className="w-1/2">
@@ -245,10 +249,10 @@ const CreditCardTab = () => {
 const EmergencyTab = () => {
    const { emergencyFund, saveEmergencyFund } = useFinancial();
    
-   const [fixo, setFixo] = useState(formatReal(emergencyFund?.fixed_cost || 0));
+   const [fixo, setFixo] = useState(fmtReal(emergencyFund?.fixed_cost || 0));
    const [months, setMonths] = useState(emergencyFund?.coverage_months || 6);
-   const [atual, setAtual] = useState(formatReal(emergencyFund?.current_reserve || 0));
-   const [aporte, setAporte] = useState(formatReal(emergencyFund?.expected_deposit || 0));
+   const [atual, setAtual] = useState(fmtReal(emergencyFund?.current_reserve || 0));
+   const [aporte, setAporte] = useState(fmtReal(emergencyFund?.expected_deposit || 0));
 
    const tgt = parseReal(fixo) * months;
    const pct = tgt > 0 ? (parseReal(atual) / tgt) * 100 : 0;
@@ -266,7 +270,7 @@ const EmergencyTab = () => {
             <div className="space-y-4">
                <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">Custo Fixo Mensal Calculado (R$)</label>
-                  <input type="text" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={fixo} onChange={e=>setFixo(formatReal(e.target.value))}/>
+                  <input type="text" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={fixo} onChange={formatInput(setFixo)}/>
                </div>
                <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">Meses Desejados de Escudo</label>
@@ -274,11 +278,11 @@ const EmergencyTab = () => {
                </div>
                <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">Reserva Atual Salva (R$)</label>
-                  <input type="text" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={atual} onChange={e=>setAtual(formatReal(e.target.value))}/>
+                  <input type="text" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={atual} onChange={formatInput(setAtual)}/>
                </div>
                <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">Aporte Mensal Destinado (R$)</label>
-                  <input type="text" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={aporte} onChange={e=>setAporte(formatReal(e.target.value))}/>
+                  <input type="text" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={aporte} onChange={formatInput(setAporte)}/>
                </div>
                 <button onClick={handleSave} className="w-full bg-[#0a2540] hover:bg-blue-900 text-amber-500 font-bold py-3 px-4 rounded-lg transition-all shadow-md mt-2">Gravar Barreira</button>
             </div>
@@ -304,8 +308,8 @@ const EmergencyTab = () => {
 };
 
 const CompoundInterestTab = () => {
-   const [initial, setInitial] = useState(formatReal(50000));
-   const [monthly, setMonthly] = useState(formatReal(2000));
+   const [initial, setInitial] = useState(fmtReal(50000));
+   const [monthly, setMonthly] = useState(fmtReal(2000));
    const [years, setYears] = useState(10);
    const [rate, setRate] = useState(12);
 
@@ -342,11 +346,11 @@ for (let y = 1; y <= years; y++) {
                <div className="space-y-4">
                   <div>
                      <label className="block text-sm font-semibold text-gray-700 mb-1">Investimento Inicial (R$)</label>
-                     <input type="text" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={initial} onChange={e => setInitial(formatReal(e.target.value))} />
+                     <input type="text" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={initial} onChange={formatInput(setInitial)} />
                   </div>
                   <div>
                      <label className="block text-sm font-semibold text-gray-700 mb-1">Aporte Mensal (R$)</label>
-                     <input type="text" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={monthly} onChange={e => setMonthly(formatReal(e.target.value))} />
+                     <input type="text" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={monthly} onChange={formatInput(setMonthly)} />
                   </div>
                   <div className="flex gap-4">
                      <div className="w-1/2">

@@ -10,14 +10,18 @@ const formatReal = (val) => {
 
 const parseReal = (str) => {
   if (!str) return 0;
-  return parseFloat(String(str).replace(/[^\d]/g, '')) / 100 || 0;
+  return parseFloat(String(str).replace('R$', '').replace(/\./g, '').replace(',', '.')) || 0;
 };
 
-const onMoneyChange = (setter) => (e) => {
-  const v = e.target.value.replace(/[^\d]/g, '');
-  if (!v) { setter(''); return; }
-  const num = Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-  setter('R$ ' + num);
+const formatCurrency = (setter) => (e) => {
+  let val = e.target.value;
+  val = val.replace('R$', '').trim();
+  const raw = val.replace(/[^\d]/g, '');
+  if (!raw) { setter(''); return; }
+  if (raw.length > 16) return;
+  const num = Number(raw) / 100;
+  if (isNaN(num)) { setter(''); return; }
+  setter('R$ ' + num.toLocaleString('pt-BR', { minimumFractionDigits: 2 }));
 };
 
 export const DebtDestroyerCalc = () => {
@@ -61,7 +65,7 @@ export const DebtDestroyerCalc = () => {
               <input 
                 type="text" 
                 value={debtAmount}
-                onChange={onMoneyChange(setDebtAmount)}
+                onChange={formatCurrency(setDebtAmount)}
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" 
               />
             </div>
@@ -82,7 +86,7 @@ export const DebtDestroyerCalc = () => {
                 <input 
                   type="text" 
                   value={monthlyPayment}
-                  onChange={onMoneyChange(setMonthlyPayment)}
+                  onChange={formatCurrency(setMonthlyPayment)}
                   className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" 
                 />
               </div>
@@ -159,7 +163,7 @@ export const FeeAuditorCalc = () => {
               <input 
                 type="text" 
                 value={investedAmount}
-                onChange={onMoneyChange(setInvestedAmount)}
+                onChange={formatCurrency(setInvestedAmount)}
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all" 
               />
             </div>
