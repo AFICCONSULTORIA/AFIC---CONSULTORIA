@@ -1,3 +1,112 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html.dark {
+    background: #0f0f1d;
+  }
+  
+  html.dark body {
+    background: #0f0f1d;
+    color: #f8fafc;
+    color-scheme: dark;
+  }
+}
+
+@layer components {
+  /* Premium Dark Mode Refinement */
+  .dark .bg-white {
+    background-color: #1a1a2e !important;
+  }
+  
+  .dark .bg-gray-50 {
+    background-color: #252545 !important;
+  }
+  
+  .dark .bg-gray-100 {
+    background-color: #1a1a2e !important;
+  }
+  
+  .dark .bg-gray-200 {
+    background-color: #2a2a44 !important;
+  }
+
+  /* Status Badge Backgrounds in Dark Mode */
+  .dark .bg-blue-50 { background-color: rgba(59, 130, 246, 0.1) !important; }
+  .dark .bg-emerald-50 { background-color: rgba(16, 185, 129, 0.1) !important; }
+  .dark .bg-amber-50 { background-color: rgba(245, 158, 11, 0.1) !important; }
+  .dark .bg-purple-50 { background-color: rgba(139, 92, 246, 0.1) !important; }
+  .dark .bg-red-50 { background-color: rgba(239, 68, 68, 0.1) !important; }
+
+  /* Status Badge Text in Dark Mode */
+  .dark .text-blue-600 { color: #60a5fa !important; }
+  .dark .text-emerald-600 { color: #34d399 !important; }
+  .dark .text-amber-600 { color: #fbbf24 !important; }
+  .dark .text-purple-600 { color: #a78bfa !important; }
+  .dark .text-red-600 { color: #f87171 !important; }
+  
+  /* Text Contrast - Tailwind class Map */
+  .dark .text-gray-900,
+  .dark .text-gray-800 {
+    color: #f8fafc !important;
+  }
+  
+  .dark .text-gray-700 {
+    color: #cbd5e1 !important;
+  }
+  
+  .dark .text-gray-600 {
+    color: #94a3b8 !important;
+  }
+  
+  .dark .text-gray-500 {
+    color: #64748b !important;
+  }
+  
+  .dark .text-gray-400 {
+    color: #475569 !important;
+  }
+  
+  /* Borders and Dividers */
+  .dark .border-gray-100,
+  .dark .border-gray-200,
+  .dark .border-gray-300 {
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+  
+  /* Forms */
+  .dark input,
+  .dark select,
+  .dark textarea {
+    background-color: #252545 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: #f8fafc !important;
+  }
+  
+  .dark input::placeholder {
+    color: #64748b !important;
+  }
+  
+  /* Specific AFIC classes in dark mode */
+  .dark .card {
+    background-color: #1a1a2e !important;
+    border-color: rgba(255, 255, 255, 0.05) !important;
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5) !important;
+  }
+  
+  .dark .sidebar {
+    background-color: #051845 !important; /* Keep navy for brand identity */
+  }
+
+  .dark .page-title {
+    color: #f1f5f9 !important;
+  }
+
+  /* Transition smooth override */
+  .dark * {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+  }
+}

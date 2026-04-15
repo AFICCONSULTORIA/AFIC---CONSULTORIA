@@ -119,6 +119,30 @@ export const FinancialProvider = ({ children }) => {
     }
   };
 
+  const addCreditCardBuy = async (description, totalAmount, installments, startMonth) => {
+    if (!supabase || !userId) return;
+    const payload = {
+       user_id: userId,
+       description,
+       total_amount: totalAmount,
+       installments,
+       start_month: startMonth
+    };
+    const { data: resultData, error } = await supabase.from('afic_credit_cards').insert([payload]).select().limit(1);
+    const data = resultData?.[0];
+    if(!error && data) {
+       setCreditCards(prev => [data, ...prev]);
+    }
+  };
+
+  const deleteCreditCardBuy = async (id) => {
+    if (!supabase) return;
+    const { error } = await supabase.from('afic_credit_cards').delete().eq('id', id);
+    if(!error) {
+       setCreditCards(prev => prev.filter(cc => cc.id !== id));
+    }
+  };
+
   const updateEmergencyFund = async (fixedCost, coverageMonths, currentReserve, expectedDeposit) => {
     if (!supabase || !userId) return;
     const fundData = {
@@ -215,6 +239,8 @@ export const FinancialProvider = ({ children }) => {
       addTransaction,
       deleteTransaction,
       addCreditCard,
+      addCreditCardBuy,
+      deleteCreditCardBuy,
       updateEmergencyFund,
       saveEmergencyFund: updateEmergencyFund,
       getBudgetSummary,

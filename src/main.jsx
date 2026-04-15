@@ -32,6 +32,12 @@ const waitForSupabase = (timeout = 10000) => {
   });
 };
 
+// Aplica tema salvo no carregamento
+const savedTheme = localStorage.getItem('afic-theme');
+if (savedTheme === 'dark') {
+  document.documentElement.classList.add('dark');
+}
+
 // Inicializa tudo após Supabase carregar
 waitForSupabase().then(() => {
   console.log('Supabase loaded, initializing app...');
@@ -47,6 +53,24 @@ waitForSupabase().then(() => {
 
 // O componente App coordena onde renderizar cada funcionalidade React (Portals)
 const ReactApp = () => {
+  const [isDark, setIsDark] = useState(() => localStorage.getItem('afic-theme') === 'dark');
+  
+  useEffect(() => {
+    const handleThemeChange = (e) => {
+      setIsDark(e.detail.dark);
+    };
+    window.addEventListener('theme-changed', handleThemeChange);
+    return () => window.removeEventListener('theme-changed', handleThemeChange);
+  }, []);
+  
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDark]);
+  
   const dashboardRoot = document.getElementById('react-dashboard-root');
   const educationRoot = document.getElementById('react-education-root');
   const toolsRoot = document.getElementById('react-tools-root');

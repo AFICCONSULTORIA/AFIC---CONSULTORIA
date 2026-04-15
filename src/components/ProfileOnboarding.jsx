@@ -16,8 +16,8 @@ export const ProfileOnboarding = () => {
           onClick={() => setUserProfile('iniciante')}
           className={`flex flex-col text-left p-5 rounded-lg border-2 transition-all duration-200 ${
             userProfile === 'iniciante' 
-              ? 'border-blue-600 bg-blue-50 ring-2 ring-blue-100' 
-              : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+              ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/40 ring-2 ring-blue-100 dark:ring-blue-900/50' 
+              : 'border-gray-200 dark:border-gray-800 hover:border-blue-300 dark:hover:border-blue-700 hover:bg-gray-50 dark:hover:bg-gray-900/50'
           }`}
         >
           <div className="flex items-center justify-between mb-2 w-full">
@@ -34,8 +34,8 @@ export const ProfileOnboarding = () => {
           onClick={() => setUserProfile('avancado')}
           className={`flex flex-col text-left p-5 rounded-lg border-2 transition-all duration-200 ${
             userProfile === 'avancado' 
-              ? 'border-emerald-600 bg-emerald-50 ring-2 ring-emerald-100' 
-              : 'border-gray-200 hover:border-emerald-300 hover:bg-gray-50'
+              ? 'border-emerald-600 bg-emerald-50 dark:bg-emerald-900/40 ring-2 ring-emerald-100 dark:ring-emerald-900/50' 
+              : 'border-gray-200 dark:border-gray-800 hover:border-emerald-300 dark:hover:border-emerald-700 hover:bg-gray-50 dark:hover:bg-gray-900/50'
           }`}
         >
           <div className="flex items-center justify-between mb-2 w-full">

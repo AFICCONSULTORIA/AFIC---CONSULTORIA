@@ -10,24 +10,20 @@ const formatReal = (val) => {
 
 const parseReal = (str) => {
   if (!str) return 0;
-  return parseFloat(String(str).replace('R$', '').replace(/\./g, '').replace(',', '.')) || 0;
+  const num = parseFloat(String(str).replace(/[^\d]/g, '')) || 0;
+  return num / 100; // Divide por 100 para obter o valor em reais
 };
 
 const formatCurrency = (setter) => (e) => {
-  let val = e.target.value;
-  val = val.replace('R$', '').trim();
-  const raw = val.replace(/[^\d]/g, '');
-  if (!raw) { setter(''); return; }
-  if (raw.length > 16) return;
-  const num = Number(raw) / 100;
-  if (isNaN(num)) { setter(''); return; }
-  setter('R$ ' + num.toLocaleString('pt-BR', { minimumFractionDigits: 2 }));
+  // Permite digitar apenas números
+  const val = e.target.value.replace(/[^\d]/g, '');
+  setter(val);
 };
 
 export const DebtDestroyerCalc = () => {
-  const [debtAmount, setDebtAmount] = useState(formatReal(25000));
+  const [debtAmount, setDebtAmount] = useState('25000');
   const [interestRate, setInterestRate] = useState('3.5');
-  const [monthlyPayment, setMonthlyPayment] = useState(formatReal(1200));
+  const [monthlyPayment, setMonthlyPayment] = useState('1200');
 
   let monthsToPayoff = 0;
   let totalInterest = 0;
@@ -128,7 +124,7 @@ export const DebtDestroyerCalc = () => {
 };
 
 export const FeeAuditorCalc = () => {
-  const [investedAmount, setInvestedAmount] = useState(formatReal(100000));
+  const [investedAmount, setInvestedAmount] = useState('100000');
   const [years, setYears] = useState('20');
   const [grossReturn, setGrossReturn] = useState('10');
   const [adminFee, setAdminFee] = useState('1.5');

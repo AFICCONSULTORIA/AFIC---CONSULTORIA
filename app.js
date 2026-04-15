@@ -2035,6 +2035,24 @@ window.initApp = function() {
 
     console.log('AFIC Dashboard initialized ✦');
 
+    // Theme Toggle
+    const themeToggle = document.getElementById('theme-toggle');
+    const savedTheme = localStorage.getItem('afic-theme');
+    
+    // Aplica tema salvo
+    if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+    }
+    
+    if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('afic-theme', isDark ? 'dark' : 'light');
+            // Emite evento para React atualizar
+            window.dispatchEvent(new CustomEvent('theme-changed', { detail: { dark: isDark } }));
+        });
+    }
+
   } catch(err) {
     console.error('AFIC INIT ERROR:', err);
   }

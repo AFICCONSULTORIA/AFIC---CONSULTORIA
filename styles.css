@@ -67,6 +67,45 @@
     --duration-slow:  0.6s;
 }
 
+/* ─── DARK MODE TOKENS ─── */
+:root.dark {
+    /* Backgrounds — Deeper, more sophisticated blues */
+    --bg-white:       #1a1a2e; /* Card background */
+    --bg-off-white:   #0f0f1d; /* Main page background */
+    --bg-light-blue:  #252545; /* Hover/Secondary background */
+    --bg-cream:       #12121f;
+    
+    /* Text - High contrast for readability */
+    --text-primary:   #f1f5f9; /* Near white for main titles */
+    --text-secondary: #cbd5e1; /* Light gray for body text */
+    --text-muted:     #94a3b8; /* Muted slate for captions */
+    --text-on-dark:   #ffffff;
+    --text-on-dark-muted: rgba(255, 255, 255, 0.6);
+    
+    /* Brand Colors - Adjusted for dark mode vibrancy */
+    --navy-deep:      #3b82f6; /* More vibrant blue for buttons/accents */
+    --navy-darker:    #1e3a8a;
+    --navy-medium:    #2563eb;
+    --navy-soft:      #3b82f6;
+    
+    /* Gold - More luminous for premium feel */
+    --gold-rich:      #fbbf24;
+    --gold-light:     #fcd34d;
+    --gold-dry:       #d97706;
+    --gold-muted:     rgba(251, 191, 36, 0.15);
+    --gold-subtle:    rgba(251, 191, 36, 0.08);
+    
+    /* Status */
+    --green:          #4ade80;
+    --green-bg:       rgba(74, 222, 128, 0.15);
+    --red:            #f87171;
+    --red-bg:         rgba(248, 113, 113, 0.15);
+    
+    /* Shadows - Deeper but softer */
+    --shadow-ambient: 0 4px 24px rgba(0, 0, 0, 0.4);
+    --shadow-float:   0 12px 48px rgba(0, 0, 0, 0.6);
+}
+
 /* ─── RESET & BASE ─── */
 *,
 *::before,
@@ -124,12 +163,13 @@ h1, h2, h3, h4, h5, h6 {
     left: 0;
     width: var(--sidebar-width);
     height: 100vh;
-    background: var(--navy-deep);
+    background: #051845; /* Fixed navy for brand consistency across modes */
     display: flex;
     flex-direction: column;
     z-index: 100;
     overflow-y: auto;
     overflow-x: hidden;
+    border-right: 1px solid rgba(255,255,255,0.05);
 }
 
 .sidebar-header {
@@ -480,7 +520,7 @@ h1, h2, h3, h4, h5, h6 {
 .page-title {
     font-size: 32px;
     font-weight: 800;
-    color: var(--navy-deep);
+    color: var(--text-primary);
     letter-spacing: -0.03em;
 }
 
@@ -559,7 +599,7 @@ h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
     font-size: 64px;
     font-weight: 800;
-    color: var(--navy-deep);
+    color: var(--text-primary);
     letter-spacing: -0.04em;
     line-height: 1;
 }
@@ -1256,6 +1296,15 @@ h1, h2, h3, h4, h5, h6 {
 
 .result-currency.gold {
     color: var(--gold-rich);
+}
+
+.re.score-value {
+    font-family: var(--font-display);
+    font-size: 64px;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.04em;
+    line-height: 1;
 }
 
 .result-value {
