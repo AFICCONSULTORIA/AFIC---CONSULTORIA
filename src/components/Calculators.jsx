@@ -15,15 +15,17 @@ const parseReal = (str) => {
 };
 
 const formatCurrency = (setter) => (e) => {
-  // Permite digitar apenas números
-  const val = e.target.value.replace(/[^\d]/g, '');
-  setter(val);
+  // Remove non-digits and format with R$
+  let val = e.target.value.replace(/[^\d]/g, '');
+  if (!val) { setter(''); return; }
+  const num = Number(val) / 100;
+  setter('R$ ' + num.toLocaleString('pt-BR', { minimumFractionDigits: 2 }));
 };
 
 export const DebtDestroyerCalc = () => {
-  const [debtAmount, setDebtAmount] = useState('25000');
+  const [debtAmount, setDebtAmount] = useState('R$ 25.000,00');
   const [interestRate, setInterestRate] = useState('3.5');
-  const [monthlyPayment, setMonthlyPayment] = useState('1200');
+  const [monthlyPayment, setMonthlyPayment] = useState('R$ 1.200,00');
 
   let monthsToPayoff = 0;
   let totalInterest = 0;
@@ -124,7 +126,7 @@ export const DebtDestroyerCalc = () => {
 };
 
 export const FeeAuditorCalc = () => {
-  const [investedAmount, setInvestedAmount] = useState('100000');
+  const [investedAmount, setInvestedAmount] = useState('R$ 100.000,00');
   const [years, setYears] = useState('20');
   const [grossReturn, setGrossReturn] = useState('10');
   const [adminFee, setAdminFee] = useState('1.5');
