@@ -7,6 +7,8 @@ export const ProfileOnboarding = () => {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isChanging, setIsChanging] = useState(false);
+  const [nickname, setNickname] = useState('');
+  const [error, setError] = useState('');
 
   const [sessionUser, setSessionUser] = useState(null);
 
@@ -58,6 +60,11 @@ export const ProfileOnboarding = () => {
   }, [sessionUser, isChanging]);
 
   const handleSave = async (profile) => {
+    if (!nickname || nickname.trim().length === 0) {
+      setError('Nome é obrigatório');
+      return;
+    }
+    
     setUserProfile(profile);
     setShowModal(false);
     
@@ -65,13 +72,16 @@ export const ProfileOnboarding = () => {
     if (session?.user) {
       const { error } = await supabase
         .from('profiles')
-        .upsert({ id: session.user.id, profile_type: profile, updated_at: new Date().toISOString() });
+        .upsert({ 
+          id: session.user.id, 
+          nickname: nickname || null,
+          profile_type: profile, 
+          updated_at: new Date().toISOString() 
+        });
       
       if (!error) {
-        const selectEl = document.getElementById('profile-type-select');
-        if (selectEl) selectEl.value = profile;
-        
-        window.dispatchEvent(new CustomEvent('profile-selected', { detail: { profile } }));
+        window.dispatchEvent(new CustomEvent('profile-selected', { detail: { profile, nickname } }));
+        window.location.reload();
       }
     }
   };
@@ -79,11 +89,33 @@ export const ProfileOnboarding = () => {
   if (loading) return null;
   if (!showModal) return null;
 
+  const handleNicknameChange = (e) => {
+    const val = e.target.value;
+    if (val.length <= 32) {
+      setNickname(val);
+      setError('');
+    }
+  };
+
   return (
     <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
       <div style={{ backgroundColor: 'white', borderRadius: '16px', maxWidth: '550px', width: '100%', padding: '24px' }}>
-        <h3 style={{ fontSize: '20px', fontWeight: 'bold', color: '#111' }}>Complete seu Perfil Financeiro</h3>
-        <p style={{ color: '#6b7280', marginTop: '8px', marginBottom: '24px' }}>Selecione seu perfil para personalizar as ferramentas.</p>
+        <h3 style={{ fontSize: '20px', fontWeight: 'bold', color: '#111' }}>Complete seu Cadastro</h3>
+        
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>Como gostaria de ser chamado?</label>
+          <input
+            type="text"
+            value={nickname}
+            onChange={handleNicknameChange}
+            placeholder="Seu apelido"
+            maxLength={32}
+            style={{ width: '100%', padding: '12px', borderRadius: '8px', border: error ? '1px solid #ef4444' : '1px solid #d1d5db', fontSize: '16px' }}
+          />
+          <p style={{ fontSize: '12px', color: error ? '#ef4444' : '#6b7280', marginTop: '4px' }}>{error || `${nickname.length}/32 caracteres`}</p>
+        </div>
+        
+        <p style={{ color: '#6b7280', marginBottom: '16px' }}>Selecione seu perfil para personalizar as ferramentas:</p>
         
         <div className="grid grid-cols-1 gap-4 mb-6">
           <button 

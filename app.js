@@ -69,7 +69,7 @@ window.initApp = function() {
     const profileTypeSelect = document.getElementById('profile-type-select');
     const profileTypeMsg = document.getElementById('profile-type-msg');
 
-    function switchPage(pageName) {
+    window.switchPage = function(pageName) {
         try {
             const pages = document.querySelectorAll('.page-content');
             pages.forEach(p => p.classList.add('page-hidden'));
@@ -84,10 +84,10 @@ window.initApp = function() {
                 }
             }
             console.log('Switched to page:', pageName);
-        
-        if (pageName === 'account') {
-            loadProfileType();
-        }
+            
+            if (pageName === 'account') {
+                loadProfileType();
+            }
         } catch(err) {
             console.error('switchPage error:', err);
         }
@@ -821,8 +821,37 @@ window.initApp = function() {
         await loadUserProfile();
         await loadCommunityThreads();
         initializeRealtime();
+        
+        // Update all header user info elements after loading data
+        updateAllHeaderUserInfo();
     }
-
+    
+function updateAllHeaderUserInfo() {
+        const profileLabels = { conservador: '🛡️ Conservador', equilibrado: '⚖️ Equilibrado', arrojado: '🚀 Arrojado' };
+        
+        document.querySelectorAll('.header-user-name').forEach(el => {
+            if (el && currentUserProfile?.nickname) el.textContent = currentUserProfile.nickname;
+        });
+        document.querySelectorAll('.header-user-initials').forEach(el => {
+            if (el && currentUserProfile?.nickname) el.textContent = currentUserProfile.nickname.substring(0, 2).toUpperCase();
+        });
+        document.querySelectorAll('.header-user-profile').forEach(el => {
+            if (el && currentUserProfile?.profile_type) el.textContent = profileLabels[currentUserProfile.profile_type] || 'Perfil';
+        });
+        
+        console.log('Setting up header click handlers, elements found:', document.querySelectorAll('.header-user-info').length);
+        
+        setTimeout(() => {
+            document.querySelectorAll('.header-user-info').forEach(el => {
+                el.style.cursor = 'pointer';
+                el.onclick = function() {
+                    console.log('Clicked going to account');
+                    switchPage('account');
+                };
+            });
+        }, 100);
+    }
+    
     function initializeRealtime() {
         if (window.communitySubscribed) return;
         
@@ -1367,6 +1396,13 @@ window.initApp = function() {
             const nicknameInput = document.getElementById('user-nickname');
             if (nicknameInput) nicknameInput.value = data.nickname || '';
             
+            // Update avatar initials with first 2 letters of nickname
+            const initialsEl = document.getElementById('avatar-initials');
+            if (initialsEl && data.nickname) {
+                const initials = data.nickname.substring(0, 2).toUpperCase();
+                initialsEl.textContent = initials;
+            }
+            
             // Preencher todos os campos do perfil
             if (document.getElementById('user-email')) document.getElementById('user-email').value = data.email_public || '';
             if (document.getElementById('user-about')) document.getElementById('user-about').value = data.about || '';
@@ -1392,13 +1428,21 @@ window.initApp = function() {
             const userDisplay = document.querySelector('.user-name');
             if (userDisplay && data.nickname) userDisplay.textContent = data.nickname;
             
-            // Load profile type in dropdown
-            if (data.profile_type && profileTypeSelect) {
-                profileTypeSelect.value = data.profile_type;
-            }
+            // Update header user info in ALL pages
+            const profileLabels = { conservador: '🛡️ Conservador', equilibrado: '⚖️ Equilibrado', arrojado: '🚀 Arrojado' };
+            
+            document.querySelectorAll('.header-user-name').forEach(el => {
+                if (el) el.textContent = data.nickname || 'Usuário';
+            });
+            document.querySelectorAll('.header-user-initials').forEach(el => {
+                if (el) el.textContent = data.nickname ? data.nickname.substring(0, 2).toUpperCase() : 'CA';
+            });
+document.querySelectorAll('.header-user-profile').forEach(el => {
+if (el) el.textContent = data.profile_type ? profileLabels[data.profile_type] || 'Perfil' : 'Perfil';
+            });
         }
     }
-
+    
     function updateProfilePreview(data) {
         const previewNickname = document.getElementById('preview-nickname');
         const previewAbout = document.getElementById('preview-about');
@@ -1408,6 +1452,10 @@ window.initApp = function() {
         
         if (previewNickname) previewNickname.textContent = data.nickname || 'Seu Nickname';
         if (previewAbout) previewAbout.textContent = data.about || 'Sua biografia aparecerá aqui...';
+        
+        if (previewInitials && data.nickname) {
+            previewInitials.textContent = data.nickname.substring(0, 2).toUpperCase();
+        }
         
         if (data.linkedin) {
             if (previewLinkedin) {
@@ -1544,6 +1592,18 @@ window.initApp = function() {
         
         window.addEventListener('profile-selected', (e) => {
             const profile = e.detail.profile;
+            const nickname = e.detail.nickname;
+            
+            // Update avatar initials
+            const initialsEl = document.getElementById('avatar-initials');
+            if (initialsEl && nickname) {
+                initialsEl.textContent = nickname.substring(0, 2).toUpperCase();
+            }
+            const previewInitials = document.getElementById('preview-initials');
+            if (previewInitials && nickname) {
+                previewInitials.textContent = nickname.substring(0, 2).toUpperCase();
+            }
+            
             const profileLabels = {
                 'conservador': '🛡️ Conservador',
                 'equilibrado': '⚖️ Equilibrado',
