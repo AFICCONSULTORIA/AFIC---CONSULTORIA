@@ -350,8 +350,8 @@ const EmergencyTab = () => {
 };
 
 const CompoundInterestTab = () => {
-   const [initial, setInitial] = useState('50000');
-   const [monthly, setMonthly] = useState('2000');
+   const [initial, setInitial] = useState('R$ 50.000,00');
+   const [monthly, setMonthly] = useState('R$ 2.000,00');
 const [years, setYears] = useState(10);
    const [rate, setRate] = useState(12);
 
@@ -393,13 +393,13 @@ return { data, crossoverYear, finalData: data[data.length - 1] || { invested: 0,
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
                <h3 className="text-lg font-bold text-gray-900 mb-4">Parâmetros da Simulação</h3>
                <div className="space-y-4">
-                  <div>
-                     <label className="block text-sm font-semibold text-gray-700 mb-1">Investimento Inicial (R$)</label>
-<input type="number" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={initial} onChange={e => setInitial(e.target.value)} />
-                   </div>
-                   <div>
+<div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">Investimento Inicial (R$)</label>
+                      <input type="text" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={initial} onChange={formatCurrency(setInitial)} placeholder="R$ 0,00" />
+                    </div>
+                    <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-1">Aporte Mensal (R$)</label>
-                      <input type="number" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={monthly} onChange={e => setMonthly(e.target.value)} />
+                      <input type="text" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={monthly} onChange={formatCurrency(setMonthly)} placeholder="R$ 0,00" />
                   </div>
                   <div className="flex gap-4">
                      <div className="w-1/2">
