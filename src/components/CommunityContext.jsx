@@ -61,6 +61,7 @@ export const CommunityProvider = ({ children }) => {
           
           if (profile?.role === 'admin' || session.user.email === 'aficconsultoria@gmail.com') {
             setIsAdmin(true);
+            window.isUserAdmin = true;
           }
         }
         await fetchAnnouncements(setAnnouncements);

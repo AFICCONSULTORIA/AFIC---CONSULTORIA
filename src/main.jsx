@@ -14,6 +14,9 @@ import { FinancialProvider } from './components/FinancialContext';
 import { FinancialTools } from './components/FinancialTools';
 import { CommunityProvider } from './components/CommunityContext';
 import { CommunityForum } from './components/CommunityForum';
+import { PricingPage } from './components/PricingPage';
+import { SubscriptionProvider } from './components/SubscriptionContext';
+import { PlansAdmin } from './components/PlansAdmin';
 
 // Espera o Supabase CDN estar disponível
 const waitForSupabase = (timeout = 10000) => {
@@ -52,7 +55,7 @@ waitForSupabase().then(() => {
 });
 
 // O componente App coordena onde renderizar cada funcionalidade React (Portals)
-const ReactApp = () => {
+const ReactApp = ({ isAdmin = false }) => {
   const [isDark, setIsDark] = useState(() => localStorage.getItem('afic-theme') === 'dark');
   
   useEffect(() => {
@@ -75,9 +78,15 @@ const ReactApp = () => {
   const educationRoot = document.getElementById('react-education-root');
   const toolsRoot = document.getElementById('react-tools-root');
   const communityRoot = document.getElementById('react-community-root');
+  const pricingRoot = document.getElementById('react-pricing-root');
+  const adminRoot = document.getElementById('react-admin-root');
 
   return (
     <UserProfileProvider>
+      {adminRoot && createPortal(
+        <PlansAdmin />,
+        adminRoot
+      )}
       {dashboardRoot && createPortal(
         <div className="space-y-6">
           <ProfileOnboarding />
@@ -112,6 +121,13 @@ const ReactApp = () => {
         </div>,
         communityRoot
       )}
+
+      {pricingRoot && createPortal(
+        <SubscriptionProvider>
+          <PricingPage />
+        </SubscriptionProvider>,
+        pricingRoot
+      )}
     </UserProfileProvider>
   );
 };
@@ -122,5 +138,9 @@ document.addEventListener('DOMContentLoaded', () => {
   container.id = 'react-global-container';
   document.body.appendChild(container);
 
-  ReactDOM.createRoot(container).render(<ReactApp />);
+  const isAdmin = window.adminMode || window.location.pathname.includes('admin-plans') || window.location.href.includes('admin-plans');
+  
+  ReactDOM.createRoot(container).render(
+    <ReactApp isAdmin={isAdmin} />
+  );
 });

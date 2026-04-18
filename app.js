@@ -55,6 +55,37 @@ window.initApp = function() {
         };
     }
 
+    const pageMap = {
+        'home': 'page-home',
+        'dashboard': 'page-dashboard',
+        'tools': 'page-tools',
+        'education': 'page-education',
+        'community': 'page-community',
+        'account': 'page-account',
+        'plans': 'page-plans',
+        'admin-plans': 'page-admin-plans'
+    };
+
+    function switchPage(pageName) {
+        try {
+            const pages = document.querySelectorAll('.page-content');
+            pages.forEach(p => p.classList.add('page-hidden'));
+            const targetId = pageMap[pageName];
+            if (targetId) {
+                const targetPage = document.getElementById(targetId);
+                if (targetPage) {
+                    targetPage.classList.remove('page-hidden');
+                    targetPage.style.animation = 'none';
+                    targetPage.offsetHeight;
+                    targetPage.style.animation = '';
+                }
+            }
+            console.log('Switched to page:', pageName);
+        } catch(err) {
+            console.error('switchPage error:', err);
+        }
+    }
+
     async function checkAuthSession() {
         console.log("Checking session...");
         try {
@@ -68,6 +99,7 @@ window.initApp = function() {
                 if (authModal) authModal.classList.add('hidden');
                 console.log("User logged in: " + currentUser.email);
                 await loadSupabaseData();
+                checkAdminLink();
                 switchPage('dashboard');
                 document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
                 const dashLink = document.querySelector('.nav-link[data-page="dashboard"]');
@@ -103,6 +135,8 @@ window.initApp = function() {
                     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
                     if (error) throw error;
                     console.log("Login success.");
+                    currentUser = { email };
+                    checkAdminLink();
                     checkAuthSession();
                 } else {
                     const confirm = authConfirmPassword.value;
@@ -297,46 +331,15 @@ window.initApp = function() {
     const navLinks = document.querySelectorAll('.nav-link');
     const pages = document.querySelectorAll('.page-content');
     
-    // Page map: data-page value → page element ID
-    const pageMap = {
-        'home': 'page-home',
-        'dashboard': 'page-dashboard',
-        'tools': 'page-tools',
-        'education': 'page-education',
-        'community': 'page-community',
-        'account': 'page-account',
-        'plans': 'page-plans'
-    };
-
-    function switchPage(pageName) {
-        try {
-            const pages = document.querySelectorAll('.page-content');
-            // Hide all pages
-            pages.forEach(p => p.classList.add('page-hidden'));
-            
-            // Show target page
-            const targetId = pageMap[pageName];
-            if (targetId) {
-                const targetPage = document.getElementById(targetId);
-                if (targetPage) {
-                    targetPage.classList.remove('page-hidden');
-                    // Re-trigger animations
-                    targetPage.style.animation = 'none';
-                    targetPage.offsetHeight; // force reflow
-                    targetPage.style.animation = '';
-                }
-            }
-
-            // If switching to tools, auto-calculate 
-            if (pageName === 'tools') {
-                setTimeout(() => {
-                    try { calculateCompound(); } catch(e) { console.error('Calc error:', e); }
-                }, 100);
-            }
-            
-            console.log('Switched to page:', pageName);
-        } catch(err) {
-            console.error('switchPage error:', err);
+    // Hide/show admin link based on user role
+    function checkAdminLink() {
+        const adminLink = document.querySelector('.nav-link[data-page="admin-plans"]');
+        if (!adminLink) return;
+        const isAdminEmail = currentUser?.email === 'aficconsultoria@gmail.com';
+        if (window.isUserAdmin || isAdminEmail) {
+            adminLink.style.display = '';
+        } else {
+            adminLink.style.display = 'none';
         }
     }
     
