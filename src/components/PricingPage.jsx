@@ -3,10 +3,12 @@ import { supabase } from '../lib/supabase';
 
 const fmtBR = (num) => {
   if (!num && num !== 0) return 'R$ 0,00';
-  return 'R$ ' + Number(num).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+  const val = parseFloat(num);
+  if (isNaN(val)) return 'R$ 0,00';
+  return 'R$ ' + val.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
 };
 
-export const PricingPage = ({ currentPlan, onSelectPlan }) => {
+export const PricingPage = ({ currentPlan, onSelectPlan = () => {} }) => {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [billingType, setBillingType] = useState('monthly');
@@ -45,7 +47,9 @@ export const PricingPage = ({ currentPlan, onSelectPlan }) => {
   };
 
   const getPrice = (plan) => {
-    return billingType === 'monthly' ? plan.monthly_price : plan.lifetime_price;
+    return billingType === 'monthly' 
+      ? (parseFloat(plan.monthly_price) || 0) 
+      : (parseFloat(plan.lifetime_price) || 0);
   };
 
   if (loading) {

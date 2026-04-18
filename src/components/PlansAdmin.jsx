@@ -1,15 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
+const formatCurrency = (setter) => (e) => {
+  let val = e.target.value.replace(/[^\d]/g, '');
+  if (!val) { setter(0); return; }
+  const num = Number(val) / 100;
+  setter(num);
+};
+
+
+
 const fmtBR = (num) => {
   if (!num && num !== 0) return 'R$ 0,00';
-  return 'R$ ' + Number(num).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+  const val = parseFloat(num);
+  if (isNaN(val)) return 'R$ 0,00';
+  return 'R$ ' + val.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
 };
 
 const parseBR = (str) => {
-  if (!str) return 0;
+  if (!str && str !== 0) return 0;
   const clean = String(str).replace('R$', '').replace(/\./g, '').replace(',', '.');
-  return parseFloat(clean) || 0;
+  const val = parseFloat(clean);
+  return isNaN(val) ? 0 : val;
 };
 
 export const PlansAdmin = () => {
@@ -147,7 +159,7 @@ export const PlansAdmin = () => {
                   <input
                     type="text"
                     value={fmtBR(plan.monthly_price).replace('R$ ', '')}
-                    onChange={(e) => updatePlan(plan.id, 'monthly_price', e.target.value)}
+                    onChange={formatCurrency((val) => updatePlan(plan.id, 'monthly_price', val))}
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-400 outline-none"
                   />
                 </div>
@@ -157,8 +169,8 @@ export const PlansAdmin = () => {
                   </label>
                   <input
                     type="text"
-                    value={plan.lifetime_price > 0 ? fmtBR(plan.lifetime_price).replace('R$ ', '') : '0'}
-                    onChange={(e) => updatePlan(plan.id, 'lifetime_price', e.target.value)}
+                    value={fmtBR(plan.lifetime_price).replace('R$ ', '')}
+                    onChange={formatCurrency((val) => updatePlan(plan.id, 'lifetime_price', val))}
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-400 outline-none"
                   />
                 </div>
