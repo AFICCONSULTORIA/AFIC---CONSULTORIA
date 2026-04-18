@@ -356,18 +356,18 @@ const [years, setYears] = useState(10);
    const [rate, setRate] = useState(12);
 
    // Math engine com useMemo para recalcular quando inputs mudarem
-   const calcResult = useMemo(() => {
-      const initialVal = parseReal(initial);
-      const monthlyVal = parseReal(monthly);
-      if (initialVal <= 0 && monthlyVal <= 0) return { data: [], crossoverYear: null, finalData: { invested: 0, interest: 0, balance: 0 } };
-      
-      const monthlyRate = (rate / 100) / 12;
+const calcResult = useMemo(() => {
+       const initialVal = parseReal(initial) || 50000;
+       const monthlyVal = parseReal(monthly) || 2000;
+       const yearsVal = Number(years) || 10;
+       
+       const monthlyRate = (rate / 100) / 12;
       const data = [];
       let balance = initialVal;
       let totalInvested = initialVal;
       let crossoverYear = null;
 
-      for (let y = 1; y <= years; y++) {
+      for (let y = 1; y <= yearsVal; y++) {
          for (let m = 0; m < 12; m++) {
             balance = balance * (1 + monthlyRate) + monthlyVal;
             totalInvested += monthlyVal;
@@ -376,15 +376,16 @@ const [years, setYears] = useState(10);
          if (!crossoverYear && interest > totalInvested) crossoverYear = y;
          data.push({ year: y, invested: totalInvested, interest, balance });
       }
-      return { data, crossoverYear, finalData: data[data.length - 1] || { invested: 0, interest: 0, balance: 0 } };
-   }, [initial, monthly, years, rate]);
+return { data, crossoverYear, finalData: data[data.length - 1] || { invested: 0, interest: 0, balance: 0 } };
+    }, [initial, monthly, years, rate]);
 
-   const finalData = calcResult.finalData;
-   const maxBalance = finalData.balance || 1;
-   const crossoverYear = calcResult.crossoverYear;
-   const finalInvested = finalData.invested;
-   const finalInterest = finalData.interest;
-   const yearData = calcResult.data;
+    const finalData = calcResult.finalData;
+    const maxBalance = finalData.balance || 1;
+    const crossoverYear = calcResult.crossoverYear;
+    const finalInvested = finalData.invested;
+    const finalInterest = finalData.interest;
+    const yearData = calcResult.data;
+    const yearsVal = Number(years) || 10;
 
    return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left mt-6">
@@ -474,22 +475,26 @@ const [years, setYears] = useState(10);
                      <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-amber-400 inline-block"></span> Juros</span>
                   </div>
                </div>
-               <div className="flex items-end gap-1" style={{ height: '200px' }}>
-                  {yearData.map(d => {
-                     const totalH = (d.balance / maxBalance) * 100;
-                     const investedH = (d.invested / maxBalance) * 100;
-                     const interestH = totalH - investedH;
-                     return (
-                        <div key={d.year} className="flex-1 flex flex-col justify-end items-center" title={`Ano ${d.year}: R$ ${fmtBR(d.balance)}`}>
-                           <div className="w-full rounded-t bg-amber-400" style={{ height: `${Math.max(interestH, 0)}%` }}></div>
-                           <div className="w-full bg-blue-400" style={{ height: `${Math.max(investedH, 1)}%` }}></div>
-                           {d.year % Math.max(1, Math.floor(years / 10)) === 0 && (
-                              <span className="text-[9px] text-gray-400 mt-1">{d.year}</span>
-                           )}
-                        </div>
-                     );
-                  })}
-               </div>
+<div className="flex items-end gap-1" style={{ height: '200px' }}>
+                   {(!yearData || yearData.length === 0) ? (
+                     <div className="w-full text-center text-gray-400 py-10">Sem dados para exibir</div>
+                   ) : (
+                     yearData.map(d => {
+                        const totalH = (d.balance / maxBalance) * 100;
+                        const investedH = (d.invested / maxBalance) * 100;
+                        const interestH = totalH - investedH;
+                        return (
+                           <div key={d.year} className="flex-1 flex flex-col justify-end items-center h-full" title={`Ano ${d.year}: R$ ${fmtBR(d.balance)}`}>
+                              <div className="w-full rounded-t bg-amber-400" style={{ height: `${Math.max(interestH, 0.5)}%` }}></div>
+                              <div className="w-full bg-blue-400" style={{ height: `${Math.max(investedH, 0.5)}%` }}></div>
+                              {d.year % Math.max(1, Math.floor(yearsVal / 10)) === 0 && (
+                                 <span className="text-[9px] text-gray-400 mt-1">{d.year}</span>
+                              )}
+                           </div>
+                        );
+                     })
+                   )}
+                </div>
             </div>
          </div>
       </div>
