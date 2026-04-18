@@ -94,6 +94,11 @@ const ReactApp = ({ isAdmin = false }) => {
         </div>,
         dashboardRoot
       )}
+      {!dashboardRoot && (
+        <div className="space-y-6">
+          <ProfileOnboarding />
+        </div>
+      )}
 
       {toolsRoot && createPortal(
         <div className="pt-6">

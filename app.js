@@ -66,6 +66,9 @@ window.initApp = function() {
         'admin-plans': 'page-admin-plans'
     };
 
+    const profileTypeSelect = document.getElementById('profile-type-select');
+    const profileTypeMsg = document.getElementById('profile-type-msg');
+
     function switchPage(pageName) {
         try {
             const pages = document.querySelectorAll('.page-content');
@@ -81,6 +84,10 @@ window.initApp = function() {
                 }
             }
             console.log('Switched to page:', pageName);
+        
+        if (pageName === 'account') {
+            loadProfileType();
+        }
         } catch(err) {
             console.error('switchPage error:', err);
         }
@@ -100,6 +107,7 @@ window.initApp = function() {
                 console.log("User logged in: " + currentUser.email);
                 await loadSupabaseData();
                 checkAdminLink();
+                if (profileTypeSelect) loadProfileType();
                 switchPage('dashboard');
                 document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
                 const dashLink = document.querySelector('.nav-link[data-page="dashboard"]');
@@ -1339,11 +1347,20 @@ window.initApp = function() {
     // Profile Management
     async function loadUserProfile() {
         if (!currentUser) return;
-        const { data, error } = await supabase
+        let { data, error } = await supabase
             .from('profiles')
-            .select('nickname')
+            .select('nickname, profile_type')
             .eq('id', currentUser.id)
-            .single();
+            .maybeSingle();
+        
+        if (!data && !error) {
+            await supabase.from('profiles').insert({ id: currentUser.id });
+            ({ data } = await supabase
+                .from('profiles')
+                .select('nickname, profile_type')
+                .eq('id', currentUser.id)
+                .maybeSingle());
+        }
         
         if (!error && data) {
             currentUserProfile = data;
@@ -1374,6 +1391,11 @@ window.initApp = function() {
             // Update UI with nickname if needed
             const userDisplay = document.querySelector('.user-name');
             if (userDisplay && data.nickname) userDisplay.textContent = data.nickname;
+            
+            // Load profile type in dropdown
+            if (data.profile_type && profileTypeSelect) {
+                profileTypeSelect.value = data.profile_type;
+            }
         }
     }
 
@@ -1494,6 +1516,61 @@ window.initApp = function() {
         });
     }
 
+    async function loadProfileType() {
+        if (!currentUser) return;
+        const { data } = await supabase
+            .from('profiles')
+            .select('profile_type')
+            .eq('id', currentUser.id)
+            .maybeSingle();
+        
+        const display = document.getElementById('current-profile-display');
+        const profileLabels = {
+            'conservador': '🛡️ Conservador',
+            'equilibrado': '⚖️ Equilibrado',
+            'arrojado': '🚀 Arrojado'
+        };
+        
+        if (data?.profile_type && display) {
+            display.textContent = 'Perfil atual: ' + (profileLabels[data.profile_type] || data.profile_type);
+        } else if (display) {
+            display.textContent = 'Perfil não definido';
+        }
+    }
+    
+    const btnChangeProfile = document.getElementById('btn-change-profile');
+    if (btnChangeProfile) {
+        loadProfileType();
+        
+        window.addEventListener('profile-selected', (e) => {
+            const profile = e.detail.profile;
+            const profileLabels = {
+                'conservador': '🛡️ Conservador',
+                'equilibrado': '⚖️ Equilibrado',
+                'arrojado': '🚀 Arrojado'
+            };
+            const display = document.getElementById('current-profile-display');
+            if (display) {
+                display.textContent = 'Perfil atual: ' + (profileLabels[profile] || profile);
+            }
+            if (profileTypeMsg) {
+                profileTypeMsg.textContent = 'Perfil atualizado!';
+                profileTypeMsg.style.display = 'block';
+                profileTypeMsg.style.color = 'green';
+                setTimeout(() => { profileTypeMsg.style.display = 'none'; }, 3000);
+            }
+        });
+        
+        btnChangeProfile.addEventListener('click', () => {
+            switchPage('dashboard');
+            window.dispatchEvent(new CustomEvent('open-profile-modal'));
+            
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            const dashLink = document.querySelector('.nav-link[data-page="dashboard"]');
+            if (dashLink) dashLink.classList.add('active');
+        });
+    }
+    
     // Budget Settings Form
     const budgetSettingsForm = document.getElementById('form-budget-settings');
     if (budgetSettingsForm) {
