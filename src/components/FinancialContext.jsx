@@ -78,10 +78,12 @@ export const FinancialProvider = ({ children }) => {
   }, []);
 
   // ─── ACTIONS ───
-  const addTransaction = async (description, amount, category, method) => {
+  const addTransaction = async (description, amount, category, method, monthKey) => {
     if (!supabase || !userId) return;
+    const key = monthKey || `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
     const payload = {
        user_id: userId,
+       month_key: key,
        description,
        amount,
        category,

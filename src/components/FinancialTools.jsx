@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useFinancial } from './FinancialContext';
 import { DebtDestroyerCalc, FeeAuditorCalc } from './Calculators';
 
@@ -57,7 +57,7 @@ const BudgetTab = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if(desc && amount) {
-       addTransaction(desc, parseReal(amount), cat, method);
+       addTransaction(desc, parseReal(amount), cat, method, selectedMonth);
        setDesc('');
        setAmount('');
     }
@@ -69,11 +69,44 @@ const BudgetTab = () => {
     if(cat === 'variable') return <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded">Variável</span>;
   };
 
+const months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  });
+
+  const monthDisplay = () => {
+    const [year, month] = selectedMonth.split('-');
+    return `${months[parseInt(month) - 1]} ${year}`;
+  };
+
+  const goPrevMonth = () => {
+    const [year, month] = selectedMonth.split('-');
+    const date = new Date(parseInt(year), parseInt(month) - 2);
+    setSelectedMonth(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`);
+  };
+
+  const goNextMonth = () => {
+    const [year, month] = selectedMonth.split('-');
+    const date = new Date(parseInt(year), parseInt(month));
+    setSelectedMonth(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`);
+  };
+
+  const currentMonthTxs = transactions.filter(t => t.month_key === selectedMonth);
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left mt-6">
+       <div className="md:col-span-2 mb-2">
+         <div className="flex items-center justify-between bg-[#0a2540] rounded-lg p-3">
+           <button onClick={goPrevMonth} className="px-4 py-2 bg-transparent text-amber-500 font-bold">← Mês Anterior</button>
+           <p className="text-lg font-bold text-white">{monthDisplay()}</p>
+           <button onClick={goNextMonth} className="px-4 py-2 bg-transparent text-amber-500 font-bold">Próximo Mês →</button>
+         </div>
+       </div>
+
        <div>
          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
-           <h3 className="text-lg font-bold text-gray-900 mb-4">Novo Lançamento</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Novo Lançamento</h3>
            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                  <label className="block text-sm font-semibold text-gray-700 mb-1">Descrição</label>
@@ -105,11 +138,11 @@ const BudgetTab = () => {
            </form>
          </div>
 
-         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Movimentações</h3>
-            <div className="max-h-60 overflow-y-auto space-y-3">
-               {transactions.length === 0 && <p className="text-sm text-gray-400">Nenhum lançamento no projeto.</p>}
-               {transactions.map(t => (
+<div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+             <h3 className="text-lg font-bold text-gray-900 mb-4">Movimentações do Mês</h3>
+             <div className="max-h-60 overflow-y-auto space-y-3">
+                {currentMonthTxs.length === 0 && <p className="text-sm text-gray-400">Nenhum lançamento neste mês.</p>}
+                {currentMonthTxs.map(t => (
                   <div key={t.id} className="flex justify-between items-center p-3 border border-gray-50 bg-gray-50 rounded-md">
                      <div>
                         <p className="font-semibold text-gray-800 text-sm">{t.description}</p>
@@ -317,35 +350,41 @@ const EmergencyTab = () => {
 };
 
 const CompoundInterestTab = () => {
-   const [initial, setInitial] = useState(fmtReal(50000));
-   const [monthly, setMonthly] = useState(fmtReal(2000));
-   const [years, setYears] = useState(10);
+   const [initial, setInitial] = useState('50000');
+   const [monthly, setMonthly] = useState('2000');
+const [years, setYears] = useState(10);
    const [rate, setRate] = useState(12);
 
-   // Math engine
-   const initialVal = parseReal(initial);
-   const monthlyVal = parseReal(monthly);
-   const monthlyRate = (rate / 100) / 12;
-   const totalMonths = years * 12;
-   const yearData = [];
+   // Math engine com useMemo para recalcular quando inputs mudarem
+   const calcResult = useMemo(() => {
+      const initialVal = parseReal(initial);
+      const monthlyVal = parseReal(monthly);
+      if (initialVal <= 0 && monthlyVal <= 0) return { data: [], crossoverYear: null, finalData: { invested: 0, interest: 0, balance: 0 } };
+      
+      const monthlyRate = (rate / 100) / 12;
+      const data = [];
+      let balance = initialVal;
+      let totalInvested = initialVal;
+      let crossoverYear = null;
 
-   let balance = initialVal;
-   let totalInvested = initialVal;
-   let crossoverYear = null;
+      for (let y = 1; y <= years; y++) {
+         for (let m = 0; m < 12; m++) {
+            balance = balance * (1 + monthlyRate) + monthlyVal;
+            totalInvested += monthlyVal;
+         }
+         const interest = balance - totalInvested;
+         if (!crossoverYear && interest > totalInvested) crossoverYear = y;
+         data.push({ year: y, invested: totalInvested, interest, balance });
+      }
+      return { data, crossoverYear, finalData: data[data.length - 1] || { invested: 0, interest: 0, balance: 0 } };
+   }, [initial, monthly, years, rate]);
 
-for (let y = 1; y <= years; y++) {
-       for (let m = 0; m < 12; m++) {
-          balance = balance * (1 + monthlyRate) + monthlyVal;
-          totalInvested += monthlyVal;
-       }
-      const interest = balance - totalInvested;
-      if (!crossoverYear && interest > totalInvested) crossoverYear = y;
-      yearData.push({ year: y, invested: totalInvested, interest, balance });
-   }
-
-   const finalInvested = totalInvested;
-   const finalInterest = balance - totalInvested;
-   const maxBalance = yearData.length > 0 ? yearData[yearData.length - 1].balance : 1;
+   const finalData = calcResult.finalData;
+   const maxBalance = finalData.balance || 1;
+   const crossoverYear = calcResult.crossoverYear;
+   const finalInvested = finalData.invested;
+   const finalInterest = finalData.interest;
+   const yearData = calcResult.data;
 
    return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left mt-6">
@@ -355,11 +394,11 @@ for (let y = 1; y <= years; y++) {
                <div className="space-y-4">
                   <div>
                      <label className="block text-sm font-semibold text-gray-700 mb-1">Investimento Inicial (R$)</label>
-                     <input type="text" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={initial} onChange={formatInput(setInitial)} />
-                  </div>
-                  <div>
-                     <label className="block text-sm font-semibold text-gray-700 mb-1">Aporte Mensal (R$)</label>
-                     <input type="text" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={monthly} onChange={formatInput(setMonthly)} />
+<input type="number" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={initial} onChange={e => setInitial(e.target.value)} />
+                   </div>
+                   <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">Aporte Mensal (R$)</label>
+                      <input type="number" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none" value={monthly} onChange={e => setMonthly(e.target.value)} />
                   </div>
                   <div className="flex gap-4">
                      <div className="w-1/2">
@@ -387,9 +426,9 @@ for (let y = 1; y <= years; y++) {
                            <th className="py-2 text-right font-semibold">Juros</th>
                            <th className="py-2 text-right font-semibold">Saldo</th>
                         </tr>
-                     </thead>
-                     <tbody>
-                        {yearData.map(d => (
+</thead>
+                      <tbody>
+                         {(yearData || []).map(d => (
                            <tr key={d.year} className="border-b border-gray-50 hover:bg-gray-50">
                               <td className="py-2 font-bold text-gray-700">{d.year}º</td>
 <td className="py-2 text-right text-gray-600">{fmtBR(d.invested)}</td>
@@ -408,7 +447,7 @@ for (let y = 1; y <= years; y++) {
               <div className="bg-[#cda434] border border-[#b8860b] rounded-xl p-6 mb-6 shadow-lg text-[#0a2540] dark:text-white">
                 <p className="text-sm font-black mb-1 uppercase tracking-widest opacity-70">Ponto de Ignição (Crossover)</p>
                 <h2 className="text-4xl font-black">
-                   {crossoverYear ? `Ano ${crossoverYear}` : `Acima de ${years} anos`}
+                   {crossoverYear !== null ? `Ano ${crossoverYear}` : `Acima de ${years} anos`}
                 </h2>
                 <p className="text-xs mt-2 font-bold opacity-60">Quando os juros superam o valor investido do bolso.</p>
              </div>

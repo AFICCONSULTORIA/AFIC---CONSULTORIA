@@ -6,6 +6,7 @@
 CREATE TABLE IF NOT EXISTS public.afic_financial_transactions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL,
+    month_key TEXT NOT NULL DEFAULT to_char(CURRENT_DATE, 'YYYY-MM'),
     description TEXT NOT NULL,
     amount NUMERIC(10, 2) NOT NULL,
     category TEXT CHECK (category IN ('income', 'fixed', 'variable')) NOT NULL,
