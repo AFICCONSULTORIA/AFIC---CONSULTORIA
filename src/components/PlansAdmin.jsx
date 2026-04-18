@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
-const formatCurrency = (setter) => (e) => {
-  let val = e.target.value.replace(/[^\d]/g, '');
-  if (!val) { setter(0); return; }
-  const num = Number(val) / 100;
-  setter(num);
-};
+
 
 
 
@@ -51,7 +46,7 @@ export const PlansAdmin = () => {
     }
   };
 
-  const updatePlan = async (planId, field, value) => {
+  const updatePlan = (planId, field, value) => {
     setPlans(plans.map(p => 
       p.id === planId ? { ...p, [field]: value } : p
     ));
@@ -61,20 +56,29 @@ export const PlansAdmin = () => {
     setSaving(true);
     setMessage({ type: '', text: '' });
     
+    const monthlyPrice = parseFloat(plan.monthly_price) || 0;
+    const lifetimePrice = parseFloat(plan.lifetime_price) || 0;
+    
+    console.log('Saving plan:', plan.id, 'monthly:', monthlyPrice, 'lifetime:', lifetimePrice);
+    
     try {
       const { error } = await supabase
         .from('afic_plans')
         .update({
           name: plan.name,
           description: plan.description,
-          monthly_price: parseBR(plan.monthly_price),
-          lifetime_price: parseBR(plan.lifetime_price),
+          monthly_price: monthlyPrice,
+          lifetime_price: lifetimePrice,
           updated_at: new Date().toISOString()
         })
         .eq('id', plan.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Save error:', error);
+        throw error;
+      }
       setMessage({ type: 'success', text: `Plano ${plan.name} atualizado com sucesso!` });
+      loadPlans();
     } catch (err) {
       console.error('Error saving plan:', err);
       setMessage({ type: 'error', text: 'Erro ao salvar plano' });
@@ -157,9 +161,10 @@ export const PlansAdmin = () => {
                     Preço Mensal (R$)
                   </label>
                   <input
-                    type="text"
-                    value={fmtBR(plan.monthly_price).replace('R$ ', '')}
-                    onChange={formatCurrency((val) => updatePlan(plan.id, 'monthly_price', val))}
+                    type="number"
+                    step="0.01"
+                    value={plan.monthly_price || 0}
+                    onChange={(e) => updatePlan(plan.id, 'monthly_price', parseFloat(e.target.value) || 0)}
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-400 outline-none"
                   />
                 </div>
@@ -168,9 +173,10 @@ export const PlansAdmin = () => {
                     Preço Vitalício (R$)
                   </label>
                   <input
-                    type="text"
-                    value={fmtBR(plan.lifetime_price).replace('R$ ', '')}
-                    onChange={formatCurrency((val) => updatePlan(plan.id, 'lifetime_price', val))}
+                    type="number"
+                    step="0.01"
+                    value={plan.lifetime_price || 0}
+                    onChange={(e) => updatePlan(plan.id, 'lifetime_price', parseFloat(e.target.value) || 0)}
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-400 outline-none"
                   />
                 </div>
