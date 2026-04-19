@@ -85,6 +85,13 @@ window.initApp = function() {
             }
             console.log('Switched to page:', pageName);
             
+            // Gerenciar visibilidade do sidebar baseado na página
+            if (pageName === 'home') {
+                document.body.classList.add('landing-mode');
+            } else {
+                document.body.classList.remove('landing-mode');
+            }
+
             if (pageName === 'account') {
                 loadProfileType();
             }
@@ -108,17 +115,16 @@ window.initApp = function() {
                 await loadSupabaseData();
                 checkAdminLink();
                 if (profileTypeSelect) loadProfileType();
+                document.body.classList.remove('landing-mode');
                 switchPage('dashboard');
                 document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
                 const dashLink = document.querySelector('.nav-link[data-page="dashboard"]');
                 if (dashLink) dashLink.classList.add('active');
             } else {
-                switchPage('dashboard');
-                // Mostrar modal de login quando não logado
-                if (authModal) {
-                    authModal.classList.remove('hidden');
-                    authModal.style.display = 'flex';
-                }
+                // Modo Landing Page para usuários não autenticados
+                document.body.classList.add('landing-mode');
+                switchPage('home');
+                if (authModal) authModal.classList.add('hidden');
             }
         } catch (e) {
             console.error("Auth check failed:", e);

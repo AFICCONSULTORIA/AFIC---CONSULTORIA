@@ -17,6 +17,7 @@ import { CommunityForum } from './components/CommunityForum';
 import { PricingPage } from './components/PricingPage';
 import { SubscriptionProvider } from './components/SubscriptionContext';
 import { PlansAdmin } from './components/PlansAdmin';
+import { LandingPage } from './components/LandingPage';
 
 // Espera o Supabase CDN estar disponível
 const waitForSupabase = (timeout = 10000) => {
@@ -74,6 +75,7 @@ const ReactApp = ({ isAdmin = false }) => {
     }
   }, [isDark]);
   
+  const landingRoot = document.getElementById('react-landing-root');
   const dashboardRoot = document.getElementById('react-dashboard-root');
   const educationRoot = document.getElementById('react-education-root');
   const toolsRoot = document.getElementById('react-tools-root');
@@ -83,6 +85,10 @@ const ReactApp = ({ isAdmin = false }) => {
 
   return (
     <UserProfileProvider>
+      {landingRoot && createPortal(
+        <LandingPage />,
+        landingRoot
+      )}
       {adminRoot && createPortal(
         <PlansAdmin />,
         adminRoot

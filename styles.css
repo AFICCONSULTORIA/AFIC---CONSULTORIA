@@ -67,6 +67,21 @@
     --duration-slow:  0.6s;
 }
 
+/* ─── LANDING PAGE MODE ─── */
+body.landing-mode .sidebar {
+    display: none !important;
+}
+
+body.landing-mode .page-content {
+    margin-left: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+}
+
+body.landing-mode .page-header {
+    display: none !important;
+}
+
 /* ─── DARK MODE TOKENS ─── */
 :root.dark {
     /* Backgrounds — Deeper, more sophisticated blues */
