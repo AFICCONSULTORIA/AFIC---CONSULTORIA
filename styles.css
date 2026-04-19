@@ -3568,19 +3568,92 @@ h1, h2, h3, h4, h5, h6 {
 
 .assessment-progress {
     width: 100%;
-    max-width: 300px;
-    height: 2px;
+    max-width: 400px;
+    margin: 0 auto 24px auto;
+    text-align: center;
+}
+
+.assessment-headline {
+    font-size: 48px;
+    font-weight: 800;
+    color: #D4AF37;
+    letter-spacing: 2px;
+}
+
+.assessment-subheadline {
+    font-size: 14px;
+    color: rgba(255,255,255,0.5);
+    margin-top: 4px;
+}
+
+.assessment-progress-text {
+    display: block;
+    font-size: 48px;
+    font-weight: 800;
+    color: #D4AF37;
+    letter-spacing: 2px;
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.assessment-progress-bar-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
     background: rgba(255,255,255,0.1);
-    margin: 0 auto;
-    border-radius: 1px;
+    border-radius: 2px;
     overflow: hidden;
 }
 
 .assessment-progress-bar {
-    width: 25%;
     height: 100%;
     background: #D4AF37;
-    transition: width 0.3s;
+    transition: width 0.3s ease;
+}
+
+.step-indicator {
+    font-size: 12px;
+    font-weight: 700;
+    color: #D4AF37;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.assessment-step {
+    display: none;
+    flex-direction: column;
+}
+
+.assessment-step.active {
+    display: flex !important;
+}
+
+.assessment-step.hidden {
+    display: none !important;
+}
+
+.assessment-next {
+    width: 100%;
+    max-width: 300px;
+    margin: 32px auto 0 auto;
+    padding: 16px 32px;
+    background: #D4AF37;
+    border: none;
+    border-radius: 12px;
+    color: #001240;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.assessment-next:hover {
+    background: #e8cc6e;
+    transform: translateY(-2px);
 }
 
 .assessment-form {
@@ -3606,6 +3679,37 @@ h1, h2, h3, h4, h5, h6 {
     .assessment-contact-fields {
         grid-template-columns: 1fr;
     }
+}
+
+.assessment-section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #D4AF37;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin: 40px 0 24px 0;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(212,175,55,0.3);
+}
+
+.assessment-input-small {
+    width: 100%;
+    padding: 12px 16px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 14px;
+    margin-top: 8px;
+}
+
+.assessment-input-small::placeholder {
+    color: rgba(255,255,255,0.4);
+}
+
+.assessment-input-small:focus {
+    outline: none;
+    border-color: #D4AF37;
 }
 
 .assessment-cards {

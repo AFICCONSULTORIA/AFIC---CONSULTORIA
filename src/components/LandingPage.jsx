@@ -127,16 +127,16 @@ export const LandingPage = () => {
       <section id="numbers" className="bg-[#051845] py-16 text-white overflow-hidden relative">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 relative z-10">
           <div className="text-center">
-            <div className="text-3xl md:text-4xl font-display font-extrabold text-[#D4AF37] mb-2">+R$ 2.8M</div>
-            <div className="text-xs uppercase tracking-widest text-white/60 font-bold">Patrimônio Gerenciado</div>
+            <div className="text-3xl md:text-4xl font-display font-extrabold text-[#D4AF37] mb-2">7+</div>
+            <div className="text-xs uppercase tracking-widest text-white/60 font-bold">Anos de Mercado</div>
           </div>
           <div className="text-center">
             <div className="text-3xl md:text-4xl font-display font-extrabold text-[#D4AF37] mb-2">99%</div>
             <div className="text-xs uppercase tracking-widest text-white/60 font-bold">Precisão Matemática</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl md:text-4xl font-display font-extrabold text-[#D4AF37] mb-2">+500</div>
-            <div className="text-xs uppercase tracking-widest text-white/60 font-bold">Membros Ativos</div>
+            <div className="text-3xl md:text-4xl font-display font-extrabold text-[#D4AF37] mb-2">100%</div>
+            <div className="text-xs uppercase tracking-widest text-white/60 font-bold">Metodologia Proprietária</div>
           </div>
           <div className="text-center">
             <div className="text-3xl md:text-4xl font-display font-extrabold text-[#D4AF37] mb-2">24/7</div>

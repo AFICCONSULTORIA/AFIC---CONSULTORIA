@@ -159,103 +159,196 @@
                 </div>
             </div>
             
-            <form id="form-assessment" class="assessment-form">
-                <!-- Dados de Contato -->
-                <div class="assessment-block">
-                    <h3 class="assessment-question">Seus Dados para Contato</h3>
-                    <div class="assessment-contact-fields">
-                        <div class="assessment-input-wrapper">
-                            <input type="text" id="assessment-nome" class="assessment-input" placeholder="Nome completo" required>
+            <div class="assessment-progress">
+                    <div class="assessment-headline" id="assessment-progress-text">1/9</div>
+                    <div class="assessment-subheadline">Pergunta</div>
+                    <div class="assessment-progress-bar-container">
+                        <div class="assessment-progress-bar" id="assessment-progress-bar"></div>
+                    </div>
+                </div>
+                
+<form id="form-assessment" class="assessment-form">
+                    <!-- Step 1: Dados Contato -->
+                    <div class="assessment-step active" data-step="1">
+                        <h3 class="assessment-question">Seus Dados para Contato</h3>
+                        <div class="assessment-contact-fields">
+                            <div class="assessment-input-wrapper">
+                                <input type="text" id="assessment-nome" class="assessment-input" placeholder="Nome completo">
+                            </div>
+                            <div class="assessment-input-wrapper">
+                                <input type="email" id="assessment-email" class="assessment-input" placeholder="Seu melhor e-mail">
+                            </div>
+                            <div class="assessment-input-wrapper">
+                                <input type="tel" id="assessment-whatsapp" class="assessment-input" placeholder="(00) 00000-0000">
+                            </div>
                         </div>
-                        <div class="assessment-input-wrapper">
-                            <input type="email" id="assessment-email" class="assessment-input" placeholder="Seu melhor e-mail" required>
+                        <button type="button" class="assessment-next" onclick="nextStep()">Próximo</button>
+                    </div>
+                    
+                    <!-- Step 2: Rotina -->
+                    <div class="assessment-step hidden" data-step="2">
+                        <div class="step-indicator">I. Mapeamento de Rotina</div>
+                        <h3 class="assessment-question">O que acontece com o seu dinheiro na primeira semana após receber o pagamento?</h3>
+                        <div class="assessment-cards assessment-cards-vertical">
+                            <label class="assessment-card">
+                                <input type="radio" name="dinheiro1" value="some">
+                                <span class="card-content"><span class="card-text">Vai quase tudo para pagar as contas do mês passado e faturas.</span></span>
+                            </label>
+                            <label class="assessment-card">
+                                <input type="radio" name="dinheiro1" value="percebe">
+                                <span class="card-content"><span class="card-text">Consigo pagar o básico, mas o resto some sem perceber.</span></span>
+                            </label>
+                            <label class="assessment-card">
+                                <input type="radio" name="dinheiro1" value="separo">
+                                <span class="card-content"><span class="card-text">Já separo uma parte antes de começar a gastar.</span></span>
+                            </label>
                         </div>
-                        <div class="assessment-input-wrapper">
-                            <input type="tel" id="assessment-whatsapp" class="assessment-input" placeholder="(00) 00000-0000" required>
+                        <button type="button" class="assessment-next" onclick="nextStep()">Próximo</button>
+                    </div>
+                    
+                    <!-- Step 3: Emergência -->
+                    <div class="assessment-step hidden" data-step="3">
+                        <h3 class="assessment-question">Se uma emergência exigisse R$ 2.000,00 hoje, como você resolveria?</h3>
+                        <div class="assessment-cards assessment-cards-vertical">
+                            <label class="assessment-card">
+                                <input type="radio" name="emergencia" value="emprestou">
+                                <span class="card-content"><span class="card-text">Usaria limite, cartão ou pediria emprestado.</span></span>
+                            </label>
+                            <label class="assessment-card">
+                                <input type="radio" name="emergencia" value="atrasar">
+                                <span class="card-content"><span class="card-text">Venderia algo ou atrasaria outras contas.</span></span>
+                            </label>
+                            <label class="assessment-card">
+                                <input type="radio" name="emergencia" value="fundo">
+                                <span class="card-content"><span class="card-text">Pagaria tranquilamente, tenho fundo de emergência.</span></span>
+                            </label>
                         </div>
+                        <button type="button" class="assessment-next" onclick="nextStep()">Próximo</button>
                     </div>
-                </div>
-                
-                <div class="assessment-block">
-                    <h3 class="assessment-question">Qual é o seu objetivo principal ao buscar a Academia AFIC?</h3>
-                    <div class="assessment-cards">
-                        <label class="assessment-card">
-                            <input type="radio" name="objective" value="blindagem">
-                            <span class="card-content">
-                                <span class="card-icon">🛡️</span>
-                                <span class="card-text">Blindagem Financeira</span>
-                            </span>
-                        </label>
-                        <label class="assessment-card">
-                            <input type="radio" name="objective" value="crescimento">
-                            <span class="card-content">
-                                <span class="card-icon">📈</span>
-                                <span class="card-text">Crescimento Patrimonial</span>
-                            </span>
-                        </label>
+                    
+                    <!-- Step 4: Crenças -->
+                    <div class="assessment-step hidden" data-step="4">
+                        <div class="step-indicator">II. Raio-X de Crenças</div>
+                        <h3 class="assessment-question">O que mais te travou de construir patrimônio até hoje?</h3>
+                        <div class="assessment-cards assessment-cards-vertical">
+                            <label class="assessment-card">
+                                <input type="radio" name="trava" value="pouco">
+                                <span class="card-content"><span class="card-text">Ganha pouco, só rico investe.</span></span>
+                            </label>
+                            <label class="assessment-card">
+                                <input type="radio" name="trava" value="conhecimento">
+                                <span class="card-content"><span class="card-text">Tenho medo de perder, não entendo o mercado.</span></span>
+                            </label>
+                            <label class="assessment-card">
+                                <input type="radio" name="trava" value="disciplina">
+                                <span class="card-content"><span class="card-text">Tento guardar, mas sempre gasto demais.</span></span>
+                            </label>
+                        </div>
+                        <button type="button" class="assessment-next" onclick="nextStep()">Próximo</button>
                     </div>
-                </div>
-                
-                <div class="assessment-block">
-                    <h3 class="assessment-question">Como você classificaria o seu momento financeiro atual?</h3>
-                    <div class="assessment-cards assessment-cards-vertical">
-                        <label class="assessment-card">
-                            <input type="radio" name="moment" value="iniciante">
-                            <span class="card-content">
-                                <span class="card-icon">🌱</span>
-                                <span class="card-text">Iniciante – Começando a organizar</span>
-                            </span>
-                        </label>
-                        <label class="assessment-card">
-                            <input type="radio" name="moment" value="intermediario">
-                            <span class="card-content">
-                                <span class="card-icon">🌿</span>
-                                <span class="card-text">Intermediário – Já investe algum valor</span>
-                            </span>
-                        </label>
-                        <label class="assessment-card">
-                            <input type="radio" name="moment" value="avancado">
-                            <span class="card-content">
-                                <span class="card-icon">🌳</span>
-                                <span class="card-text">Avançado – Portfólio estruturado</span>
-                            </span>
-                        </label>
-                        <label class="assessment-card">
-                            <input type="radio" name="moment" value="institucional">
-                            <span class="card-content">
-                                <span class="card-icon">🏛️</span>
-                                <span class="card-text">Institucional – Alta renda</span>
-                            </span>
-                        </label>
+                    
+                    <!-- Step 5: Cartão -->
+                    <div class="assessment-step hidden" data-step="5">
+                        <h3 class="assessment-question">Como você utiliza o cartão de crédito hoje?</h3>
+                        <div class="assessment-cards assessment-cards-vertical">
+                            <label class="assessment-card">
+                                <input type="radio" name="cartao" value="extensao">
+                                <span class="card-content"><span class="card-text">Extensão da renda. Pago mínimo ou parcelo.</span></span>
+                            </label>
+                            <label class="assessment-card">
+                                <input type="radio" name="cartao" value="consome">
+                                <span class="card-content"><span class="card-text">Uso muito, pago o total, mas consome o que ganho.</span></span>
+                            </label>
+                            <label class="assessment-card">
+                                <input type="radio" name="cartao" value="estrategico">
+                                <span class="card-content"><span class="card-text">Uso estratégico para pontos, sempre pago o total.</span></span>
+                            </label>
+                        </div>
+                        <button type="button" class="assessment-next" onclick="nextStep()">Próximo</button>
                     </div>
-                </div>
-                
-                <div class="assessment-block">
-                    <h3 class="assessment-question">Qual a sua capacidade mensal de aportes (Skin in the Game)?</h3>
-                    <div class="assessment-input-wrapper">
-                        <input type="text" id="assessment-aporte" class="assessment-input" placeholder="R$ 0,00">
+                    
+                    <!-- Step 6: Paciência -->
+                    <div class="assessment-step hidden" data-step="6">
+                        <div class="step-indicator">III. Filtro Anti-Ficção</div>
+                        <h3 class="assessment-question">Qual seu nível de paciência para ver o dinheiro crescer de forma segura?</h3>
+                        <div class="assessment-cards assessment-cards-vertical">
+                            <label class="assessment-card">
+                                <input type="radio" name="paciencia" value="imediato">
+                                <span class="card-content"><span class="card-text">Preciso de retorno imediato (alerta: filtro).</span></span>
+                            </label>
+                            <label class="assessment-card">
+                                <input type="radio" name="paciencia" value="medio">
+                                <span class="card-content"><span class="card-text">Aceito esperar, mas preciso ver resultados em 6-12 meses.</span></span>
+                            </label>
+                            <label class="assessment-card">
+                                <input type="radio" name="paciencia" value="processo">
+                                <span class="card-content"><span class="card-text">Entendo o processo. Quero resultados em anos.</span></span>
+                            </label>
+                        </div>
+                        <button type="button" class="assessment-next" onclick="nextStep()">Próximo</button>
                     </div>
-                </div>
-                
-                <div class="assessment-block">
-                    <h3 class="assessment-question">Você está disposto a dedicar 2 a 3 horas semanais para estruturar seu portfólio?</h3>
-                    <div class="assessment-cards">
-                        <label class="assessment-card">
-                            <input type="radio" name="dedication" value="sim">
-                            <span class="card-content">
-                                <span class="card-text">Sim, estou comprometido</span>
-                            </span>
-                        </label>
-                        <label class="assessment-card">
-                            <input type="radio" name="dedication" value="nao">
-                            <span class="card-content">
-                                <span class="card-text">Prefiro gestão passiva</span>
-                            </span>
-                        </label>
+                    
+                    <!-- Step 7: Sucesso -->
+                    <div class="assessment-step hidden" data-step="7">
+                        <h3 class="assessment-question">O que significa "ter sucesso financeiro" para você?</h3>
+                        <div class="assessment-cards assessment-cards-vertical">
+                            <label class="assessment-card">
+                                <input type="radio" name="sucesso" value="acertar">
+                                <span class="card-content"><span class="card-text">Acertar a moeda e não trabalhar mais.</span></span>
+                            </label>
+                            <label class="assessment-card">
+                                <input type="radio" name="sucesso" value="dividas">
+                                <span class="card-content"><span class="card-text">Sair das dívidas, sem ansiedade, não perder para inflação.</span></span>
+                            </label>
+                            <label class="assessment-card">
+                                <input type="radio" name="sucesso" value="patrimonio">
+                                <span class="card-content"><span class="card-text">Construir patrimônio consistente e viver de renda.</span></span>
+                            </label>
+                        </div>
+                        <button type="button" class="assessment-next" onclick="nextStep()">Próximo</button>
                     </div>
-                </div>
-                
-                <button type="button" class="assessment-submit" onclick="handleAssessmentSubmit(event)">Submeter Aplicação</button>
+                    
+                    <!-- Step 8: Comprometimento -->
+                    <div class="assessment-step hidden" data-step="8">
+                        <div class="step-indicator">IV. skin in the Game</div>
+                        <h3 class="assessment-question">Se precisar cortar luxos temporários, qual sua reação?</h3>
+                        <div class="assessment-cards assessment-cards-vertical">
+                            <label class="assessment-card">
+                                <input type="radio" name="corte" value="difcil">
+                                <span class="card-content"><span class="card-text">Difícil. Prefiro ganhar mais.</span></span>
+                            </label>
+                            <label class="assessment-card">
+                                <input type="radio" name="corte" value="sacrificio">
+                                <span class="card-content"><span class="card-text">Pronto para o sacrifício hoje pela paz amanhã.</span></span>
+                            </label>
+                            <label class="assessment-card">
+                                <input type="radio" name="corte" value="equilibrio">
+                                <span class="card-content"><span class="card-text">Consigo equilibrar qualidade de vida com disciplina.</span></span>
+                            </label>
+                        </div>
+                        <button type="button" class="assessment-next" onclick="nextStep()">Próximo</button>
+                    </div>
+                    
+                    <!-- Step 9: Tempo -->
+                    <div class="assessment-step hidden" data-step="9">
+                        <h3 class="assessment-question">Quanto tempo por semana para estudar e aplicar o método?</h3>
+                        <div class="assessment-cards assessment-cards-vertical">
+                            <label class="assessment-card">
+                                <input type="radio" name="tempo" value="pouco">
+                                <span class="card-content"><span class="card-text">Tenho pouco tempo, quero algo passivo.</span></span>
+                            </label>
+                            <label class="assessment-card">
+                                <input type="radio" name="tempo" value="medio">
+                                <span class="card-content"><span class="card-text">Consigo dedicar 1-2 horas semanais.</span></span>
+                            </label>
+                            <label class="assessment-card">
+                                <input type="radio" name="tempo" value="2-3">
+                                <span class="card-content"><span class="card-text">Prioridade. 2 a 3 horas semanais.</span></span>
+                            </label>
+                        </div>
+                        <button type="button" class="assessment-submit" onclick="handleAssessmentSubmit(event)">Submeter Aplicação</button>
+                    </div>
+                </form>
                 
                 <p class="assessment-footer-lock">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

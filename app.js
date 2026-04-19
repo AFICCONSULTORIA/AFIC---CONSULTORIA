@@ -2246,7 +2246,121 @@ window.addEventListener('DOMContentLoaded', function() {
   if (window.location.hash) {
     window.handleHashChange();
   }
+  // Resetar para step 1
+  window.currentStep = 1;
+  // Mostrar primeiro step
+  document.querySelectorAll('.assessment-step').forEach(step => {
+    step.classList.add('hidden');
+    step.style.display = 'none';
+  });
+  const firstStep = document.querySelector('.assessment-step[data-step="1"]');
+  if (firstStep) {
+    firstStep.classList.remove('hidden');
+    firstStep.style.display = 'flex';
+    firstStep.classList.add('active');
+  }
+  window.updateProgress();
 });
+
+// Assessment step navigation
+window.currentStep = 1;
+window.totalSteps = 9; // 1 contato + 8 perguntas
+
+window.updateProgress = function() {
+    const progress = (window.currentStep / window.totalSteps) * 100;
+    const progressBar = document.getElementById('assessment-progress-bar');
+    const progressText = document.getElementById('assessment-progress-text');
+    if (progressBar) {
+        progressBar.style.width = progress + '%';
+    }
+    if (progressText) {
+        progressText.textContent = window.currentStep + '/' + window.totalSteps;
+    }
+};
+
+window.nextStep = function() {
+    const currentStepEl = document.querySelector(`.assessment-step[data-step="${window.currentStep}"]`);
+    const toast = document.getElementById('assessment-toast');
+    const toastMessage = toast?.querySelector('.toast-message');
+    
+    // Validação do step atual
+    if (window.currentStep === 1) {
+        const nome = document.getElementById('assessment-nome')?.value.trim();
+        const email = document.getElementById('assessment-email')?.value.trim();
+        const whatsapp = document.getElementById('assessment-whatsapp')?.value.trim();
+        if (!nome || !email || !whatsapp) {
+            if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
+            if (toastMessage) toastMessage.textContent = 'Preencha todos os dados de contato.';
+            return;
+        }
+    } else if (window.currentStep === 2) {
+        if (!document.querySelector('input[name="dinheiro1"]:checked')) {
+            if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
+            if (toastMessage) toastMessage.textContent = 'Responda o que acontece com seu dinheiro.';
+            return;
+        }
+    } else if (window.currentStep === 3) {
+        if (!document.querySelector('input[name="emergencia"]:checked')) {
+            if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
+            if (toastMessage) toastMessage.textContent = 'Selecione como resolveria uma emergência.';
+            return;
+        }
+    } else if (window.currentStep === 4) {
+        if (!document.querySelector('input[name="trava"]:checked')) {
+            if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
+            if (toastMessage) toastMessage.textContent = 'Selecione o que travou seu patrimônio.';
+            return;
+        }
+    } else if (window.currentStep === 5) {
+        if (!document.querySelector('input[name="cartao"]:checked')) {
+            if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
+            if (toastMessage) toastMessage.textContent = 'Selecione como usa seu cartão.';
+            return;
+        }
+    } else if (window.currentStep === 6) {
+        if (!document.querySelector('input[name="paciencia"]:checked')) {
+            if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
+            if (toastMessage) toastMessage.textContent = 'Selecione seu nível de paciência.';
+            return;
+        }
+    } else if (window.currentStep === 7) {
+        if (!document.querySelector('input[name="sucesso"]:checked')) {
+            if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
+            if (toastMessage) toastMessage.textContent = 'Defina o que é sucesso financeiro para você.';
+            return;
+        }
+    } else if (window.currentStep === 8) {
+        if (!document.querySelector('input[name="corte"]:checked')) {
+            if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
+            if (toastMessage) toastMessage.textContent = 'Selecione como reage a necessidade de cortar luxos.';
+            return;
+        }
+    }
+    
+    // Ocultar step atual
+    if (currentStepEl) {
+        currentStepEl.classList.remove('active');
+        currentStepEl.classList.add('hidden');
+    }
+    
+    // Avançar para próximo step
+    window.currentStep++;
+    
+    // Mostrar próximo step
+    const nextStepEl = document.querySelector(`.assessment-step[data-step="${window.currentStep}"]`);
+    if (nextStepEl) {
+        nextStepEl.classList.remove('hidden');
+        nextStepEl.classList.add('active');
+    }
+    
+    // Atualizar barra de progresso
+    window.updateProgress();
+    
+    // Fechar toast se existir
+    if (toast) {
+        toast.classList.add('hidden');
+    }
+};
 
 // Assessment form handler
 window.handleAssessmentSubmit = function(e) {
@@ -2258,15 +2372,10 @@ window.handleAssessmentSubmit = function(e) {
   const nome = document.getElementById('assessment-nome')?.value.trim();
   const email = document.getElementById('assessment-email')?.value.trim();
   const whatsapp = document.getElementById('assessment-whatsapp')?.value.trim();
-  const objetivo = document.querySelector('input[name="objective"]:checked')?.value;
-  const momento = document.querySelector('input[name="moment"]:checked')?.value;
-  const aporte = document.getElementById('assessment-aporte')?.value.trim();
-  const dedicacao = document.querySelector('input[name="dedication"]:checked')?.value;
-  
   const toast = document.getElementById('assessment-toast');
   const toastMessage = toast?.querySelector('.toast-message');
   
-  // Validação - todos obrigatórios
+  // Validação dados contato
   if (!nome) {
     if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
     if (toastMessage) toastMessage.textContent = 'Preencha seu nome completo.';
@@ -2282,37 +2391,70 @@ window.handleAssessmentSubmit = function(e) {
     if (toastMessage) toastMessage.textContent = 'Preencha seu WhatsApp.';
     return false;
   }
-  if (!objetivo) {
+  
+  // Validação Bloco 1 - Removido: campos sikap dan janela antigos
+  if (!document.querySelector('input[name="dinheiro1"]:checked')) {
     if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
-    if (toastMessage) toastMessage.textContent = 'Selecione seu objetivo.';
+    if (toastMessage) toastMessage.textContent = 'Responda o que acontece com seu dinheiro.';
     return false;
   }
-  if (!momento) {
+  if (!document.querySelector('input[name="emergencia"]:checked')) {
     if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
-    if (toastMessage) toastMessage.textContent = 'Selecione seu momento financeiro.';
+    if (toastMessage) toastMessage.textContent = 'Selecione como resolveria uma emergência.';
     return false;
   }
-  if (!aporte) {
+  if (!document.querySelector('input[name="trava"]:checked')) {
     if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
-    if (toastMessage) toastMessage.textContent = 'Informe sua capacidade de aportes.';
+    if (toastMessage) toastMessage.textContent = 'Selecione o que travou seu patrimônio.';
     return false;
   }
-  if (!dedicacao) {
+  if (!document.querySelector('input[name="cartao"]:checked')) {
     if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
-    if (toastMessage) toastMessage.textContent = 'Informe sua disponibilidade de tempo.';
+    if (toastMessage) toastMessage.textContent = 'Selecione como usa seu cartão.';
+    return false;
+  }
+  if (!document.querySelector('input[name="paciencia"]:checked')) {
+    if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
+    if (toastMessage) toastMessage.textContent = 'Selecione seu nível de paciência.';
+    return false;
+  }
+  if (!document.querySelector('input[name="sucesso"]:checked')) {
+    if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
+    if (toastMessage) toastMessage.textContent = 'Defina o que é sucesso financeiro para você.';
+    return false;
+  }
+  if (!document.querySelector('input[name="corte"]:checked')) {
+    if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
+    if (toastMessage) toastMessage.textContent = 'Selecione como reage a necessidade de cortar luxos.';
+    return false;
+  }
+  if (!document.querySelector('input[name="tempo"]:checked')) {
+    if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
+    if (toastMessage) toastMessage.textContent = 'Selecione sua disponibilidade de tempo.';
     return false;
   }
   
-  // Simular envio (aqui você integraria com seu backend)
-  console.log('Assessment enviado:', { nome, email, whatsapp, objetivo, momento, aporte, dedicacao });
+  // Coletar dados
+  const formData = {
+    nome, email, whatsapp,
+    dinheiro1: document.querySelector('input[name="dinheiro1"]:checked')?.value,
+    emergencia: document.querySelector('input[name="emergencia"]:checked')?.value,
+    trava: document.querySelector('input[name="trava"]:checked')?.value,
+    cartao: document.querySelector('input[name="cartao"]:checked')?.value,
+    paciencia: document.querySelector('input[name="paciencia"]:checked')?.value,
+    sucesso: document.querySelector('input[name="sucesso"]:checked')?.value,
+    corte: document.querySelector('input[name="corte"]:checked')?.value,
+    tempo: document.querySelector('input[name="tempo"]:checked')?.value
+  };
+  
+  console.log('Assessment enviado:', formData);
   
   if (toast) {
     toast.classList.remove('hidden', 'error');
     toast.classList.add('success');
   }
-  if (toastMessage) toastMessage.textContent = 'Análise enviada com sucesso! Em breve entraremos em contato.';
+  if (toastMessage) toastMessage.textContent = 'Respostas enviadas! Nossa equipe entrará em contato em breve.';
   
-  // Fechar toast após 5 segundos
   setTimeout(() => {
     if (toast) toast.classList.add('hidden');
   }, 5000);
