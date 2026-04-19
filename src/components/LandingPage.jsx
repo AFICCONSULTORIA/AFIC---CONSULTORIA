@@ -1,21 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 export const LandingPage = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   const openAuth = () => {
     const modal = document.getElementById('auth-modal');
     if (modal) {
       modal.classList.remove('hidden');
       modal.style.display = 'flex';
+    }
+  };
+
+  const openAssessment = () => {
+    const page = document.getElementById('page-assessment');
+    if (page) {
+      page.classList.remove('page-hidden');
+      page.style.display = 'flex';
+      window.location.hash = 'assessment';
     }
   };
 
@@ -29,38 +28,58 @@ export const LandingPage = () => {
   return (
     <div className="min-h-screen bg-[#faf8ff] dark:bg-[#0f0f1d] text-[#051845] dark:text-[#f1f5f9] font-sans selection:bg-[#D4AF37] selection:text-[#051845]">
       {/* ─── HEADER ─── */}
-      <header className={`fixed top-0 left-0 right-0 z-[1000] transition-all duration-300 ${isScrolled ? 'bg-white/80 dark:bg-[#1a1a2e]/80 backdrop-blur-md shadow-sm py-4' : 'bg-transparent py-6'}`}>
+      <header className="fixed top-0 left-0 right-0 z-[1000] bg-[#001240]/95 backdrop-blur-md shadow-lg py-3">
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
-            <div className="w-10 h-10 bg-[#051845] dark:bg-[#D4AF37] flex items-center justify-center">
-              <span className="text-[#D4AF37] dark:text-[#051845] font-bold text-xl">A</span>
+            <div className="w-10 h-10 bg-[#D4AF37] flex items-center justify-center">
+              <span className="text-[#001240] font-bold text-xl">A</span>
             </div>
             <div className="flex flex-col">
-              <span className="font-display font-extrabold text-xl leading-none tracking-tight">AFIC</span>
+              <span className="font-display font-extrabold text-xl leading-none tracking-tight text-white">AFIC</span>
               <span className="text-[9px] font-bold text-[#D4AF37] tracking-[0.3em] uppercase leading-none mt-1">Consultoria</span>
             </div>
           </div>
 
-          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold">
-            <button onClick={() => scrollToSection('features')} className="hover:text-[#D4AF37] transition-colors">Funcionalidades</button>
-            <button onClick={() => scrollToSection('academy')} className="hover:text-[#D4AF37] transition-colors">Educação</button>
-            <button onClick={() => scrollToSection('pricing')} className="hover:text-[#D4AF37] transition-colors">Planos</button>
-            <button onClick={openAuth} className="bg-[#051845] dark:bg-[#D4AF37] text-white dark:text-[#051845] px-6 py-2.5 font-bold hover:shadow-lg hover:translate-y-[-2px] transition-all active:translate-y-0">
-              Acessar Sistema
-            </button>
+          {/* Desktop Navigation Bar */}
+          <nav className="hidden lg:flex items-center gap-1">
+            <div className="flex items-center bg-white/10 rounded-full p-1">
+              <button onClick={() => scrollToSection('hero')} className="px-4 py-2 text-sm font-semibold text-white/80 hover:text-white hover:bg-white/10 rounded-full transition-all">
+                Início
+              </button>
+              <button onClick={() => scrollToSection('features')} className="px-4 py-2 text-sm font-semibold text-white/80 hover:text-white hover:bg-white/10 rounded-full transition-all">
+                Funcionalidades
+              </button>
+              <button onClick={() => scrollToSection('academy')} className="px-4 py-2 text-sm font-semibold text-white/80 hover:text-white hover:bg-white/10 rounded-full transition-all">
+                Academia
+              </button>
+              <button onClick={() => scrollToSection('numbers')} className="px-4 py-2 text-sm font-semibold text-white/80 hover:text-white hover:bg-white/10 rounded-full transition-all">
+                Resultados
+              </button>
+              <button onClick={() => scrollToSection('pricing')} className="px-4 py-2 text-sm font-semibold text-white/80 hover:text-white hover:bg-white/10 rounded-full transition-all">
+                Planos
+              </button>
+            </div>
           </nav>
 
-          <button className="md:hidden text-[#051845] dark:text-white">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-          </button>
+          <div className="flex items-center gap-3">
+            <button onClick={openAssessment} className="border border-white/30 text-white px-4 py-2.5 font-bold hover:bg-white/10 transition-all text-sm">
+              Análise de Perfil
+            </button>
+            <button onClick={openAuth} className="bg-[#D4AF37] text-[#001240] px-5 py-2.5 font-bold hover:shadow-lg hover:translate-y-[-2px] transition-all active:translate-y-0 text-sm">
+              Acessar Sistema
+            </button>
+            <button className="lg:hidden text-white">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+          </div>
         </div>
       </header>
 
       {/* ─── HERO SECTION ─── */}
-      <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden">
-        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-[#ebedff] dark:from-[#1a1a2e] to-transparent opacity-50 -z-10"></div>
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="max-w-3xl">
+      <section id="hero" className="relative min-h-[85vh] flex items-center overflow-hidden bg-[#faf8ff]">
+        <div className="absolute top-0 left-0 w-1/2 h-full bg-gradient-to-r from-[#eef0ff] to-transparent opacity-50 -z-10"></div>
+        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center w-full">
+            <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#D4AF37]/10 border border-[#D4AF37]/20 text-[#D4AF37] text-xs font-bold uppercase tracking-widest mb-6">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#D4AF37] opacity-75"></span>
@@ -68,22 +87,35 @@ export const LandingPage = () => {
               </span>
               Inteligência Financeira Institucional
             </div>
-            <h1 className="font-display text-5xl md:text-7xl font-extrabold leading-[1.1] mb-8 tracking-tight">
-              Arquitetura de <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] to-[#735c00]">Riqueza</span> com Precisão.
+            <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-extrabold leading-[1.1] mb-8 tracking-tight text-[#051845]">
+              Arquitetura de <span className="text-[#D4AF37]">Riqueza</span> com Precisão.
             </h1>
-            <p className="text-lg md:text-xl text-[#4a5068] dark:text-[#cbd5e1] mb-10 leading-relaxed max-w-2xl">
+            <p className="text-lg md:text-xl text-[#4a5068] mb-10 leading-relaxed max-w-xl">
               A plataforma definitiva para gestão patrimonial institucional. Dashboards intuitivos, ferramentas de projeção de juros compostos e educação financeira de elite em um só lugar.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <button onClick={openAuth} className="bg-[#051845] dark:bg-[#D4AF37] text-white dark:text-[#051845] px-10 py-4 text-base font-bold shadow-xl hover:shadow-[0_20px_40px_rgba(5,24,69,0.2)] dark:hover:shadow-[0_20px_40px_rgba(212,175,55,0.2)] hover:scale-[1.02] transition-all flex items-center justify-center gap-2">
+              <button onClick={openAuth} className="bg-[#051845] text-white px-10 py-4 text-base font-bold shadow-xl hover:shadow-[0_20px_40px_rgba(5,24,69,0.2)] hover:scale-[1.02] transition-all flex items-center justify-center gap-2">
                 Começar Agora
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
               </button>
-              <button onClick={() => scrollToSection('features')} className="bg-white dark:bg-[#1a1a2e] text-[#051845] dark:text-white border border-[#ebedff] dark:border-[#252545] px-10 py-4 text-base font-bold hover:bg-[#ebedff] dark:hover:bg-[#252545] transition-all flex items-center justify-center">
+              <button onClick={() => scrollToSection('features')} className="bg-white text-[#051845] border border-[#e5e5e5] px-10 py-4 text-base font-bold hover:bg-gray-50 transition-all flex items-center justify-center">
                 Ver Funcionalidades
               </button>
             </div>
-          </div>
+            </div>
+            
+            {/* Right side - Image */}
+            <div className="hidden lg:block relative">
+              <div className="relative w-full aspect-square max-w-lg mx-auto">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#051845] to-[#0a2540] rounded-3xl"></div>
+                <div className="absolute inset-4 bg-[#001240] rounded-2xl overflow-hidden flex items-center justify-center">
+                  <img src="/covers/afic_banner.png" alt="AFIC Consultoria" className="w-3/4 h-auto opacity-90" />
+                </div>
+                {/* Decorative elements */}
+                <div className="absolute -top-8 -right-8 w-32 h-32 bg-[#D4AF37]/20 rounded-full blur-2xl"></div>
+                <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-[#051845]/10 rounded-full blur-3xl"></div>
+              </div>
+            </div>
         </div>
         
         {/* Floating elements for visual interest */}
@@ -92,7 +124,7 @@ export const LandingPage = () => {
       </section>
 
       {/* ─── NUMBERS SECTION ─── */}
-      <section className="bg-[#051845] py-16 text-white overflow-hidden relative">
+      <section id="numbers" className="bg-[#051845] py-16 text-white overflow-hidden relative">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 relative z-10">
           <div className="text-center">
             <div className="text-3xl md:text-4xl font-display font-extrabold text-[#D4AF37] mb-2">+R$ 2.8M</div>
@@ -115,7 +147,7 @@ export const LandingPage = () => {
       </section>
 
       {/* ─── FEATURES SECTION ─── */}
-      <section id="features" className="py-24 md:py-32 bg-white dark:bg-[#0f0f1d]">
+      <section id="features" className="py-24 md:py-32 bg-white dark:bg-[#001240]">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center max-w-2xl mx-auto mb-20">
             <h2 className="text-sm font-bold text-[#D4AF37] uppercase tracking-[0.3em] mb-4">Módulos Exclusivos</h2>
@@ -160,7 +192,7 @@ export const LandingPage = () => {
       </section>
 
       {/* ─── ACADEMY PREVIEW (Image/Mockup logic) ─── */}
-      <section id="academy" className="py-24 bg-[#faf8ff] dark:bg-[#1a1a2e] overflow-hidden">
+      <section id="academy" className="py-24 bg-[#faf8ff] dark:bg-[#0f0f1d] overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center gap-16">
           <div className="flex-1">
             <h2 className="text-sm font-bold text-[#D4AF37] uppercase tracking-[0.3em] mb-4">Conhecimento é Soberania</h2>
@@ -194,10 +226,6 @@ export const LandingPage = () => {
                 </div>
               </li>
             </ul>
-            <button onClick={openAuth} className="text-[#D4AF37] font-bold flex items-center gap-2 hover:gap-4 transition-all uppercase tracking-widest text-sm underline underline-offset-8">
-              Acessar Academia Grátis
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-            </button>
           </div>
           <div className="flex-1 relative">
             <div className="relative z-10 p-4 bg-white dark:bg-[#0f0f1d] shadow-2xl border border-[#ebedff] dark:border-[#252545]">
@@ -218,7 +246,7 @@ export const LandingPage = () => {
       </section>
 
       {/* ─── PRICING CTA ─── */}
-      <section id="pricing" className="py-24 bg-white dark:bg-[#0f0f1d]">
+      <section id="pricing" className="py-24 bg-white dark:bg-[#001240]">
         <div className="max-w-4xl mx-auto px-6 text-center">
             <h3 className="text-4xl md:text-5xl font-display font-extrabold tracking-tight mb-8">Escolha seu Nível de Acesso</h3>
             <p className="text-[#4a5068] dark:text-[#94a3b8] mb-12 text-lg">Diferentes estratégias para diferentes momentos de vida. Encontre o plano que impulsionará seu patrimônio.</p>

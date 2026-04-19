@@ -63,7 +63,8 @@ window.initApp = function() {
         'community': 'page-community',
         'account': 'page-account',
         'plans': 'page-plans',
-        'admin-plans': 'page-admin-plans'
+        'admin-plans': 'page-admin-plans',
+        'assessment': 'page-assessment'
     };
 
     const profileTypeSelect = document.getElementById('profile-type-select');
@@ -2220,9 +2221,101 @@ window.toggleAuthTheme = function() {
   authModal.classList.toggle('light');
 };
 
+// Handle hash navigation
+window.handleHashChange = function() {
+  const hash = window.location.hash.replace('#', '');
+  if (hash === 'assessment') {
+    const page = document.getElementById('page-assessment');
+    if (page) {
+      page.classList.remove('page-hidden');
+      page.style.display = 'flex';
+    }
+  }
+};
+
 // Inicializa quando o DOM estiver pronto
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', window.initApp);
 } else {
   window.initApp();
 }
+
+// Handle hash navigation on load and change
+window.addEventListener('hashchange', window.handleHashChange);
+window.addEventListener('DOMContentLoaded', function() {
+  if (window.location.hash) {
+    window.handleHashChange();
+  }
+});
+
+// Assessment form handler
+window.handleAssessmentSubmit = function(e) {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  
+  const nome = document.getElementById('assessment-nome')?.value.trim();
+  const email = document.getElementById('assessment-email')?.value.trim();
+  const whatsapp = document.getElementById('assessment-whatsapp')?.value.trim();
+  const objetivo = document.querySelector('input[name="objective"]:checked')?.value;
+  const momento = document.querySelector('input[name="moment"]:checked')?.value;
+  const aporte = document.getElementById('assessment-aporte')?.value.trim();
+  const dedicacao = document.querySelector('input[name="dedication"]:checked')?.value;
+  
+  const toast = document.getElementById('assessment-toast');
+  const toastMessage = toast?.querySelector('.toast-message');
+  
+  // Validação - todos obrigatórios
+  if (!nome) {
+    if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
+    if (toastMessage) toastMessage.textContent = 'Preencha seu nome completo.';
+    return false;
+  }
+  if (!email) {
+    if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
+    if (toastMessage) toastMessage.textContent = 'Preencha seu e-mail.';
+    return false;
+  }
+  if (!whatsapp) {
+    if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
+    if (toastMessage) toastMessage.textContent = 'Preencha seu WhatsApp.';
+    return false;
+  }
+  if (!objetivo) {
+    if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
+    if (toastMessage) toastMessage.textContent = 'Selecione seu objetivo.';
+    return false;
+  }
+  if (!momento) {
+    if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
+    if (toastMessage) toastMessage.textContent = 'Selecione seu momento financeiro.';
+    return false;
+  }
+  if (!aporte) {
+    if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
+    if (toastMessage) toastMessage.textContent = 'Informe sua capacidade de aportes.';
+    return false;
+  }
+  if (!dedicacao) {
+    if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
+    if (toastMessage) toastMessage.textContent = 'Informe sua disponibilidade de tempo.';
+    return false;
+  }
+  
+  // Simular envio (aqui você integraria com seu backend)
+  console.log('Assessment enviado:', { nome, email, whatsapp, objetivo, momento, aporte, dedicacao });
+  
+  if (toast) {
+    toast.classList.remove('hidden', 'error');
+    toast.classList.add('success');
+  }
+  if (toastMessage) toastMessage.textContent = 'Análise enviada com sucesso! Em breve entraremos em contato.';
+  
+  // Fechar toast após 5 segundos
+  setTimeout(() => {
+    if (toast) toast.classList.add('hidden');
+  }, 5000);
+  
+  return false;
+};
