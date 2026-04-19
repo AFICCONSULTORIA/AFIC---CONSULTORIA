@@ -7,6 +7,29 @@ export const DashboardWidgets = () => {
   const [userNickname, setUserNickname] = useState('');
   const [userPlan, setUserPlan] = useState('');
   const [showScoreModal, setShowScoreModal] = useState(false);
+  const [showAllocationModal, setShowAllocationModal] = useState(false);
+  const [showLiberdadeModal, setShowLiberdadeModal] = useState(false);
+const [liberdadeData, setLiberdadeData] = useState({
+    idadeAlvo: 45,
+    idadeAtual: 30,
+    custoVida: 5000,
+    rendaPassivaAlvo: 10000,
+    rendaAtual: 1500,
+    patrimonio: 100000,
+    aporteMensal: 2000
+  });
+  const [liberdadeInputs, setLiberdadeInputs] = useState({
+    custoVida: '5000',
+    aporteMensal: '2000',
+    patrimonio: '100000',
+    idadeAtual: '30',
+    idadeAlvo: '45'
+  });
+  const [allocationData, setAllocationData] = useState({
+    rf: 35,
+    rv: 30,
+    caixa: 35
+  });
   const [scoreData, setScoreData] = useState({
     solvencia: 7,
     endividamento: 7,
@@ -105,6 +128,349 @@ export const DashboardWidgets = () => {
     if (min === parseInt(scoreData.liquidez)) return 'Liquidez';
     return 'Poupança';
   };
+
+  const calcAllocationPath = (rf, rv, caixa) => {
+    const total = rf + rv + caixa;
+    const rfDeg = (rf / total) * 360;
+    const rvDeg = rfDeg + (rv / total) * 360;
+    
+    const rfRad = (rfDeg - 90) * Math.PI / 180;
+    const rvRad = (rvDeg - 90) * Math.PI / 180;
+    const caixaRad = (360 - 90) * Math.PI / 180;
+    const startRad = -90 * Math.PI / 180;
+    
+    const x1 = 50 + 40 * Math.cos(startRad);
+    const y1 = 50 + 40 * Math.sin(startRad);
+    const x2 = 50 + 40 * Math.cos(rfRad);
+    const y2 = 50 + 40 * Math.sin(rfRad);
+    const x3 = 50 + 40 * Math.cos(rvRad);
+    const y3 = 50 + 40 * Math.sin(rvRad);
+    
+    const large = (rf / total) > 0.5 ? 1 : 0;
+    const large2 = (rv / total) > 0.5 ? 1 : 0;
+    
+    return [
+      `M50,50 L${x1.toFixed(1)},${y1.toFixed(1)} A40,40 0 ${large},1 ${x2.toFixed(1)},${y2.toFixed(1)} Z`,
+      `M50,50 L${x2.toFixed(1)},${y2.toFixed(1)} A40,40 0 ${large2},1 ${x3.toFixed(1)},${y3.toFixed(1)} Z`,
+      `M50,50 L${x3.toFixed(1)},${y3.toFixed(1)} A40,40 0 0,1 ${x1.toFixed(1)},${y1.toFixed(1)} Z`
+    ];
+  };
+  
+  const allocationPaths = calcAllocationPath(allocationData.rf, allocationData.rv, allocationData.caixa);
+
+  if (showAllocationModal) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+          <h3 className="text-xl font-bold text-gray-900 mb-1">🎯 Alocação de Ativos</h3>
+          <p className="text-gray-500 text-sm mb-4">Ajuste os percentuais para ver a alocação ideal para seu perfil.</p>
+          
+          <div className="flex justify-center mb-4">
+            <svg viewBox="0 0 100 100" width="120" height="120">
+              <circle cx="50" cy="50" r="40" fill="#e5e7eb" stroke="none"/>
+              <path d={allocationPaths[0]} fill="#22c55e"/>
+              <path d={allocationPaths[1]} fill="#3b82f6"/>
+              <path d={allocationPaths[2]} fill="#f59e0b"/>
+            </svg>
+          </div>
+          
+          <div className="space-y-4">
+            <div>
+              <div className="flex justify-between mb-1">
+                <span className="font-medium text-gray-700">Renda Fixa</span>
+                <span className="text-green-600 font-bold">{allocationData.rf}%</span>
+              </div>
+              <input 
+                type="range" min="0" max="100" 
+                value={allocationData.rf}
+                onChange={(e) => setAllocationData({...allocationData, rf: parseInt(e.target.value)})}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-green-500"
+              />
+            </div>
+            <div>
+              <div className="flex justify-between mb-1">
+                <span className="font-medium text-gray-700">Renda Variável</span>
+                <span className="text-blue-600 font-bold">{allocationData.rv}%</span>
+              </div>
+              <input 
+                type="range" min="0" max="100" 
+                value={allocationData.rv}
+                onChange={(e) => setAllocationData({...allocationData, rv: parseInt(e.target.value)})}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
+              />
+            </div>
+            <div>
+              <div className="flex justify-between mb-1">
+                <span className="font-medium text-gray-700">Caixa</span>
+                <span className="text-yellow-600 font-bold">{allocationData.caixa}%</span>
+              </div>
+              <input 
+                type="range" min="0" max="100" 
+                value={allocationData.caixa}
+                onChange={(e) => setAllocationData({...allocationData, caixa: parseInt(e.target.value)})}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-yellow-500"
+              />
+            </div>
+          </div>
+          
+          <div className="flex justify-between items-center mt-4 p-3 bg-gray-50 rounded-lg">
+            <span className="text-gray-600">Total:</span>
+            <span className={`font-bold ${allocationData.rf + allocationData.rv + allocationData.caixa === 100 ? 'text-green-600' : 'text-red-600'}`}>
+              {allocationData.rf + allocationData.rv + allocationData.caixa}%
+            </span>
+          </div>
+          
+          <button onClick={() => setShowAllocationModal(false)} className="w-full mt-4 bg-[#0a2540] text-amber-400 py-3 rounded-lg font-bold">
+            Salvar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const calcPatrimonioNecessario = () => {
+    return liberdadeData.custoVida * 12 * 25;
+  };
+
+  const calcPctLiberdade = () => {
+    const meta = calcPatrimonioNecessario();
+    return meta > 0 ? Math.min(100, Math.round((liberdadeData.patrimonio / meta) * 100)) : 0;
+  };
+
+  const calcAnosAteLiberdade = () => {
+    const meta = calcPatrimonioNecessario();
+    const atual = liberdadeData.patrimonio;
+    const aporte = liberdadeData.aporteMensal;
+    const taxa = 0.004;
+    
+    if (atual >= meta) return 0;
+    if (aporte <= 0) return 999;
+    
+    let anos = 0;
+    let saldo = atual;
+    while (saldo < meta && anos < 100) {
+      saldo = saldo * (1 + taxa * 12) + aporte * 12;
+      anos++;
+    }
+    return Math.min(anos, liberdadeData.idadeAlvo - liberdadeData.idadeAtual);
+  };
+
+  const calcNivel = () => {
+    const custoBasico = liberdadeData.custoVida * 0.5;
+    const patrimonio = liberdadeData.patrimonio;
+    const custoVida = liberdadeData.custoVida;
+    
+    const seguranca = custoBasico * 12 * 25;
+    const independencia = custoVida * 12 * 25;
+    
+    if (patrimonio >= independencia) return 3;
+    if (patrimonio >= seguranca) return 2;
+    if (patrimonio >= seguranca * 0.25) return 1;
+    return 0;
+  };
+
+  if (showLiberdadeModal) {
+    const patrimonioNecessario = calcPatrimonioNecessario();
+    const nivel = calcNivel();
+    const nivelLabels = ['Segurança', 'Independência', 'Liberdade'];
+    
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+          <h3 className="text-xl font-bold text-gray-900 mb-1">🏝️ Liberdade Financeira</h3>
+          <p className="text-gray-500 text-sm mb-4">Defina seus dados. Regra dos 4%: patrimônio = custo anual × 25</p>
+          
+          <div className="bg-gradient-to-r from-emerald-500 to-green-600 p-4 rounded-xl text-white text-center mb-4">
+            <p className="text-sm opacity-90">Patrimônio Necessário</p>
+            <p className="text-2xl font-bold">R$ {patrimonioNecessario.toLocaleString()}</p>
+            <div className="w-full bg-white/30 rounded-full h-2 mt-2">
+              <div className="bg-white h-2 rounded-full" style={{width: `${calcPctLiberdade()}%`}}></div>
+            </div>
+            <p className="text-sm mt-1">{calcPctLiberdade()}% conquistado</p>
+          </div>
+          
+          <div className="flex gap-2 mb-4">
+            {[1,2,3].map(n => (
+              <div key={n} className={`flex-1 p-2 rounded-lg text-center text-xs ${nivel >= n ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-400'}`}>
+                {n === 1 ? '🛡️ Segurança' : n === 2 ? '⚖️ Independencia' : '🌟 Liberdade'}
+              </div>
+            ))}
+          </div>
+          
+          <div className="space-y-4">
+            <div>
+              <div className="flex justify-between mb-1">
+                <span className="font-medium text-gray-700">Custo de Vida (R$/mês)</span>
+                <span className="text-gray-600 font-bold">R$ {liberdadeData.custoVida.toLocaleString()}</span>
+              </div>
+              <input 
+                type="range" min="1000" max="50000" step="500"
+                value={liberdadeData.custoVida}
+                onChange={(e) => setLiberdadeData({...liberdadeData, custoVida: parseInt(e.target.value)})}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-gray-500"
+              />
+              <input 
+                type="number" 
+                value={liberdadeInputs.custoVida}
+                onChange={(e) => {
+                  setLiberdadeInputs({...liberdadeInputs, custoVida: e.target.value});
+                  if (e.target.value !== '') {
+                    setLiberdadeData({...liberdadeData, custoVida: parseInt(e.target.value) || 0});
+                  }
+                }}
+                onBlur={(e) => {
+                  if (e.target.value === '') {
+                    setLiberdadeInputs({...liberdadeInputs, custoVida: String(liberdadeData.custoVida)});
+                  }
+                }}
+                onFocus={(e) => {
+                  setLiberdadeInputs({...liberdadeInputs, custoVida: ''});
+                }}
+                className="w-full mt-1 px-2 py-1 text-sm border rounded"
+                placeholder="Ou digite um valor"
+              />
+            </div>
+            <div>
+              <div className="flex justify-between mb-1">
+                <span className="font-medium text-gray-700">Aporte Mensal (R$)</span>
+                <span className="text-blue-600 font-bold">R$ {liberdadeData.aporteMensal.toLocaleString()}</span>
+              </div>
+              <input 
+                type="range" min="0" max="20000" step="500"
+                value={liberdadeData.aporteMensal}
+                onChange={(e) => setLiberdadeData({...liberdadeData, aporteMensal: parseInt(e.target.value)})}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
+              />
+              <input 
+                type="number" 
+                value={liberdadeInputs.aporteMensal}
+                onChange={(e) => {
+                  setLiberdadeInputs({...liberdadeInputs, aporteMensal: e.target.value});
+                  if (e.target.value !== '') {
+                    setLiberdadeData({...liberdadeData, aporteMensal: parseInt(e.target.value) || 0});
+                  }
+                }}
+                onBlur={(e) => {
+                  if (e.target.value === '') {
+                    setLiberdadeInputs({...liberdadeInputs, aporteMensal: String(liberdadeData.aporteMensal)});
+                  }
+                }}
+                onFocus={(e) => {
+                  setLiberdadeInputs({...liberdadeInputs, aporteMensal: ''});
+                }}
+                className="w-full mt-1 px-2 py-1 text-sm border rounded"
+                placeholder="Ou digite um valor"
+              />
+            </div>
+            <div>
+              <div className="flex justify-between mb-1">
+                <span className="font-medium text-gray-700">Patrimônio Atual (R$)</span>
+                <span className="text-purple-600 font-bold">R$ {liberdadeData.patrimonio.toLocaleString()}</span>
+              </div>
+              <input 
+                type="range" min="0" max="5000000" step="10000"
+                value={liberdadeData.patrimonio}
+                onChange={(e) => setLiberdadeData({...liberdadeData, patrimonio: parseInt(e.target.value)})}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-500"
+              />
+              <input 
+                type="number" 
+                value={liberdadeInputs.patrimonio}
+                onChange={(e) => {
+                  setLiberdadeInputs({...liberdadeInputs, patrimonio: e.target.value});
+                  if (e.target.value !== '') {
+                    setLiberdadeData({...liberdadeData, patrimonio: parseInt(e.target.value) || 0});
+                  }
+                }}
+                onBlur={(e) => {
+                  if (e.target.value === '') {
+                    setLiberdadeInputs({...liberdadeInputs, patrimonio: String(liberdadeData.patrimonio)});
+                  }
+                }}
+                onFocus={(e) => {
+                  setLiberdadeInputs({...liberdadeInputs, patrimonio: ''});
+                }}
+                className="w-full mt-1 px-2 py-1 text-sm border rounded"
+                placeholder="Ou digite um valor"
+              />
+            </div>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <div className="flex justify-between mb-1">
+                  <span className="font-medium text-gray-700">Idade Atual</span>
+                  <span className="text-gray-600 font-bold">{liberdadeData.idadeAtual} anos</span>
+                </div>
+                <input 
+                  type="range" min="18" max="80" 
+                  value={liberdadeData.idadeAtual}
+                  onChange={(e) => setLiberdadeData({...liberdadeData, idadeAtual: parseInt(e.target.value)})}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-gray-500"
+                />
+                <input 
+                  type="number" 
+                  value={liberdadeInputs.idadeAtual}
+                  onChange={(e) => {
+                    setLiberdadeInputs({...liberdadeInputs, idadeAtual: e.target.value});
+                    if (e.target.value !== '') {
+                      setLiberdadeData({...liberdadeData, idadeAtual: parseInt(e.target.value) || 18});
+                    }
+                  }}
+                  onBlur={(e) => {
+                    if (e.target.value === '') {
+                      setLiberdadeInputs({...liberdadeInputs, idadeAtual: String(liberdadeData.idadeAtual)});
+                    }
+                  }}
+                  onFocus={(e) => {
+                    setLiberdadeInputs({...liberdadeInputs, idadeAtual: ''});
+                  }}
+                  className="w-full mt-1 px-2 py-1 text-sm border rounded"
+                />
+              </div>
+              <div className="flex-1">
+                <div className="flex justify-between mb-1">
+                  <span className="font-medium text-gray-700">Idade Alvo</span>
+                  <span className="text-emerald-600 font-bold">{liberdadeData.idadeAlvo} anos</span>
+                </div>
+                <input 
+                  type="range" min="18" max="80" 
+                  value={liberdadeData.idadeAlvo}
+                  onChange={(e) => setLiberdadeData({...liberdadeData, idadeAlvo: parseInt(e.target.value)})}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                />
+                <input 
+                  type="number" 
+                  value={liberdadeInputs.idadeAlvo}
+                  onChange={(e) => {
+                    setLiberdadeInputs({...liberdadeInputs, idadeAlvo: e.target.value});
+                    if (e.target.value !== '') {
+                      setLiberdadeData({...liberdadeData, idadeAlvo: parseInt(e.target.value) || 80});
+                    }
+                  }}
+                  onBlur={(e) => {
+                    if (e.target.value === '') {
+                      setLiberdadeInputs({...liberdadeInputs, idadeAlvo: String(liberdadeData.idadeAlvo)});
+                    }
+                  }}
+                  onFocus={(e) => {
+                    setLiberdadeInputs({...liberdadeInputs, idadeAlvo: ''});
+                  }}
+                  className="w-full mt-1 px-2 py-1 text-sm border rounded"
+                />
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-4 p-3 bg-amber-50 rounded-lg text-center">
+            <p className="text-sm text-gray-600">{calcAnosAteLiberdade() < 999 ? `Faltam ${calcAnosAteLiberdade()} anos para a liberdade` : 'Aumente aportes para proyectar'}</p>
+          </div>
+          
+          <button onClick={() => setShowLiberdadeModal(false)} className="w-full mt-4 bg-[#0a2540] text-amber-400 py-3 rounded-lg font-bold">
+            Salvar
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (showScoreModal) {
     return (
@@ -269,29 +635,68 @@ export const DashboardWidgets = () => {
         </div>
       </div>
       
-      {/* SCORE DE SAÚDE - CLICKABLE */}
-      <div onClick={() => setShowScoreModal(true)} className="bg-white p-6 rounded-xl border border-gray-100 cursor-pointer hover:border-amber-400 hover:shadow-md transition-all" style={{maxWidth: '600px'}}>
-        <div className="flex items-center justify-between mb-3">
-          <h4 className="text-lg font-bold text-gray-900">📊 Score de Saúde Financeira</h4>
-          <span className="text-2xl">🩺</span>
+      {/* WIDGETS ROW - Score, Alocação, Liberdade */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* SCORE DE SAÚDE - CLICKABLE */}
+        <div onClick={() => setShowScoreModal(true)} className="bg-white p-5 rounded-xl border border-gray-100 cursor-pointer hover:border-amber-400 hover:shadow-md transition-all">
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="text-base font-bold text-gray-900">📊 Score de Saúde</h4>
+            <span className="text-xl">🩺</span>
+          </div>
+          <div className="text-center py-1">
+            <p className="text-3xl font-bold text-gray-900">{finalScore || 700}<span className="text-lg text-gray-400">/1000</span></p>
+          </div>
+          <p className="text-xs text-gray-500 text-center mt-1">Clique para calcular</p>
         </div>
-        <div className="text-center py-2">
-          <p className="text-4xl font-bold text-gray-900">{finalScore || 842}<span className="text-2xl text-gray-400">/1000</span></p>
+        
+        {/* ALOCAÇÃO DE ATIVOS */}
+        <div className="bg-white p-5 rounded-xl border border-gray-100 cursor-pointer hover:border-amber-400 transition-colors" onClick={() => setShowAllocationModal(true)}>
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="text-base font-bold text-gray-900">🎯 Alocação</h4>
+            <span className="text-xl">⚖️</span>
+          </div>
+          <div className="flex items-center justify-center py-2">
+            <svg viewBox="0 0 100 100" width="80" height="80">
+              <circle cx="50" cy="50" r="40" fill="#e5e7eb" stroke="none"/>
+              <path d={calcAllocationPath(allocationData.rf, allocationData.rv, allocationData.caixa)[0]} fill="#22c55e"/>
+              <path d={calcAllocationPath(allocationData.rf, allocationData.rv, allocationData.caixa)[1]} fill="#3b82f6"/>
+              <path d={calcAllocationPath(allocationData.rf, allocationData.rv, allocationData.caixa)[2]} fill="#f59e0b"/>
+            </svg>
+          </div>
+          <div className="grid grid-cols-3 gap-1 text-center text-xs mt-2">
+            <div><span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-1"></span>RF {allocationData.rf}%</div>
+            <div><span className="inline-block w-2 h-2 rounded-full bg-blue-500 mr-1"></span>RV {allocationData.rv}%</div>
+            <div><span className="inline-block w-2 h-2 rounded-full bg-yellow-500 mr-1"></span>Caixa {allocationData.caixa}%</div>
+          </div>
         </div>
-        <div className="grid grid-cols-2 gap-2 text-xs text-gray-500 mt-3">
-          <div>• Solvência: {parseInt(scoreData.solvencia) >= 7 ? '✓' : '⚠️'}</div>
-          <div>• Endividamento: {parseInt(scoreData.endividamento) >= 7 ? '✓' : '⚠️'}</div>
-          <div>• Liquidez: {parseInt(scoreData.liquidez) >= 7 ? '✓' : '⚠️'}</div>
-          <div>• Poupança: {parseInt(scoreData.pouparanca) >= 7 ? '✓' : '⚠️'}</div>
+        
+        {/* RUMO À LIBERDADE */}
+        {(() => {
+          const pctLiberdade = calcPctLiberdade();
+          const patrimonioNecessario = calcPatrimonioNecessario();
+          return (
+        <div className="bg-white p-5 rounded-xl border border-gray-100 cursor-pointer hover:border-amber-400 transition-colors" onClick={() => setShowLiberdadeModal(true)}>
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="text-base font-bold text-gray-900">🏁 Liberdade</h4>
+            <span className="text-xl">🏝️</span>
+          </div>
+          <div className="text-center py-1">
+            <p className="text-3xl font-bold text-emerald-600">{pctLiberdade}<span className="text-lg text-gray-400">%</span></p>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+            <div className="bg-emerald-500 h-2 rounded-full" style={{width: `${pctLiberdade}%`}}></div>
+          </div>
+          <p className="text-xs text-gray-500 text-center mt-2">R${liberdadeData.patrimonio >= 1000000 ? (liberdadeData.patrimonio / 1000000).toFixed(1) + 'M' : (liberdadeData.patrimonio / 1000).toFixed(0) + 'k'} / R${patrimonioNecessario >= 1000000 ? (patrimonioNecessario / 1000000).toFixed(1) + 'M' : (patrimonioNecessario / 1000).toFixed(0) + 'k'}</p>
         </div>
-        <p className="text-xs text-gray-500 text-center mt-3">Clique para calcular</p>
+          );
+        })()}
       </div>
       
       {/* PRÓXIMAS AÇÕES */}
       <div className="bg-white p-5 rounded-xl border border-gray-100">
         <h4 className="text-gray-900 font-semibold mb-4">Próximas Ações Recomendadas</h4>
         <div className="space-y-3">
-          <div className="flex items-center gap-3 p-3 bg-amber-50 rounded-lg">
+          <div className="flex items-center gap-3 p-3 bg-amber-50 rounded-lg cursor-pointer hover:bg-amber-100 transition-colors" onClick={() => window.switchPage && window.switchPage('academy')}>
             <span className="text-lg">📚</span>
             <div className="flex-1">
               <p className="text-gray-900 font-medium text-sm">Assista: Como estruturar seu patrimônio</p>
@@ -299,7 +704,7 @@ export const DashboardWidgets = () => {
             </div>
             <button className="text-amber-600 font-medium text-sm">Assistir</button>
           </div>
-          <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+          <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors" onClick={() => window.switchPage && window.switchPage('tools')}>
             <span className="text-lg">💰</span>
             <div className="flex-1">
               <p className="text-gray-900 font-medium text-sm">Atualizar controle de gastos</p>
@@ -307,7 +712,7 @@ export const DashboardWidgets = () => {
             </div>
             <button className="text-blue-600 font-medium text-sm">Atualizar</button>
           </div>
-          <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
+          <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg cursor-pointer hover:bg-purple-100 transition-colors" onClick={() => window.switchPage && window.switchPage('community')}>
             <span className="text-lg">💬</span>
             <div className="flex-1">
               <p className="text-gray-900 font-medium text-sm">Participar da discussão</p>
