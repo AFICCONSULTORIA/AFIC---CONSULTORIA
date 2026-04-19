@@ -2198,6 +2198,22 @@ if (el) el.textContent = data.profile_type ? profileLabels[data.profile_type] ||
   }
 }
 
+// Toggle password visibility
+window.togglePassword = function() {
+  const passwordInput = document.getElementById('auth-password');
+  if (passwordInput.type === 'password') {
+    passwordInput.type = 'text';
+  } else {
+    passwordInput.type = 'password';
+  }
+};
+
+// Toggle auth theme (light/dark)
+window.toggleAuthTheme = function() {
+  const authModal = document.getElementById('auth-modal');
+  authModal.classList.toggle('light');
+};
+
 // Inicializa quando o DOM estiver pronto
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', window.initApp);

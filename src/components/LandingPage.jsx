@@ -27,41 +27,56 @@ export const LandingPage = ({ onEnterSystem }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0a2540] via-[#051845] to-[#001020] text-white">
-      {/* Inline Login Modal */}
+      {/* Dedicated Login Screen */}
       {showLogin && (
         <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', zIndex: 9999,
+          position: 'fixed', inset: 0, background: 'linear-gradient(135deg, #0a2540 0%, #051845 50%, #001020 100%)', zIndex: 9999,
           display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }} onClick={() => setShowLogin(false)}>
+        }}>
           <div style={{
-            background: 'white', padding: '40px', borderRadius: '16px', maxWidth: '400px', width: '90%',
-            color: '#051845'
-          }} onClick={(e) => e.stopPropagation()}>
-            <h2 style={{fontSize: '24px', fontWeight: 'bold', marginBottom: '8px', textAlign: 'center'}}>
-              {isLogin ? 'Acesso Restrito' : 'Criar Conta'}
-            </h2>
-            <p style={{fontSize: '14px', color: '#666', marginBottom: '24px', textAlign: 'center'}}>
-              {isLogin ? 'Entre com suas credenciais' : 'Cadastre-se para continuar'}
-            </p>
+            position: 'absolute', inset: 0, overflow: 'hidden'
+          }}>
+            <div style={{
+              position: 'absolute', top: '10%', left: '10%', width: '400px', height: '400px', 
+              background: '#D4AF37', borderRadius: '50%', filter: 'blur(150px)', opacity: 0.15
+            }} />
+            <div style={{
+              position: 'absolute', bottom: '20%', right: '10%', width: '300px', height: '300px', 
+              background: '#1e3a5f', borderRadius: '50%', filter: 'blur(120px)', opacity: 0.3
+            }} />
+          </div>
+          <div style={{
+            background: 'rgba(255,255,255,0.95)', padding: '48px', borderRadius: '24px', maxWidth: '420px', width: '90%',
+            color: '#051845', position: 'relative', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)'
+          }}>
+            <div style={{textAlign: 'center', marginBottom: '32px'}}>
+              <img src="/covers/afic_banner.png" alt="AFIC" style={{height: '40px', marginBottom: '16px'}} />
+              <h2 style={{fontSize: '28px', fontWeight: '800', marginBottom: '8px'}}>
+                {isLogin ? 'Acesso Restrito' : 'Criar Conta'}
+              </h2>
+              <p style={{fontSize: '15px', color: '#64748b'}}>
+                {isLogin ? 'Entre com suas credenciais' : 'Cadastre-se para continuar'}
+              </p>
+            </div>
             <form onSubmit={handleLogin}>
               <input type="email" placeholder="Seu e-mail" value={email} onChange={(e) => setEmail(e.target.value)}
-                style={{width: '100%', padding: '14px', borderRadius: '10px', border: '1px solid #ddd', marginBottom: '16px', fontSize: '16px'}} required />
+                style={{width: '100%', padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '16px', fontSize: '16px', background: '#f8fafc'}} required />
               <input type="password" placeholder="Senha" value={password} onChange={(e) => setPassword(e.target.value)}
-                style={{width: '100%', padding: '14px', borderRadius: '10px', border: '1px solid #ddd', marginBottom: '16px', fontSize: '16px'}} required />
+                style={{width: '100%', padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '16px', fontSize: '16px', background: '#f8fafc'}} required />
               <button type="submit" disabled={loading}
-                style={{width: '100%', padding: '14px', borderRadius: '10px', border: 'none', background: '#D4AF37', color: '#051845', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer'}}>
+                style={{width: '100%', padding: '16px', borderRadius: '12px', border: 'none', background: '#D4AF37', color: '#051845', fontWeight: '700', fontSize: '16px', cursor: 'pointer', marginTop: '8px'}}>
                 {loading ? 'Aguarde...' : (isLogin ? 'Entrar' : 'Cadastrar')}
               </button>
             </form>
-            <p style={{textAlign: 'center', marginTop: '16px', fontSize: '14px'}}>
+            <p style={{textAlign: 'center', marginTop: '24px', fontSize: '14px', color: '#64748b'}}>
               {isLogin ? 'Não tem conta?' : 'Já tem conta?'}
               <button onClick={() => setIsLogin(!isLogin)} style={{background: 'none', border: 'none', color: '#D4AF37', cursor: 'pointer', marginLeft: '8px', fontWeight: '600'}}>
                 {isLogin ? 'Crie agora' : 'Entre'}
               </button>
             </p>
             <button onClick={() => setShowLogin(false)} style={{
-              position: 'absolute', top: '20px', right: '20px', background: 'none', border: 'none', 
-              color: '#999', fontSize: '24px', cursor: 'pointer'
+              position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', 
+              color: '#94a3b8', fontSize: '28px', cursor: 'pointer', lineHeight: 1
             }}>×</button>
           </div>
         </div>
