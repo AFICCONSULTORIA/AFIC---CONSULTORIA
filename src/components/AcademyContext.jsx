@@ -135,8 +135,33 @@ export const AcademyProvider = ({ children }) => {
     } else { alert("Erro ao criar módulo na nuvem"); }
   };
 
+  const deleteModule = async (moduleId) => {
+    const { error } = await supabase
+      .from('academy_modules')
+      .delete()
+      .eq('id', moduleId);
+    
+    if (!error) {
+      setCourseModules(prev => prev.filter(m => m.id !== moduleId));
+    } else {
+      alert("Erro ao excluir módulo");
+    }
+  };
+
+  const editModule = async (moduleId, newTitle) => {
+    const { error } = await supabase
+      .from('academy_modules')
+      .update({ title: newTitle })
+      .eq('id', moduleId);
+    
+    if (!error) {
+      setCourseModules(prev => prev.map(m => m.id === moduleId ? { ...m, title: newTitle } : m));
+    } else {
+      alert("Erro ao editar módulo");
+    }
+  };
+
   const addLesson = async (moduleId, lessonData) => {
-    const supabase = getSupabase();
     const payload = {
         module_id: moduleId,
         title: lessonData.title,
@@ -167,7 +192,6 @@ export const AcademyProvider = ({ children }) => {
   };
 
   const deleteLesson = async (moduleId, lessonId) => {
-    const supabase = getSupabase();
     const { error } = await supabase.from('academy_lessons').delete().eq('id', lessonId);
     
     if(!error) {
@@ -176,7 +200,6 @@ export const AcademyProvider = ({ children }) => {
   };
 
   const editLesson = async (moduleId, lessonId, updatedData) => {
-    const supabase = getSupabase();
     const payload = {};
     if(updatedData.title) payload.title = updatedData.title;
     if(updatedData.duration) payload.duration = updatedData.duration;
@@ -209,6 +232,8 @@ export const AcademyProvider = ({ children }) => {
       addLesson,
       deleteLesson,
       editLesson,
+      deleteModule,
+      editModule,
       markLessonAsCompleted,
       saveLessonFeedback,
       getLessonUserProgress,

@@ -3,9 +3,12 @@ import { useAcademy } from './AcademyContext';
 import { supabase } from '../lib/supabase';
 
 export const AcademyAdmin = ({ onExit }) => {
-  const { courseModules, addModule, addLesson, deleteLesson, editLesson } = useAcademy();
+  const { courseModules, addModule, addLesson, deleteLesson, editLesson, deleteModule, editModule } = useAcademy();
   
   const [newModuleTitle, setNewModuleTitle] = useState("");
+  const [editingModuleId, setEditingModuleId] = useState(null);
+  const [editingModuleTitle, setEditingModuleTitle] = useState("");
+  const [deleteModuleConfirm, setDeleteModuleConfirm] = useState(null);
   // { type: 'add', moduleId: ID } OU { type: 'edit', moduleId: ID, lesson: { ...dados } }
   const [modalState, setModalState] = useState(null);
   
@@ -60,12 +63,12 @@ export const AcademyAdmin = ({ onExit }) => {
     setNewModuleTitle("");
   };
 
-  const handleSaveLesson = (e) => {
+  const handleSaveLesson = async (e) => {
     e.preventDefault();
     if (!lessonTitle) return;
 
     if (modalState.type === 'add') {
-      addLesson(modalState.moduleId, {
+      await addLesson(modalState.moduleId, {
         title: lessonTitle,
         duration: lessonDuration,
         videoUrl: lessonVideoUrl,
@@ -73,7 +76,7 @@ export const AcademyAdmin = ({ onExit }) => {
         isLive: lessonIsLive
       });
     } else if (modalState.type === 'edit') {
-      editLesson(modalState.moduleId, modalState.lesson.id, {
+      await editLesson(modalState.moduleId, modalState.lesson.id, {
         title: lessonTitle,
         duration: lessonDuration,
         videoUrl: lessonVideoUrl,
@@ -151,13 +154,53 @@ export const AcademyAdmin = ({ onExit }) => {
             {courseModules.map(mod => (
               <div key={mod.id} className="bg-white border text-left border-gray-200 rounded-xl overflow-hidden shadow-sm">
                 <div className="bg-gray-50 p-4 border-b border-gray-200 flex justify-between items-center">
-                  <h4 className="font-bold text-gray-900 text-lg">{mod.title}</h4>
-                  <button 
-                    onClick={() => openAddLesson(mod.id)}
-                    className="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-bold hover:bg-blue-200"
-                  >
-                    + Nova Aula
-                  </button>
+                  {editingModuleId === mod.id ? (
+                    <div className="flex items-center gap-2 flex-1">
+                      <input 
+                        type="text" 
+                        value={editingModuleTitle}
+                        onChange={(e) => setEditingModuleTitle(e.target.value)}
+                        className="flex-1 border border-gray-300 rounded px-2 py-1 text-lg font-bold"
+                        autoFocus
+                      />
+                      <button 
+                        onClick={() => { editModule(mod.id, editingModuleTitle); setEditingModuleId(null); }}
+                        className="text-green-600 font-bold text-sm"
+                      >
+                        Salvar
+                      </button>
+                      <button 
+                        onClick={() => setEditingModuleId(null)}
+                        className="text-gray-500 font-bold text-sm"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <h4 className="font-bold text-gray-900 text-lg">{mod.title}</h4>
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => { setEditingModuleId(mod.id); setEditingModuleTitle(mod.title); }}
+                          className="text-gray-500 hover:text-gray-700 font-bold text-sm"
+                        >
+                          Editar
+                        </button>
+                        <button 
+                          onClick={() => setDeleteModuleConfirm(mod)}
+                          className="text-red-500 hover:text-red-700 font-bold text-sm"
+                        >
+                          Remover
+                        </button>
+                        <button 
+                          onClick={() => openAddLesson(mod.id)}
+                          className="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-bold hover:bg-blue-200"
+                        >
+                          + Nova Aula
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 <div className="p-0">
@@ -249,6 +292,36 @@ export const AcademyAdmin = ({ onExit }) => {
                 <button type="submit" className="w-full bg-[#0a2540] text-white p-3 rounded font-bold hover:bg-blue-900">Salvar Aula</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Confirmação de Exclusão de Módulo */}
+      {deleteModuleConfirm && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl max-w-sm w-full shadow-2xl overflow-hidden animate-fade-in-up">
+            <div className="p-6 text-center">
+              <div className="text-5xl mb-4">⚠️</div>
+              <h3 className="font-bold text-xl text-gray-900 mb-2">Excluir Módulo?</h3>
+              <p className="text-gray-600 text-sm mb-4">
+                Tem certeza que deseja excluir <strong>"{deleteModuleConfirm.title}"</strong> e todas as suas {deleteModuleConfirm.lessons.length} aulas?
+              </p>
+              <p className="text-red-500 text-xs mb-4">Esta ação não pode ser desfeita.</p>
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setDeleteModuleConfirm(null)}
+                  className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg font-bold hover:bg-gray-200"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  onClick={() => { deleteModule(deleteModuleConfirm.id); setDeleteModuleConfirm(null); }}
+                  className="flex-1 bg-red-500 text-white py-2 rounded-lg font-bold hover:bg-red-600"
+                >
+                  Excluir
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
