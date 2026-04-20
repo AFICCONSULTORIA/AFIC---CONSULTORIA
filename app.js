@@ -2465,19 +2465,36 @@ window.handleAssessmentSubmit = async function(e) {
   console.log('Supabase disponível:', !!supabaseDb);
   console.log('Keys do supabase:', supabaseDb ? Object.keys(supabaseDb) : 'n/a');
   
+  let saveError = null;
+  
   if (!supabaseDb) {
     console.error('Supabase não initialized');
+    saveError = 'Supabase não initialized';
   } else {
     try {
-      const { error: saveError } = await supabaseDb.from('afic_assessment_responses').insert([formData]);
-      if (saveError) {
-        console.error('Erro do Supabase:', saveError);
+      const { error } = await supabaseDb.from('afic_assessment_responses').insert([formData]);
+      if (error) {
+        console.error('Erro do Supabase:', error);
+        saveError = error.message;
       } else {
         console.log('Salvo!');
       }
     } catch(err) {
       console.error('Erro catch:', err);
+      saveError = err.message;
     }
+  }
+  
+  if (saveError) {
+    if (toast) {
+      toast.classList.remove('hidden', 'success');
+      toast.classList.add('error');
+    }
+    if (toastMessage) toastMessage.textContent = 'Erro ao enviar: ' + saveError;
+    setTimeout(() => {
+      if (toast) toast.classList.add('hidden');
+    }, 5000);
+    return false;
   }
   
   if (toast) {
@@ -2488,7 +2505,8 @@ window.handleAssessmentSubmit = async function(e) {
   
   setTimeout(() => {
     if (toast) toast.classList.add('hidden');
-  }, 5000);
+    switchPage('home');
+  }, 3000);
   
   return false;
 };
