@@ -2460,9 +2460,24 @@ window.handleAssessmentSubmit = async function(e) {
   
   // Salvar no banco de dados
   const supabaseDb = window.supabaseApp || window.aficSupabase;
-  const { error: saveError } = await supabaseDb.from('afic_assessment_responses').insert([formData]);
-  if (saveError) {
-    console.error('Erro ao salvar assessment:', saveError);
+  
+  // Check what we have
+  console.log('Supabase disponível:', !!supabaseDb);
+  console.log('Keys do supabase:', supabaseDb ? Object.keys(supabaseDb) : 'n/a');
+  
+  if (!supabaseDb) {
+    console.error('Supabase não initialized');
+  } else {
+    try {
+      const { error: saveError } = await supabaseDb.from('afic_assessment_responses').insert([formData]);
+      if (saveError) {
+        console.error('Erro do Supabase:', saveError);
+      } else {
+        console.log('Salvo!');
+      }
+    } catch(err) {
+      console.error('Erro catch:', err);
+    }
   }
   
   if (toast) {

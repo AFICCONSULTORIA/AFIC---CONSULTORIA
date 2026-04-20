@@ -17,10 +17,17 @@ CREATE TABLE IF NOT EXISTS public.afic_assessment_responses (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Desabilitar RLS temporariamente
-ALTER TABLE public.afic_assessment_responses DISABLE ROW LEVEL SECURITY;
+-- Garantir que a tabela existe
+ALTER TABLE public.afic_assessment_responses ENABLE ROW LEVEL SECURITY;
 
--- Dar permissão para inserir (sem autenticação necessária)
-GRANT INSERT ON public.afic_assessment_responses TO anon, authenticated;
+-- Criar política permissive para insert (sem necessidade de login)
+DROP POLICY IF EXISTS "Allow insert assessment" ON public.afic_assessment_responses;
+CREATE POLICY "Allow insert assessment" ON public.afic_assessment_responses 
+FOR INSERT WITH CHECK (true);
 
-SELECT 'Tabela afic_assessment_responses criada com sucesso!' as mensagem;
+-- Permitir SELECT para todos
+DROP POLICY IF EXISTS "Allow read assessment" ON public.afic_assessment_responses;
+CREATE POLICY "Allow read assessment" ON public.afic_assessment_responses 
+FOR SELECT USING (true);
+
+SELECT 'Tabela configurada com políticas!' as mensagem;
