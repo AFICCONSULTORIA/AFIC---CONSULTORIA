@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useFinancial } from './FinancialContext';
+import { useTier } from './TierContext';
 import { DebtDestroyerCalc, FeeAuditorCalc } from './Calculators';
 
 // Helper de Moeda Real
@@ -503,12 +504,10 @@ return { data, crossoverYear, finalData: data[data.length - 1] || { invested: 0,
 
 export const FinancialTools = () => {
    const { isLoaded } = useFinancial();
+   const { hasAccess } = useTier();
    const [activeTab, setActiveTab] = useState('budget');
 
-   if (!isLoaded) {
-      return <div className="text-center p-12 text-gray-400 font-bold animate-pulse">Sincronizando Vault Financeiro...</div>;
-   }
-
+   // Tool tabs configuration
    const tabs = [
       { id: 'budget', label: 'Orçamento 50/30' },
       { id: 'cards', label: 'Matador de Cartões' },
@@ -517,28 +516,66 @@ export const FinancialTools = () => {
       { id: 'debt_calc', label: 'Destruidor de Dívidas' },
       { id: 'fee_calc', label: 'Auditoria de Taxas' },
    ];
+   
+   const canAccessTool = (toolId) => {
+     if (toolId === 'snowball' || toolId === 'debt_calc' || toolId === 'fee_calc') {
+       return hasAccess('assinante');
+     }
+     return true;
+   };
+
+   // Componente de paywall para ferramentas avançadas
+   const ToolLocked = () => (
+     <div className="min-h-[60vh] flex items-center justify-center p-8">
+       <div className="max-w-md w-full bg-[#001240] border-2 border-[#D4AF37] rounded-2xl p-8 text-center">
+         <div className="w-20 h-20 mx-auto mb-6 bg-[#D4AF37]/20 rounded-full flex items-center justify-center">
+           <svg className="w-10 h-10 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m0 0v2m0-2h2m-2 0H8m7-5a9 9 0 11-18 0 9 9 0 0118 0z" />
+           </svg>
+         </div>
+         <h2 className="text-2xl font-bold text-white mb-4">Ferramenta Institucional Bloqueada</h2>
+         <p className="text-white/70 mb-6">
+           Exclusivo para assinantes ativos. Eleve o nível da sua arquitetura de riqueza e faça o rebalanceamento tático do seu portfólio.
+         </p>
+         <button 
+           onClick={() => window.location.hash = 'plans'}
+           className="w-full bg-[#D4AF37] hover:bg-[#c9a227] text-[#001240] font-bold py-3 px-6 rounded-lg transition-all"
+         >
+           Desbloquear Acesso
+         </button>
+       </div>
+     </div>
+   );
+
+   if (!isLoaded) {
+      return <div className="text-center p-12 text-gray-400 font-bold animate-pulse">Sincronizando Vault Financeiro...</div>;
+   }
 
    return (
      <div className="max-w-6xl mx-auto w-full">
          <div className="mb-8 border-b border-gray-200 flex overflow-x-auto no-scrollbar">
-             {tabs.map(tab => (
-                <button 
-                   key={tab.id}
-                   onClick={() => setActiveTab(tab.id)}
-                   className={`px-6 py-4 text-xs font-black uppercase tracking-widest whitespace-nowrap transition-all border-b-2 ${activeTab === tab.id ? 'border-[#cda434] text-[#0a2540] bg-gray-50' : 'border-transparent text-gray-400 hover:text-gray-900 border-b-transparent hover:bg-gray-50'}`}
-                >
-                   {tab.label}
-                </button>
-             ))}
+             {tabs.map(tab => {
+               const isLocked = !canAccessTool(tab.id);
+               return (
+                 <button 
+                    key={tab.id}
+                    onClick={() => isLocked ? null : setActiveTab(tab.id)}
+                    disabled={isLocked}
+                    className={`px-6 py-4 text-xs font-black uppercase tracking-widest whitespace-nowrap transition-all border-b-2 ${activeTab === tab.id ? 'border-[#cda434] text-[#0a2540] bg-gray-50' : (isLocked ? 'border-transparent text-gray-300 cursor-not-allowed' : 'border-transparent text-gray-400 hover:text-gray-900 border-b-transparent hover:bg-gray-50')}`}
+                 >
+                    {tab.label} {isLocked && '🔒'}
+                 </button>
+               );
+             })}
          </div>
 
          <div className="w-full">
             {activeTab === 'budget' && <BudgetTab />}
             {activeTab === 'cards' && <CreditCardTab />}
             {activeTab === 'emergency' && <EmergencyTab />}
-            {activeTab === 'snowball' && <CompoundInterestTab />}
-            {activeTab === 'debt_calc' && <div className="mt-8 flex justify-center"><DebtDestroyerCalc /></div>}
-            {activeTab === 'fee_calc' && <div className="mt-8 flex justify-center"><FeeAuditorCalc /></div>}
+            {activeTab === 'snowball' && (canAccessTool('snowball') ? <CompoundInterestTab /> : <ToolLocked />)}
+            {activeTab === 'debt_calc' && (canAccessTool('debt_calc') ? <div className="mt-8 flex justify-center"><DebtDestroyerCalc /></div> : <ToolLocked />)}
+            {activeTab === 'fee_calc' && (canAccessTool('fee_calc') ? <div className="mt-8 flex justify-center"><FeeAuditorCalc /></div> : <ToolLocked />)}
          </div>
      </div>
    );

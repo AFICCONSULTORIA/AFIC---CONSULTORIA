@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 import { useAcademy } from './AcademyContext';
+import { useTier } from './TierContext';
 import { AcademyAdmin } from './AcademyAdmin';
 
 // Subcomponente de Certificado
@@ -44,6 +45,7 @@ const CertificateModal = ({ onClose, progress }) => {
 
 export const SovereignAcademy = () => {
   const { courseModules, isLoaded, isAdmin, setIsAdmin, markLessonAsCompleted, saveLessonFeedback, getLessonUserProgress, getAllProgress } = useAcademy();
+  const { hasAccess, markModuleCompleted } = useTier();
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [debugClicks, setDebugClicks] = useState(0);
 
@@ -107,7 +109,31 @@ export const SovereignAcademy = () => {
   const activeLessonData = activeModuleData?.lessons?.find(l => l.id === activeLessonId);
 
   const handleLessonClick = (mod, lesson) => {
-    // Retiramos o "unlockedState" engessado pelo Quiz e deixamos mais fluido
+    if (!courseModules || !hasAccess) {
+      setActiveModuleId(mod.id);
+      setActiveLessonId(lesson.id);
+      return;
+    }
+    
+    // Get module index from courseModules array
+    const moduleIndex = courseModules.findIndex(m => m.id === mod.id);
+    if (moduleIndex === -1) {
+      setActiveModuleId(mod.id);
+      setActiveLessonId(lesson.id);
+      return;
+    }
+    
+    const moduleNum = moduleIndex + 1;
+    let requiredTier = 'despertar';
+    if (moduleNum >= 4 && moduleNum <= 5) requiredTier = 'assinante';
+    if (moduleNum >= 6) requiredTier = 'private_elite';
+    
+    if (!hasAccess(requiredTier)) {
+      const tierName = requiredTier === 'assinante' ? 'assinantes da AFIC Para Sempre (R$ 49/mês)' : 'membros Private Elite';
+      alert(`🚫 Este conteúdo está bloqueado!\n\nO Módulo ${moduleNum} é exclusivo para ${tierName}.\n\nFaça upgrade para desbloquear todos os módulos e ferramentas.`);
+      return;
+    }
+    
     setActiveModuleId(mod.id);
     setActiveLessonId(lesson.id);
   };
@@ -128,10 +154,21 @@ export const SovereignAcademy = () => {
 
   const handleMarkAsDone = async () => {
     if(activeLessonData) {
-       await markLessonAsCompleted(activeLessonData.id);
-       if(!completedLessonIds.includes(activeLessonData.id)) {
-          setCompletedLessonIds(prev => [...prev, activeLessonData.id]);
-       }
+      await markLessonAsCompleted(activeLessonData.id);
+      if(!completedLessonIds.includes(activeLessonData.id)) {
+        setCompletedLessonIds(prev => [...prev, activeLessonData.id]);
+        
+        // Check if this was the last lesson of Module 3 - trigger webhook
+        const mod3 = courseModules?.[2]; // Módulo 3 (index 2)
+        if (mod3 && mod3.lessons.length > 0) {
+          const lastLessonId = mod3.lessons[mod3.lessons.length - 1].id;
+          if (activeLessonData.id === lastLessonId) {
+            // User completed module 3 - trigger event
+            await markModuleCompleted('modulo_3');
+            console.log('🎯 Gatilho módulo 3 concluído disparado!');
+          }
+        }
+      }
     }
   };
 
@@ -372,6 +409,14 @@ export const SovereignAcademy = () => {
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             {courseModules?.map((mod, index) => {
               const isActiveModule = activeModuleId === mod.id;
+              
+              // Determine tier required for this module
+              const moduleNum = index + 1;
+              let requiredTier = 'despertar';
+              if (moduleNum >= 4 && moduleNum <= 5) requiredTier = 'assinante';
+              if (moduleNum >= 6) requiredTier = 'private_elite';
+              
+              const hasModuleAccess = hasAccess(requiredTier);
 
               return (
                 <div key={mod.id} className="border-b border-gray-100 last:border-0">
@@ -380,9 +425,14 @@ export const SovereignAcademy = () => {
                       {index + 1}
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-semibold text-sm text-gray-900">{mod.title}</h4>
+                      <h4 className={`font-semibold text-sm ${hasModuleAccess ? 'text-gray-900' : 'text-gray-400'}`}>
+                        {mod.title}
+                      </h4>
                       <p className="text-xs text-gray-500">{mod.lessons.length} Aulas</p>
                     </div>
+                    {!hasModuleAccess && (
+                      <div className="shrink-0 text-[#D4AF37]">🔒</div>
+                    )}
                   </div>
 
                   <div className="pb-3 px-4">
@@ -395,17 +445,21 @@ export const SovereignAcademy = () => {
                           onClick={() => handleLessonClick(mod, lesson)}
                           className={`w-full flex justify-between items-center p-3 mt-1 rounded-lg text-left text-sm transition-colors ${isCurrentLesson ? 'bg-blue-600 text-white font-medium shadow-md' : (isCompleted ? 'bg-emerald-50 text-emerald-900 border border-emerald-100 hover:bg-emerald-100' : 'text-gray-600 hover:bg-gray-100')}`}
                         >
-                          <div className="flex items-center gap-3 truncate pr-2">
-                             <span className="shrink-0">{isCurrentLesson ? '▶️' : (isCompleted ? '✅' : '📄')}</span>
+<div className="flex items-center gap-3 truncate pr-2">
+                             <span className="shrink-0 text-[#D4AF37]">
+                               {!hasModuleAccess ? (
+                                 <span>🔒</span>
+                               ) : (isCurrentLesson ? '▶️' : (isCompleted ? '✅' : '📄'))}
+                             </span>
                              <span className="truncate max-w-[200px]">{lesson.title}</span>
-                          </div>
+                           </div>
                           
-                          <div className="flex items-center gap-2 shrink-0">
-                            {lesson.isLive && !isCurrentLesson && (
-                               <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                            )}
-                            <span className={`text-xs ${isCurrentLesson ? 'text-blue-200' : 'text-gray-400'}`}>{lesson.duration}</span>
-                          </div>
+<div className="flex items-center gap-2 shrink-0">
+                             {lesson.isLive && !isCurrentLesson && (
+                                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                             )}
+                             <span className={`text-xs ${isCurrentLesson ? 'text-blue-200' : 'text-gray-400'}`}>{lesson.duration}</span>
+                           </div>
                         </button>
                       );
                     })}

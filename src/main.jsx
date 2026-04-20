@@ -16,6 +16,7 @@ import { CommunityProvider } from './components/CommunityContext';
 import { CommunityForum } from './components/CommunityForum';
 import { PricingPage } from './components/PricingPage';
 import { SubscriptionProvider } from './components/SubscriptionContext';
+import { TierProvider } from './components/TierContext';
 import { PlansAdmin } from './components/PlansAdmin';
 import { LandingPage } from './components/LandingPage';
 
@@ -84,27 +85,28 @@ const ReactApp = ({ isAdmin = false }) => {
   const adminRoot = document.getElementById('react-admin-root');
 
   return (
-    <UserProfileProvider>
-      {landingRoot && createPortal(
-        <LandingPage />,
-        landingRoot
-      )}
-      {adminRoot && createPortal(
-        <PlansAdmin />,
-        adminRoot
-      )}
-      {dashboardRoot && createPortal(
-        <div className="space-y-6">
-          <ProfileOnboarding />
-          <DashboardWidgets />
-        </div>,
-        dashboardRoot
-      )}
-      {!dashboardRoot && (
-        <div className="space-y-6">
-          <ProfileOnboarding />
-        </div>
-      )}
+    <TierProvider>
+      <UserProfileProvider>
+        {landingRoot && createPortal(
+          <LandingPage />,
+          landingRoot
+        )}
+        {adminRoot && createPortal(
+          <PlansAdmin />,
+          adminRoot
+        )}
+        {dashboardRoot && createPortal(
+          <div className="space-y-6">
+            <ProfileOnboarding />
+            <DashboardWidgets />
+          </div>,
+          dashboardRoot
+        )}
+        {!dashboardRoot && (
+          <div className="space-y-6">
+            <ProfileOnboarding />
+          </div>
+        )}
 
       {toolsRoot && createPortal(
         <div className="pt-6">
@@ -139,7 +141,8 @@ const ReactApp = ({ isAdmin = false }) => {
         </SubscriptionProvider>,
         pricingRoot
       )}
-    </UserProfileProvider>
+      </UserProfileProvider>
+    </TierProvider>
   );
 };
 
