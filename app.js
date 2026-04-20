@@ -9,6 +9,7 @@ window.initApp = function() {
   try {
     // ─── SUPABASE INITIALIZATION ───
     const supabase = window.aficSupabase;
+    window.supabaseApp = supabase; // Tornar disponível globalmente
     let currentUser = null;
     let currentUserProfile = null;
 
@@ -2371,7 +2372,7 @@ window.nextStep = function() {
 };
 
 // Assessment form handler
-window.handleAssessmentSubmit = function(e) {
+window.handleAssessmentSubmit = async function(e) {
   if (e) {
     e.preventDefault();
     e.stopPropagation();
@@ -2456,6 +2457,13 @@ window.handleAssessmentSubmit = function(e) {
   };
   
   console.log('Assessment enviado:', formData);
+  
+  // Salvar no banco de dados
+  const supabaseDb = window.supabaseApp || window.aficSupabase;
+  const { error: saveError } = await supabaseDb.from('afic_assessment_responses').insert([formData]);
+  if (saveError) {
+    console.error('Erro ao salvar assessment:', saveError);
+  }
   
   if (toast) {
     toast.classList.remove('hidden', 'error');
