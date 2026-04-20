@@ -8,13 +8,34 @@ const fmtBR = (num) => {
   return 'R$ ' + val.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
 };
 
+// Stripe configuration
+const STRIPE_PUBLIC_KEY = 'pk_test_51TJ2vhCBYPTHESLfqo7K3PBveOrIIJoWM0teVOdvbCJSgbQP6Ywxu98VIKNCexj0a4mMNOe9fKn3bkZRIaVpKp9500bP3nQGMc';
+
+// Stripe configuration - Payment Links from Stripe Dashboard
+const STRIPE_PAYMENT_LINKS = {
+  basic: 'https://buy.stripe.com/test_9B6cN40Xy6cy9AOdbWabK01',    // Básico
+  pro: 'https://buy.stripe.com/test_dRmaEW8q0asObIW0paabK02',       // Profissional
+  elite: 'https://buy.stripe.com/test_eVq00ifSsfN814i7RCabK03',     // Elite
+};
+
+// URL de sucesso/cancelamento
+const STRIPE_SUCCESS_URL = window.location.origin + '/?payment=success';
+const STRIPE_CANCEL_URL = window.location.origin + '/?payment=cancelled';
+
 export const PricingPage = ({ currentPlan, onSelectPlan = () => {} }) => {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [billingType, setBillingType] = useState('monthly');
+  const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
     loadPlans();
+    // Load Stripe
+    if (!window.Stripe) {
+      const script = document.createElement('script');
+      script.src = 'https://js.stripe.com/v3/';
+      document.head.appendChild(script);
+    }
   }, []);
 
   const loadPlans = async () => {
@@ -52,6 +73,39 @@ export const PricingPage = ({ currentPlan, onSelectPlan = () => {} }) => {
       : (parseFloat(plan.lifetime_price) || 0);
   };
 
+  // Handle subscription with Stripe - Using Payment Links
+  const handleSubscribe = async (plan) => {
+    setProcessing(true);
+    
+    try {
+      const price = getPrice(plan);
+      if (price === 0) {
+        alert('Plano gratuito selecionado! Em breve você terá acesso.');
+        setProcessing(false);
+        return;
+      }
+
+      // Get the payment link for this plan
+      const paymentLink = STRIPE_PAYMENT_LINKS[plan.id];
+      if (!paymentLink) {
+        alert('Plano não encontrado. Entre em contato com o suporte.');
+        setProcessing(false);
+        return;
+      }
+
+      console.log('Redirecting to:', paymentLink);
+      
+      // Redirect to Stripe Payment Link
+      window.location.href = paymentLink;
+      
+    } catch (err) {
+      console.error('Subscription error:', err);
+      alert('Erro ao processar assinatura. Tente novamente.');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0a2540] flex items-center justify-center">
@@ -81,16 +135,6 @@ export const PricingPage = ({ currentPlan, onSelectPlan = () => {} }) => {
               }`}
             >
               Mensal
-            </button>
-            <button
-              onClick={() => setBillingType('lifetime')}
-              className={`px-6 py-3 rounded-full font-bold transition-all ${
-                billingType === 'lifetime' 
-                  ? 'bg-amber-400 text-[#0a2540]' 
-                  : 'bg-transparent text-gray-400 border border-gray-600 hover:border-white'
-              }`}
-            >
-              Vitalício {billingType === 'lifetime' && <span className="ml-2 text-xs bg-green-500 text-white px-2 py-0.5 rounded">Economia</span>}
             </button>
           </div>
         </div>
@@ -138,8 +182,8 @@ export const PricingPage = ({ currentPlan, onSelectPlan = () => {} }) => {
                 </ul>
 
                 <button
-                  onClick={() => onSelectPlan(plan.id, billingType)}
-                  disabled={isCurrent}
+                  onClick={() => handleSubscribe(plan)}
+                  disabled={isCurrent || processing}
                   className={`w-full py-4 rounded-xl font-bold transition-all ${
                     isCurrent
                       ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
@@ -148,7 +192,7 @@ export const PricingPage = ({ currentPlan, onSelectPlan = () => {} }) => {
                         : 'bg-white/20 hover:bg-white/30 text-white border border-white/30'
                   }`}
                 >
-                  {isCurrent ? 'Plano Atual' : price === 0 ? 'Começar Grátis' : 'Assinar Agora'}
+                  {processing ? 'Processando...' : isCurrent ? 'Plano Atual' : price === 0 ? 'Começar Grátis' : 'Assinar Agora'}
                 </button>
               </div>
             );

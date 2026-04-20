@@ -12,6 +12,14 @@ window.initApp = function() {
     let currentUser = null;
     let currentUserProfile = null;
 
+    // ─── STRIPE INITIALIZATION ───
+    const stripePublicKey = 'pk_test_51TJ2vhCBYPTHESLfqo7K3PBveOrIIJoWM0teVOdvbCJSgbQP6Ywxu98VIKNCexj0a4mMNOe9fKn3bkZRIaVpKp9500bP3nQGMc';
+    let stripe = null;
+    if (typeof Stripe !== 'undefined') {
+      stripe = Stripe(stripePublicKey);
+      console.log("Stripe initialized");
+    }
+
     // ─── AUTHENTICATION HANDLERS ───
     console.log("AFIC Auth Bridge Initializing...");
     const authModal = document.getElementById('auth-modal');

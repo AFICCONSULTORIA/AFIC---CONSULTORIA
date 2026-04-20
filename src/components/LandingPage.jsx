@@ -79,16 +79,16 @@ export const LandingPage = () => {
       <section id="hero" className="relative min-h-[85vh] flex items-center overflow-hidden bg-[#faf8ff]">
         <div className="absolute top-0 left-0 w-1/2 h-full bg-gradient-to-r from-[#eef0ff] to-transparent opacity-50 -z-10"></div>
         <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center w-full">
-            <div className="max-w-2xl">
+            <div className="col-span-1 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#D4AF37]/10 border border-[#D4AF37]/20 text-[#D4AF37] text-xs font-bold uppercase tracking-widest mb-6">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#D4AF37] opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[#D4AF37]"></span>
               </span>
-              Inteligência Financeira Institucional
+              Negando a Ficção
             </div>
             <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-extrabold leading-[1.1] mb-8 tracking-tight text-[#051845]">
-              Arquitetura de <span className="text-[#D4AF37]">Riqueza</span> com Precisão.
+              Da Ficção à <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FFD700] via-[#D4AF37] to-[#B8860B]">Riqueza Real.</span>
             </h1>
             <p className="text-lg md:text-xl text-[#4a5068] mb-10 leading-relaxed max-w-xl">
               A plataforma definitiva para gestão patrimonial institucional. Dashboards intuitivos, ferramentas de projeção de juros compostos e educação financeira de elite em um só lugar.
@@ -104,17 +104,20 @@ export const LandingPage = () => {
             </div>
             </div>
             
-            {/* Right side - Image */}
-            <div className="hidden lg:block relative">
-              <div className="relative w-full aspect-square max-w-lg mx-auto">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#051845] to-[#0a2540] rounded-3xl"></div>
-                <div className="absolute inset-4 bg-[#001240] rounded-2xl overflow-hidden flex items-center justify-center">
-                  <img src="/covers/afic_banner.png" alt="AFIC Consultoria" className="w-3/4 h-auto opacity-90" />
+            {/* Right side - Image/Video placeholder */}
+            <div className="lg:block col-span-1">
+              <div className="relative z-10 p-4 bg-white shadow-2xl border-2 border-[#D4AF37]">
+                <div className="aspect-video bg-gradient-to-br from-[#051845] to-[#0a2460] overflow-hidden flex items-center justify-center">
+                  <img 
+                    src="./covers/afic_banner.png" 
+                    alt="AFIC Consultoria" 
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-                {/* Decorative elements */}
-                <div className="absolute -top-8 -right-8 w-32 h-32 bg-[#D4AF37]/20 rounded-full blur-2xl"></div>
-                <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-[#051845]/10 rounded-full blur-3xl"></div>
               </div>
+              {/* Background decoration */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] border border-[#D4AF37]/10 -z-10 rotate-12 mt-8 ml-4"></div>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[110%] border border-[#051845]/10 -z-10 -rotate-6 mt-8 ml-4"></div>
             </div>
         </div>
         
@@ -123,27 +126,115 @@ export const LandingPage = () => {
         <div className="absolute top-1/4 right-0 w-64 h-64 bg-[#051845]/5 rounded-full blur-2xl -z-10"></div>
       </section>
 
-      {/* ─── NUMBERS SECTION ─── */}
-      <section id="numbers" className="bg-[#051845] py-16 text-white overflow-hidden relative">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 relative z-10">
-          <div className="text-center">
-            <div className="text-3xl md:text-4xl font-display font-extrabold text-[#D4AF37] mb-2">7+</div>
-            <div className="text-xs uppercase tracking-widest text-white/60 font-bold">Anos de Mercado</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl md:text-4xl font-display font-extrabold text-[#D4AF37] mb-2">99%</div>
-            <div className="text-xs uppercase tracking-widest text-white/60 font-bold">Precisão Matemática</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl md:text-4xl font-display font-extrabold text-[#D4AF37] mb-2">100%</div>
-            <div className="text-xs uppercase tracking-widest text-white/60 font-bold">Metodologia Proprietária</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl md:text-4xl font-display font-extrabold text-[#D4AF37] mb-2">24/7</div>
-            <div className="text-xs uppercase tracking-widest text-white/60 font-bold">Suporte Concierge</div>
-          </div>
+      {/* ─── ASSESSMENT CTA ─── */}
+      <section className="bg-[#051845] py-20 text-white overflow-hidden relative">
+        <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
+          <h2 className="text-3xl md:text-5xl font-display font-extrabold mb-6">Pronto para transformar sua vida financeira?</h2>
+          <p className="text-lg text-white/70 mb-10 max-w-2xl mx-auto">Descubra seu perfil financeiro e receba uma análise personalizada para atingir seus objetivos.</p>
+          <button 
+            onClick={openAssessment}
+            className="inline-block bg-[#D4AF37] hover:bg-[#c9a227] text-[#051845] font-display font-bold text-xl px-12 py-5 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 cursor-pointer"
+          >
+            Faça sua Análise de Perfil
+          </button>
         </div>
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:20px_20px]"></div>
+      </section>
+
+      {/* ─── PARA QUEM É A AFIC ─── */}
+      <section className="py-24 bg-white dark:bg-[#001240]">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <h2 className="text-sm font-bold text-[#D4AF37] uppercase tracking-[0.3em] mb-4">Para quem é a AFIC?</h2>
+            <h3 className="text-3xl md:text-4xl font-display font-extrabold tracking-tight">A Academia que transforma quem quer sair do lugar comum.</h3>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="p-8 bg-[#faf8ff] dark:bg-[#1a1a2e] border border-[#ebedff] dark:border-[#252545] hover:border-[#D4AF37]/30 transition-all">
+              <div className="w-12 h-12 bg-[#051845] flex items-center justify-center mb-6">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+              </div>
+              <h4 className="text-xl font-display font-bold mb-3">Quem quer construir riqueza de verdade</h4>
+              <p className="text-[#4a5068] dark:text-[#94a3b8]">Não busca atalhos, mas métodos comprovados matematicamente.</p>
+            </div>
+            <div className="p-8 bg-[#faf8ff] dark:bg-[#1a1a2e] border border-[#ebedff] dark:border-[#252545] hover:border-[#D4AF37]/30 transition-all">
+              <div className="w-12 h-12 bg-[#051845] flex items-center justify-center mb-6">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+              </div>
+              <h4 className="text-xl font-display font-bold mb-3">Quem está cansado de conselhos genéricos</h4>
+              <p className="text-[#4a5068] dark:text-[#94a3b8]">Quer estratégias práticas, baseadas em dados e não em modismos.</p>
+            </div>
+            <div className="p-8 bg-[#faf8ff] dark:bg-[#1a1a2e] border border-[#ebedff] dark:border-[#252545] hover:border-[#D4AF37]/30 transition-all">
+              <div className="w-12 h-12 bg-[#051845] flex items-center justify-center mb-6">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+              </div>
+              <h4 className="text-xl font-display font-bold mb-3">Quem busca independência financeira</h4>
+              <p className="text-[#4a5068] dark:text-[#94a3b8]">Não quer depender de terceiros para tomar decisões sobre seu dinheiro.</p>
+            </div>
+            <div className="p-8 bg-[#faf8ff] dark:bg-[#1a1a2e] border border-[#ebedff] dark:border-[#252545] hover:border-[#D4AF37]/30 transition-all">
+              <div className="w-12 h-12 bg-[#051845] flex items-center justify-center mb-6">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              </div>
+              <h4 className="text-xl font-display font-bold mb-3">Quem quer pensar como investidor institucional</h4>
+              <p className="text-[#4a5068] dark:text-[#94a3b8]">Aprende a analisar oportunidades com a mesma lógica de quem maneja milhões.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── VANTAGENS AFIC ─── */}
+      <section className="py-24 bg-[#051845] text-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <h2 className="text-sm font-bold text-[#D4AF37] uppercase tracking-[0.3em] mb-4">Vantagens AFIC</h2>
+            <h3 className="text-3xl md:text-4xl font-display font-extrabold tracking-tight">Por que escolher a AFIC?</h3>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-[#D4AF37]/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+              </div>
+              <h4 className="text-xl font-display font-bold mb-3">Método Proprietário</h4>
+              <p className="text-white/70">Framework testado e refinado ao longo de anos de mercado.</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-[#D4AF37]/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+              </div>
+              <h4 className="text-xl font-display font-bold mb-3">Ferramentas Poderosas</h4>
+              <p className="text-white/70">Calculadoras, simuladores e dashboards que você não encontra em outro lugar.</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-[#D4AF37]/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              </div>
+              <h4 className="text-xl font-display font-bold mb-3">Comunidade de Elite</h4>
+              <p className="text-white/70">Acesso a uma rede de pessoas com o mesmo nível de comprometimento.</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-[#D4AF37]/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              </div>
+              <h4 className="text-xl font-display font-bold mb-3">Atualização Contínua</h4>
+              <p className="text-white/70">Conteúdo sempre atualizado com as tendências do mercado.</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-[#D4AF37]/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+              </div>
+              <h4 className="text-xl font-display font-bold mb-3">Base de Conhecimento</h4>
+              <p className="text-white/70">Biblioteca completa de masterclasses e materiais de estudo.</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-[#D4AF37]/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+              </div>
+              <h4 className="text-xl font-display font-bold mb-3">Suporte Dedicado</h4>
+              <p className="text-white/70">Equipe disponível para tirar suas dúvidas e guiar sua jornada.</p>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* ─── FEATURES SECTION ─── */}
@@ -248,31 +339,26 @@ export const LandingPage = () => {
       {/* ─── PRICING CTA ─── */}
       <section id="pricing" className="py-24 bg-white dark:bg-[#001240]">
         <div className="max-w-4xl mx-auto px-6 text-center">
-            <h3 className="text-4xl md:text-5xl font-display font-extrabold tracking-tight mb-8">Escolha seu Nível de Acesso</h3>
-            <p className="text-[#4a5068] dark:text-[#94a3b8] mb-12 text-lg">Diferentes estratégias para diferentes momentos de vida. Encontre o plano que impulsionará seu patrimônio.</p>
+            <h3 className="text-4xl md:text-5xl font-display font-extrabold tracking-tight mb-8">Sua transformação patrimonial começa aqui</h3>
+            <p className="text-[#4a5068] dark:text-[#94a3b8] mb-12 text-lg">Não é sobre quanto você ganha. É sobre como você faz seu dinheiro trabalhar para você.</p>
             
             <div className="bg-[#051845] p-12 relative overflow-hidden text-left md:flex items-center justify-between gap-8">
                <div className="relative z-10">
-                 <div className="text-[#D4AF37] font-bold text-sm uppercase tracking-widest mb-2">Recomendado</div>
-                 <h4 className="text-3xl font-display font-extrabold text-white mb-4">AFIC Elite Institutional</h4>
-                 <p className="text-white/70 text-sm mb-6 max-w-sm">Acesso a todas as ferramentas, mentoria trimestral e conteúdo avançado de mercado.</p>
-                 <div className="flex items-baseline gap-2 text-white">
-                   <span className="text-sm font-bold opacity-60">R$</span>
-                   <span className="text-5xl font-extrabold text-[#D4AF37]">1.850</span>
-                   <span className="text-sm font-bold opacity-60">/mês</span>
-                 </div>
+                 <div className="text-[#D4AF37] font-bold text-sm uppercase tracking-widest mb-2">O Método AFIC</div>
+                 <h4 className="text-3xl font-display font-extrabold text-white mb-4">Acesso Completo à Academia</h4>
+                 <p className="text-white/70 text-sm mb-6 max-w-sm">Dashboards patrimoniais, calculadoras de juros compostos, simuladores de bola de neve e masterclasses exclusivas.</p>
                </div>
                <div className="relative z-10 mt-8 md:mt-0">
-                 <button onClick={openAuth} className="w-full md:w-auto bg-[#D4AF37] text-[#051845] px-10 py-5 font-bold hover:bg-[#e8cc6e] transition-all shadow-xl">
-                   Quero ser Membro Elite
+                 <button onClick={openAssessment} className="w-full md:w-auto bg-[#D4AF37] text-[#051845] px-10 py-5 font-bold hover:bg-[#e8cc6e] transition-all shadow-xl">
+                   Quero Começar Minha Transformação
                  </button>
-                 <p className="text-white/40 text-[10px] text-center mt-3 uppercase tracking-tighter uppercase tracking-widest">Inscrições limitadas por trimestre</p>
+                 <p className="text-white/40 text-[10px] text-center mt-3 uppercase tracking-tighter">Vagas limitadas para novos membros</p>
                </div>
                {/* Pattern */}
                <div className="absolute top-0 right-0 w-64 h-full bg-white/5 -skew-x-[30deg]"></div>
             </div>
             
-            <p className="mt-8 text-sm text-[#4a5068] dark:text-[#94a3b8]">Tem dúvidas? Fale com nosso <a href="#" className="text-[#D4AF37] font-bold underline">Concierge</a> agora mesmo.</p>
+            <p className="mt-8 text-sm text-[#4a5068] dark:text-[#94a3b8]">Pronto para sair da teoria e entrar na prática? <button onClick={openAssessment} className="text-[#D4AF37] font-bold underline">Faça sua análise de perfil</button> agora.</p>
         </div>
       </section>
 

@@ -47,44 +47,45 @@ export const SubscriptionProvider = ({ children }) => {
     }
   };
 
-  const checkPlanAccess = (planId) => {
-    if (!subscription) return planId === 'basic';
-    return subscription.plan_id === planId || 
-           (subscription.plan_id === 'pro' && (planId === 'basic' || planId === 'pro')) ||
-           (subscription.plan_id === 'elite');
+const checkPlanAccess = (planId) => {
+    if (!subscription) return planId === 'free';
+    return subscription.plan_id === planId;
   };
 
-  const createCheckoutSession = async (userId, planId, billingType) => {
-    const plan = plans.find(p => p.id === planId);
-    if (!plan) throw new Error('Plano não encontrado');
-
-    const price = billingType === 'monthly' ? plan.monthly_price : plan.lifetime_price;
-    
-    // Por enquanto, criar registro de assinatura diretamente
-    // (Stripe integration será adicionada depois)
+  // Stripe Checkout
+  const createCheckoutSession = async (planId, billingType) => {
     try {
-      const expiresAt = billingType === 'monthly' 
-        ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-        : null;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        alert('Faça login para assinar um plano');
+        return;
+      }
 
-      const { data, error } = await supabase
-        .from('afic_subscriptions')
-        .insert({
-          user_id: userId,
+      // Chamar Edge Function para criar sessão Stripe
+      const response = await fetch('https://sueyfodlqcviojivlxgv.supabase.co/functions/v1/stripe-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
           plan_id: planId,
-          billing_type: billingType,
-          status: 'active',
-          expires_at: expiresAt
+          billing_type: billingType
         })
-        .select()
-        .single();
+      });
 
-      if (error) throw error;
-      setSubscription(data);
-      return data;
+      const { url, error } = await response.json();
+      
+      if (error) {
+        alert('Erro: ' + error);
+        return;
+      }
+
+      // Redirecionar para Stripe
+      window.location.href = url;
     } catch (err) {
-      console.error('Error creating subscription:', err);
-      throw err;
+      console.error('Checkout error:', err);
+      alert('Erro ao processar pagamento');
     }
   };
 
