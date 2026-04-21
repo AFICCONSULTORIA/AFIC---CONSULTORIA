@@ -66,6 +66,16 @@ export const CRMAdmin = () => {
     return answerMap[val] || val;
   };
 
+  const formatWhatsAppLink = (phone, nome) => {
+    let clean = (phone || '').replace(/\D/g, '');
+    if (clean && !clean.startsWith('55') && clean.length <= 11) {
+      clean = '55' + clean;
+    }
+    const firstName = nome ? nome.split(' ')[0] : '';
+    const mensagem = `Olá ${firstName}, ficamos felizes em receber a sua análise de perfil! Após a nossa análise, voltaremos a entrar em contato com a aprovação ou reprovação do seu perfil.`;
+    return `https://wa.me/${clean}?text=${encodeURIComponent(mensagem)}`;
+  };
+
   useEffect(() => {
     loadLeads();
   }, []);
@@ -234,7 +244,7 @@ export const CRMAdmin = () => {
                       
                       <div className="mt-6 flex justify-end">
                         <a 
-                          href={`https://wa.me/${(lead.whatsapp || '').replace(/\D/g, '')}?text=Olá ${lead.nome.split(' ')[0]}, vi que preencheu nosso assessment na AFIC Consultoria.`} 
+                          href={formatWhatsAppLink(lead.whatsapp, lead.nome)} 
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="flex items-center gap-2 bg-[#25D366] text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-[#20bd5a] transition-colors"
