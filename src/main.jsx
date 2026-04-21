@@ -17,7 +17,7 @@ import { CommunityForum } from './components/CommunityForum';
 import { PricingPage } from './components/PricingPage';
 import { SubscriptionProvider } from './components/SubscriptionContext';
 import { TierProvider } from './components/TierContext';
-import { PlansAdmin } from './components/PlansAdmin';
+import { AdminPanel } from './components/AdminPanel';
 import { LandingPage } from './components/LandingPage';
 
 // Espera o Supabase CDN estar disponível
@@ -92,7 +92,7 @@ const ReactApp = ({ isAdmin = false }) => {
           landingRoot
         )}
         {adminRoot && createPortal(
-          <PlansAdmin />,
+          <AdminPanel />,
           adminRoot
         )}
         {dashboardRoot && createPortal(

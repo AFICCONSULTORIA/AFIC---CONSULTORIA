@@ -504,7 +504,7 @@
                 </svg>
                 <span>Sair da Conta</span>
             </a>
-            <a href="#" class="nav-link" data-page="admin-dashboard" style="color: #cda434;">
+            <a href="javascript:void(0)" class="nav-link" data-page="admin-plans" style="color: #cda434;" onclick="window.switchPage('admin-plans')">
                 <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                 </svg>
@@ -512,14 +512,6 @@
             </a>
         </nav>
 
-        <div class="sidebar-footer">
-            <div class="premium-card" id="premium-cta">
-                <div class="premium-badge">VIP</div>
-                <p class="premium-title">Acesso Premium</p>
-                <p class="premium-desc">Desbloqueie análises institucionais e mentoria exclusiva.</p>
-                <button class="premium-btn" id="upgrade-btn">Elevar Acesso</button>
-            </div>
-        </div>
     </aside>
 
 <!-- ═══════════════════════════════════════════ -->
@@ -527,6 +519,13 @@
         <!-- ═══════════════════════════════════════════ -->
         <section class="page-content page-hidden" id="page-home">
             <div id="react-landing-root"></div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════ -->
+        <!-- ADMIN AREA                                  -->
+        <!-- ═══════════════════════════════════════════ -->
+        <section class="page-content page-hidden" id="page-admin-plans">
+            <div id="react-admin-root"></div>
         </section>
 
 <section class="page-content" id="page-dashboard">

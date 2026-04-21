@@ -72,6 +72,7 @@ window.initApp = function() {
         'community': 'page-community',
         'account': 'page-account',
         'plans': 'page-plans',
+        'admin-plans': 'page-admin-plans',
         'admin-assessment': 'page-admin-assessment',
         'admin-dashboard': 'page-admin-dashboard',
         'assessment': 'page-assessment'
