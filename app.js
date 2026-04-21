@@ -73,6 +73,7 @@ window.initApp = function() {
         'account': 'page-account',
         'plans': 'page-plans',
         'admin-assessment': 'page-admin-assessment',
+        'admin-dashboard': 'page-admin-dashboard',
         'assessment': 'page-assessment'
     };
 
@@ -108,6 +109,10 @@ window.initApp = function() {
             
             if (pageName === 'admin-assessment') {
                 loadAssessmentResponses();
+            }
+            
+            if (pageName === 'admin-dashboard') {
+                loadKanban();
             }
         } catch(err) {
             console.error('switchPage error:', err);
@@ -353,34 +358,43 @@ window.initApp = function() {
         setTimeout(() => animateFormattedCounter(aumEl, '2.847.320', 2000), 800);
     }
 
-    // ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
     // NAVIGATION — Page Switching
     // ═══════════════════════════════════════════════════════════
-    const navLinks = document.querySelectorAll('.nav-link');
-    const pages = document.querySelectorAll('.page-content');
-    
-    // Hide/show admin links based on user role
     function checkAdminLink() {
         const assessmentLink = document.querySelector('.nav-link[data-page="admin-assessment"]');
+        const dashboardLink = document.querySelector('.nav-link[data-page="admin-dashboard"]');
         const isAdminEmail = currentUser?.email === 'aficconsultoria@gmail.com';
         const isAdmin = window.isUserAdmin || isAdminEmail;
         
         if (assessmentLink) {
             assessmentLink.style.display = isAdmin ? '' : 'none';
         }
+        if (dashboardLink) {
+            dashboardLink.style.display = isAdmin ? '' : 'none';
+        }
     }
     
-    navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            
-            navLinks.forEach(l => l.classList.remove('active'));
-            link.classList.add('active');
-            
-            const page = link.getAttribute('data-page');
-            switchPage(page);
+    function setupNavigation() {
+        const navLinks = document.querySelectorAll('.nav-link');
+        const pages = document.querySelectorAll('.page-content');
+        
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                navLinks.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+                
+                const page = link.getAttribute('data-page');
+                switchPage(page);
+            });
         });
-    });
+    }
+    
+    // Setup navigation
+    setupNavigation();
 
     // ─── PERIOD BUTTONS (AUM Chart) ───
     const periodBtns = document.querySelectorAll('.period-btn');
@@ -2749,3 +2763,1074 @@ window.exportAssessmentExcel = async function() {
     alert('Erro ao exportar: ' + err.message);
   }
 };
+
+/* ═══════════════════════════════════════════════════════════════
+   ADMIN DASHBOARD - KANBAN FUNCTIONS
+   ═══════════════════════════════════════════════════════════════ */
+
+window.loadKanban = async function() {
+  const board = document.getElementById('kanban-board');
+  if (!board) return;
+  
+  const supabaseDb = window.supabaseApp || window.aficSupabase;
+  if (!supabaseDb) {
+    board.innerHTML = '<p style="color: #ef4444; padding: 20px;">Supabase não conectado</p>';
+    return;
+  }
+  
+  try {
+    const { data, error } = await supabaseDb.from('afic_assessment_responses')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    
+    const columns = [
+      { id: 'novo', title: 'Novas Aplicações' },
+      { id: 'analise', title: 'Em Análise' },
+      { id: 'qualificado', title: 'Qualificado (O Despertar)' },
+      { id: 'highticket', title: 'Qualificado (High-Ticket)' },
+      { id: 'reprovado', title: 'Reprovados' }
+    ];
+    
+    const getStatus = (r) => r.status || 'novo';
+    const getFlags = (r) => {
+      const flags = [];
+      if (r.dinheiro1 === 'separo') flags.push({ type: 'green', label: 'Finança' });
+      if (r.emergencia === 'fundo') flags.push({ type: 'green', label: 'Reserva' });
+      if (r.trava === 'pouco') flags.push({ type: 'red', label: 'Income' });
+      if (r.paciencia === 'imediato') flags.push({ type: 'red', label: 'Impaciente' });
+      if (r.cartao === 'estrategico') flags.push({ type: 'green', label: 'Cartão' });
+      return flags;
+    };
+    
+    board.innerHTML = columns.map(col => {
+      const cards = data.filter(r => getStatus(r) === col.id);
+      return `
+        <div class="kanban-column">
+          <div class="column-header">
+            <span class="column-title">${col.title}</span>
+            <span class="column-count">${cards.length}</span>
+          </div>
+          <div class="kanban-cards">
+            ${cards.map(r => `
+              <div class="candidate-card" onclick="openCandidate('${r.id}')">
+                <div class="candidate-name">${r.nome || '-'}</div>
+                <div class="candidate-contact">${r.email || '-'}<br>${r.whatsapp || '-'}</div>
+                <div class="candidate-tags">
+                  ${getFlags(r).map(f => `<span class="tag ${f.type}">${f.label}</span>`).join('')}
+                </div>
+                <div class="candidate-notes">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+                  Ver detalhes
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }).join('');
+    
+    window.kanbanData = data;
+    
+  } catch(err) {
+    board.innerHTML = '<p style="color: #ef4444; padding: 20px;">Erro ao carregar: ' + err.message + '</p>';
+  }
+};
+
+window.openCandidate = function(id) {
+  const data = window.kanbanData;
+  const r = data.find(d => d.id === id);
+  if (!r) return;
+  
+  const modal = document.getElementById('candidate-modal');
+  document.getElementById('candidate-name').textContent = r.nome || 'Candidato';
+  document.getElementById('candidate-email').textContent = r.email || '';
+  
+  const answersMap = {
+    dinheiro1: { 'some': 'Vai quase tudo para pagar as contas.', 'percebe': 'Consigo pagar o básico, mas o resto some.', 'separo': 'Já separo uma parte antes.' },
+    emergencia: { 'emprestou': 'Usaria limite ou pediria emprestado.', 'atrasar': 'Venderia algo ou atrasaria contas.', 'fundo': 'Tenho reserva para emergências.' },
+    trava: { 'pouco': 'Ganha pouco, só rico investe.', 'conhecimento': 'Tenho medo de perder.', 'disciplina': 'Tento guardar, mas sempre gasto.' },
+    cartao: { 'extensao': 'Extensão da renda.', 'consome': 'Uso muito, pago o total.', 'estrategico': 'Uso estratégico, sempre pago.' },
+    paciencia: { 'imediato': 'Quero resultados já.', 'medio': 'Aguardo até 1 ano.', 'processo': 'Entendo que é um processo longo.' },
+    sucesso: { 'acertar': 'Acertar o timing.', 'dividas': 'Sair das dívidas.', 'patrimonio': 'Acumular patrimônio.' },
+    corte: { 'difcil': 'Muito difícil abrir mão.', 'sacrificio': 'Consigo com sacrifício.', 'equilibrio': 'Consigo equilibrar.' },
+    tempo: { 'pouco': 'Tenho poco tempo.', 'medio': 'Algumas horas por semana.', '2-3': 'Tenho tempo full.' }
+  };
+  
+  const getAnswer = (field, val) => answersMap[field]?.[val] || val || '-';
+  
+  const questions = [
+    { q: 'O que faz com o dinheiro?', a: getAnswer('dinheiro1', r.dinheiro1) },
+    { q: 'Emergência financeira?', a: getAnswer('emergencia', r.emergencia) },
+    { q: 'O que trava o crescimento?', a: getAnswer('trava', r.trava) },
+    { q: 'Uso do cartão?', a: getAnswer('cartao', r.cartao) },
+    { q: 'Paciência para resultados?', a: getAnswer('paciencia', r.paciencia) },
+    { q: 'Sucesso financeiro?', a: getAnswer('sucesso', r.sucesso) },
+    { q: 'Corte de luxos?', a: getAnswer('corte', r.corte) },
+    { q: 'Tempo disponível?', a: getAnswer('tempo', r.tempo) }
+  ];
+  
+  document.getElementById('candidate-content').innerHTML = questions.map(q => `
+    <div class="drawer-question">
+      <div class="drawer-question-label">${q.q}</div>
+      <div class="drawer-question-answer">${q.a}</div>
+    </div>
+  `).join('') + `
+    <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1);">
+      <div style="color: #fbbf24; font-size: 11px; text-transform: uppercase; margin-bottom: 8px;">Contato</div>
+      <div style="color: white; font-size: 14px;">${r.whatsapp || '-'}</div>
+      <div style="color: #94a3b8; font-size: 13px; margin-top: 4px;">${r.email || '-'}</div>
+    </div>
+  `;
+  
+  window.currentCandidateId = id;
+  modal.classList.remove('hidden');
+};
+
+window.closeCandidateModal = function() {
+  document.getElementById('candidate-modal').classList.add('hidden');
+};
+
+window.candidateAction = async function(action) {
+  const id = window.currentCandidateId;
+  if (!id) return;
+  
+  let newStatus;
+  if (action === 'aprovar') newStatus = 'qualificado';
+  else if (action === 'escalar') newStatus = 'highticket';
+  else if (action === 'negar') newStatus = 'reprovado';
+  
+  const supabaseDb = window.supabaseApp || window.aficSupabase;
+  if (!supabaseDb) {
+    alert('Supabase não conectado');
+    return;
+  }
+  
+  try {
+    const { error } = await supabaseDb.from('afic_assessment_responses')
+      .update({ status: newStatus })
+      .eq('id', id);
+    
+    if (error) throw error;
+    
+    closeCandidateModal();
+    loadKanban();
+    alert('Candidato atualizado para: ' + (newStatus === 'qualificado' ? 'Qualificado (O Despertar)' : newStatus === 'highticket' ? 'High-Ticket' : 'Reprovado'));
+  } catch(err) {
+    alert('Erro ao atualizar: ' + err.message);
+  }
+};
+
+window.loadAlunos = async function() {
+  const supabaseDb = window.supabaseApp || window.aficSupabase;
+  if (!supabaseDb) return [];
+  
+  const { data, error } = await supabaseDb.from('afic_alunos').select('*').order('created_at', { ascending: false });
+  if (error) {
+    console.error('Error loading alunos:', error);
+    return [];
+  }
+  return data || [];
+};
+
+window.renderAlunosModule = async function() {
+  const board = document.getElementById('kanban-board');
+  if (!board) return;
+
+  const alunos = await window.loadAlunos();
+  const statusFilter = document.getElementById('aluno-status-filter')?.value || 'todos';
+  const planoFilter = document.getElementById('aluno-plano-filter')?.value || 'todos';
+
+  let filtered = alunos;
+  if (statusFilter !== 'todos') {
+    filtered = filtered.filter(a => a.status_pagamento === statusFilter);
+  }
+  if (planoFilter !== 'todos') {
+    filtered = filtered.filter(a => a.plano === planoFilter);
+  }
+
+  const planoCounts = { ninguno: 0, despertar: 0, assinante: 0, private: 0, elite: 0 };
+const statusCounts = { pendente: 0, ativo: 0, inadimplente: 0, cancelado: 0 };
+  alunos.forEach(a => {
+    if (planoCounts[a.plano] !== undefined) planoCounts[a.plano]++;
+    if (statusCounts[a.status_pagamento] !== undefined) statusCounts[a.status_pagamento]++;
+  });
+
+  const receitaTotal = (alunos.reduce((sum, a) => sum + (parseFloat(a.valor_pago) || 0), 0)).toLocaleString('pt-BR');
+  
+  const html = `
+    <div class="alunos-toolbar">
+      <div class="toolbar-left">
+        <button class="btn-primary" onclick="openAlunoModal()">+ Novo Aluno</button>
+        <input type="text" id="aluno-search" placeholder="Buscar por nome ou email..." oninput="filterAlunos()" style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; width: 280px;">
+      </div>
+      <div class="toolbar-right">
+        <select id="aluno-status-filter" onchange="renderAlunosModule()" style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px;">
+          <option value="todos">Todos Status (${alunos.length})</option>
+          <option value="pendente">Pendente (${statusCounts.pendente})</option>
+          <option value="ativo">Ativo (${statusCounts.ativo})</option>
+          <option value="inadimplente">Inadimplente (${statusCounts.inadimplente})</option>
+          <option value="cancelado">Cancelado (${statusCounts.cancelado})</option>
+        </select>
+        <select id="aluno-plano-filter" onchange="renderAlunosModule()" style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px;">
+          <option value="todos">Todos Planos</option>
+          <option value="despertar">Despertar (${planoCounts.despertar})</option>
+          <option value="assinante">Assinante (${planoCounts.assinante})</option>
+          <option value="private">Private (${planoCounts.private})</option>
+          <option value="elite">Elite (${planoCounts.elite})</option>
+        </select>
+      </div>
+    </div>
+    <div class="alunos-stats">
+      <div class="stat-card">
+        <span class="stat-number">${alunos.length}</span>
+        <span class="stat-label">Total Alunos</span>
+      </div>
+      <div class="stat-card active">
+        <span class="stat-number">${statusCounts.ativo}</span>
+        <span class="stat-label">Ativos</span>
+      </div>
+      <div class="stat-card warning">
+        <span class="stat-number">${statusCounts.inadimplente}</span>
+        <span class="stat-label">Inadimplentes</span>
+      </div>
+      <div class="stat-card revenue">
+        <span class="stat-number">R$ ${receitaTotal}</span>
+        <span class="stat-label">Receita Total</span>
+      </div>
+    </div>
+    <div class="alunos-table-container">
+      <table class="alunos-table">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Email</th>
+            <th>WhatsApp</th>
+            <th>Plano</th>
+            <th>Status</th>
+            <th>Valor</th>
+            <th>Início</th>
+            <th>Último Acesso</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="alunos-tbody">
+          ${filtered.length === 0 ? '<tr><td colspan="9" style="text-align: center; padding: 40px; color: #94a3b8;">Nenhum aluno encontrado</td></tr>' : filtered.map(aluno => `
+            <tr>
+              <td><strong>${aluno.nome || '-'}</strong></td>
+              <td>${aluno.email || '-'}</td>
+              <td>${aluno.whatsapp || '-'}</td>
+              <td><span class="badge plano-${aluno.plano}">${aluno.plano || 'nenhum'}</span></td>
+              <td><span class="badge status-${aluno.status_pagamento}">${aluno.status_pagamento || 'pendente'}</span></td>
+              <td>R$ ${parseFloat(aluno.valor_pago || 0).toLocaleString('pt-BR')}</td>
+              <td>${aluno.data_inicio ? new Date(aluno.data_inicio).toLocaleDateString('pt-BR') : '-'}</td>
+              <td>${aluno.ultimo_acesso ? new Date(aluno.ultimo_acesso).toLocaleDateString('pt-BR') : '-'}</td>
+              <td>
+                <button class="btn-icon" onclick="openAlunoModal('${aluno.id}')" title="Editar">✏️</button>
+                <button class="btn-icon" onclick="deleteAluno('${aluno.id}')" title="Excluir">🗑️</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+  
+  board.innerHTML = html;
+};
+
+window.filterAlunos = function() {
+  const search = document.getElementById('aluno-search')?.value.toLowerCase() || '';
+  const rows = document.querySelectorAll('#alunos-tbody tr');
+  rows.forEach(row => {
+    const text = row.textContent.toLowerCase();
+    row.style.display = text.includes(search) ? '' : 'none';
+  });
+};
+
+window.openAlunoModal = async function(alunoId) {
+  const supabaseDb = window.supabaseApp || window.aficSupabase;
+  let aluno = null;
+  
+  if (alunoId) {
+    const { data } = await supabaseDb.from('afic_alunos').select('*').eq('id', alunoId).limit(1);
+    aluno = data?.[0];
+  }
+
+  const isEdit = !!aluno;
+  const modal = document.createElement('div');
+  modal.id = 'aluno-modal';
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h2>${isEdit ? 'Editar Aluno' : 'Novo Aluno'}</h2>
+        <button class="btn-close" onclick="closeAlunoModal()">&times;</button>
+      </div>
+      <form id="aluno-form" onsubmit="saveAluno(event, '${alunoId || ''}')">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Nome Completo</label>
+            <input type="text" name="nome" value="${aluno?.nome || ''}" required>
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" name="email" value="${aluno?.email || ''}" required>
+          </div>
+          <div class="form-group">
+            <label>WhatsApp</label>
+            <input type="text" name="whatsapp" value="${aluno?.whatsapp || ''}" placeholder="(11) 99999-9999">
+          </div>
+          <div class="form-group">
+            <label>Plano</label>
+            <select name="plano">
+              <option value="nenhum" ${aluno?.plano === 'nenhum' ? 'selected' : ''}}>Nenhum</option>
+              <option value="despertar" ${aluno?.plano === 'despertar' ? 'selected' : ''}}>Despertar</option>
+              <option value="assinante" ${aluno?.plano === 'assinante' ? 'selected' : ''}}>Assinante</option>
+              <option value="private" ${aluno?.plano === 'private' ? 'selected' : ''}}>Private</option>
+              <option value="elite" ${aluno?.plano === 'elite' ? 'selected' : ''}}>Elite</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Status Pagamento</label>
+            <select name="status_pagamento">
+              <option value="pendente" ${aluno?.status_pagamento === 'pendente' ? 'selected' : ''}}>Pendente</option>
+              <option value="ativo" ${aluno?.status_pagamento === 'ativo' ? 'selected' : ''}}>Ativo</option>
+              <option value="inadimplente" ${aluno?.status_pagamento === 'inadimplente' ? 'selected' : ''}}>Inadimplente</option>
+              <option value="cancelado" ${aluno?.status_pagamento === 'cancelado' ? 'selected' : ''}}>Cancelado</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Valor Pago (R$)</label>
+            <input type="number" name="valor_pago" value="${aluno?.valor_pago || 0}" step="0.01">
+          </div>
+          <div class="form-group">
+            <label>Data Início</label>
+            <input type="date" name="data_inicio" value="${aluno?.data_inicio ? new Date(aluno.data_inicio).toISOString().split('T')[0] : ''}">
+          </div>
+          <div class="form-group full">
+            <label>Notas</label>
+            <textarea name="notas" rows="3">${aluno?.notas || ''}</textarea>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="closeAlunoModal()">Cancelar</button>
+          <button type="submit" class="btn-primary">${isEdit ? 'Salvar' : 'Criar'}</button>
+        </div>
+      </form>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+};
+
+window.closeAlunoModal = function() {
+  const modal = document.getElementById('aluno-modal');
+  if (modal) modal.remove();
+};
+
+window.saveAluno = async function(e, alunoId) {
+  e.preventDefault();
+  const supabaseDb = window.supabaseApp || window.aficSupabase;
+  if (!supabaseDb) {
+    alert('Supabase não conectado');
+    return;
+  }
+
+  const form = e.target;
+  const formData = {
+    nome: form.nome.value,
+    email: form.email.value,
+    whatsapp: form.whatsapp.value,
+    plano: form.plano.value,
+    status_pagamento: form.status_pagamento.value,
+    valor_pago: parseFloat(form.valor_pago.value) || 0,
+    data_inicio: form.data_inicio.value ? new Date(form.data_inicio.value).toISOString() : null,
+    notas: form.notas.value,
+    updated_at: new Date().toISOString()
+  };
+
+  try {
+    if (alunoId) {
+      const { error } = await supabaseDb.from('afic_alunos').update(formData).eq('id', alunoId);
+      if (error) throw error;
+      alert('Aluno atualizado!');
+    } else {
+      const { error } = await supabaseDb.from('afic_alunos').insert([formData]);
+      if (error) throw error;
+      alert('Aluno criado!');
+    }
+    closeAlunoModal();
+    window.renderAlunosModule();
+  } catch(err) {
+    alert('Erro: ' + err.message);
+  }
+};
+
+window.deleteAluno = async function(alunoId) {
+  if (!confirm('Tem certeza que deseja excluir este aluno?')) return;
+  
+  const supabaseDb = window.supabaseApp || window.aficSupabase;
+  if (!supabaseDb) return;
+
+  try {
+    const { error } = await supabaseDb.from('afic_alunos').delete().eq('id', alunoId);
+    if (error) throw error;
+    alert('Aluno excluído!');
+    window.renderAlunosModule();
+  } catch(err) {
+    alert('Erro ao excluir: ' + err.message);
+  }
+};
+
+window.switchAdminModule = function(module) {
+  const links = document.querySelectorAll('.nav-module');
+  links.forEach(l => l.classList.remove('active'));
+  const activeLink = document.querySelector(`.nav-module[data-module="${module}"]`);
+  if (activeLink) activeLink.classList.add('active');
+  
+  const header = document.getElementById('admin-header-title');
+  const exportBtn = document.getElementById('admin-export-btn');
+  const moduleNames = {
+    crm: 'Pipeline de Elegibilidade',
+    alunos: 'Gestão de Alunos',
+    telemetria: 'Telemetria e Engajamento',
+    financeiro: 'Motor Financeiro',
+    conteudo: 'Gestão de Conteúdo'
+  };
+  if (header) header.textContent = moduleNames[module] || 'Admin';
+  
+  const board = document.getElementById('kanban-board');
+  
+  if (module === 'alunos') {
+    if (exportBtn) exportBtn.style.display = 'flex';
+    exportBtn.onclick = () => {
+      const rows = document.querySelectorAll('#alunos-tbody tr');
+      let csv = 'Nome,Email,WhatsApp,Plano,Status,Valor,Data Início\n';
+      rows.forEach(row => {
+        if (row.style.display !== 'none') {
+          const cols = row.querySelectorAll('td');
+          csv += Array.from(cols).map(c => c.textContent).join(',') + '\n';
+        }
+      });
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'alunos_' + new Date().toISOString().split('T')[0] + '.csv';
+      a.click();
+    };
+    window.renderAlunosModule();
+    window.updateAdminQuickStats();
+  } else if (module === 'crm') {
+    if (exportBtn) {
+      exportBtn.style.display = 'flex';
+      exportBtn.onclick = window.exportAssessmentExcel;
+    }
+    window.loadKanban();
+    window.updateAdminQuickStats();
+  } else if (module === 'telemetria') {
+    if (exportBtn) exportBtn.style.display = 'none';
+    window.renderTelemetriaModule();
+    window.updateAdminQuickStats();
+  } else if (module === 'financeiro') {
+    if (exportBtn) exportBtn.style.display = 'flex';
+    exportBtn.onclick = () => {
+      window.exportFinanceiroCSV();
+    };
+    window.renderFinanceiroModule();
+    window.updateAdminQuickStats();
+  } else if (module === 'conteudo') {
+    if (exportBtn) exportBtn.style.display = 'flex';
+    exportBtn.onclick = () => {
+      window.exportConteudoCSV();
+    };
+    window.renderConteudoModule();
+    window.updateAdminQuickStats();
+  } else {
+    if (exportBtn) exportBtn.style.display = 'none';
+    board.innerHTML = `<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #64748b; font-size: 16px;">Módulo "${moduleNames[module]}" em desenvolvimento</div>`;
+  }
+};
+
+window.renderTelemetriaModule = async function() {
+  const board = document.getElementById('kanban-board');
+  if (!board) return;
+  
+  const supabaseDb = window.supabaseApp || window.aficSupabase;
+  
+  let alunosData = [];
+  let progressData = [];
+  let assessmentData = [];
+  
+  try {
+    if (supabaseDb) {
+      const { data: alunos } = await supabaseDb.from('afic_alunos').select('*');
+      alunosData = alunos || [];
+      
+      const { data: progress } = await supabaseDb.from('academy_user_progress').select('*');
+      progressData = progress || [];
+      
+      const { data: assessment } = await supabaseDb.from('afic_assessment_responses').select('*');
+      assessmentData = assessment || [];
+    }
+  } catch(e) {
+    console.log('Telemetria load error:', e);
+  }
+  
+  const now = new Date();
+  const dias = [];
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    dias.push(d.toISOString().split('T')[0]);
+  }
+  
+  const ativos7dias = alunosData.filter(a => {
+    if (!a.ultimo_acesso) return false;
+    const acesso = new Date(a.ultimo_acesso);
+    const diff = now - acesso;
+    return diff < 7 * 24 * 60 * 60 * 1000;
+  }).length;
+  
+  const ativos30dias = alunosData.filter(a => {
+    if (!a.ultimo_acesso) return false;
+    const acesso = new Date(a.ultimo_acesso);
+    return now - acesso < 30 * 24 * 60 * 60 * 1000;
+  }).length;
+  
+  const cursosIniciados = progressData.length;
+  const cursosConcluidos = progressData.filter(p => p.is_completed).length;
+  
+  const html = `
+    <div class="telemetria-grid">
+      <div class="tele-card">
+        <div class="tele-icon">👥</div>
+        <div class="tele-content">
+          <span class="tele-number">${alunosData.length}</span>
+          <span class="tele-label">Total Cadastrados</span>
+        </div>
+      </div>
+      <div class="tele-card">
+        <div class="tele-icon">✅</div>
+        <div class="tele-content">
+          <span class="tele-number">${alunosData.filter(a => a.status_pagamento === 'ativo').length}</span>
+          <span class="tele-label">Ativos</span>
+        </div>
+      </div>
+      <div class="tele-card">
+        <div class="tele-icon">🔥</div>
+        <div class="tele-content">
+          <span class="tele-number">${ativos7dias}</span>
+          <span class="tele-label">Ativos 7 dias</span>
+        </div>
+      </div>
+      <div class="tele-card">
+        <div class="tele-icon">📚</div>
+        <div class="tele-content">
+          <span class="tele-number">${cursosConcluidos}</span>
+          <span class="tele-label">Aulas Concluídas</span>
+        </div>
+      </div>
+      <div class="tele-card">
+        <div class="tele-icon">📝</div>
+        <div class="tele-content">
+          <span class="tele-number">${assessmentData.length}</span>
+          <span class="tele-label">Avaliações</span>
+        </div>
+      </div>
+      <div class="tele-card">
+        <div class="tele-icon">⚠️</div>
+        <div class="tele-content">
+          <span class="tele-number">${alunosData.filter(a => a.status_pagamento === 'inadimplente').length}</span>
+          <span class="tele-label">Inadimplentes</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="tele-section">
+      <h3 class="tele-title">Distribuição por Plano</h3>
+      <div class="tele-chart">
+        ${[
+          { label: 'Nenhum', count: alunosData.filter(a => !a.plano || a.plano === 'nenhum').length, color: '#94a3b8' },
+          { label: 'Despertar', count: alunosData.filter(a => a.plano === 'despertar').length, color: '#3b82f6' },
+          { label: 'Assinante', count: alunosData.filter(a => a.plano === 'assinante').length, color: '#8b5cf6' },
+          { label: 'Private', count: alunosData.filter(a => a.plano === 'private').length, color: '#22c55e' },
+          { label: 'Elite', count: alunosData.filter(a => a.plano === 'elite').length, color: '#D4AF37' }
+        ].map(item => `
+          <div class="chart-row">
+            <span class="chart-label" style="color: ${item.color}">${item.label}</span>
+            <div class="chart-bar-container">
+              <div class="chart-bar" style="width: ${alunosData.length ? (item.count / alunosData.length * 100) : 0}%; background: ${item.color}"></div>
+            </div>
+            <span class="chart-value">${item.count}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    
+    <div class="tele-section">
+      <h3 class="tele-title">Status de Pagamento</h3>
+      <div class="tele-chart">
+        ${[
+          { label: 'Ativo', count: alunosData.filter(a => a.status_pagamento === 'ativo').length, color: '#22c55e' },
+          { label: 'Pendente', count: alunosData.filter(a => a.status_pagamento === 'pendente').length, color: '#fbbf24' },
+          { label: 'Inadimplente', count: alunosData.filter(a => a.status_pagamento === 'inadimplente').length, color: '#ef4444' },
+          { label: 'Cancelado', count: alunosData.filter(a => a.status_pagamento === 'cancelado').length, color: '#94a3b8' }
+        ].map(item => `
+          <div class="chart-row">
+            <span class="chart-label" style="color: ${item.color}">${item.label}</span>
+            <div class="chart-bar-container">
+              <div class="chart-bar" style="width: ${alunosData.length ? (item.count / alunosData.length * 100) : 0}%; background: ${item.color}"></div>
+            </div>
+            <span class="chart-value">${item.count}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    
+    <div class="tele-section">
+      <h3 class="tele-title">Últimos Acessos</h3>
+      <table class="tele-table">
+        <thead>
+          <tr>
+            <th>Aluno</th>
+            <th>Último Acesso</th>
+            <th>Plano</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${alunosData.filter(a => a.ultimo_acesso).sort((a, b) => new Date(b.ultimo_acesso) - new Date(a.ultimo_acesso)).slice(0, 10).map(a => `
+            <tr>
+              <td>${a.nome || a.email}</td>
+              <td>${new Date(a.ultimo_acesso).toLocaleDateString('pt-BR')}</td>
+              <td><span class="badge plano-${a.plano || 'nenhum'}">${a.plano || 'nenhum'}</span></td>
+              <td><span class="badge status-${a.status_pagamento}">${a.status_pagamento}</span></td>
+            </tr>
+          `).join('') || '<tr><td colspan="4">Nenhum acesso registrado</td></tr>'}
+        </tbody>
+      </table>
+    </div>
+  `;
+  
+  board.innerHTML = html;
+};
+
+window.renderFinanceiroModule = async function() {
+  const board = document.getElementById('kanban-board');
+  if (!board) return;
+  
+  const supabaseDb = window.supabaseApp || window.aficSupabase;
+  
+  let alunosData = [];
+  let budgetData = [];
+  
+  try {
+    if (supabaseDb) {
+      const { data: alunos } = await supabaseDb.from('afic_alunos').select('*');
+      alunosData = alunos || [];
+      
+      const { data: budget } = await supabaseDb.from('budget_transactions').select('*');
+      budgetData = budget || [];
+    }
+  } catch(e) {
+    console.log('Financeiro load error:', e);
+  }
+  
+  const receitaMensal = alunosData
+    .filter(a => a.status_pagamento === 'ativo')
+    .reduce((sum, a) => sum + (parseFloat(a.valor_pago) || 0), 0);
+  
+  const receitaPendentes = alunosData
+    .filter(a => a.status_pagamento === 'pendente')
+    .reduce((sum, a) => sum + (parseFloat(a.valor_pago) || 0), 0);
+  
+  const receitaInadimplente = alunosData
+    .filter(a => a.status_pagamento === 'inadimplente')
+    .reduce((sum, a) => sum + (parseFloat(a.valor_pago) || 0), 0);
+  
+  const receitaTotalGeral = alunosData.reduce((sum, a) => sum + (parseFloat(a.valor_pago) || 0), 0);
+  
+  const meses = [];
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    meses.push({
+      nome: d.toLocaleDateString('pt-BR', { month: 'short' }),
+      ano: d.getFullYear(),
+      mes: d.getMonth() + 1
+    });
+  }
+  
+  window.financeiroData = { alunosData, budgetData, meses };
+  
+  const html = `
+    <div class="financeiro-grid">
+      <div class="financeiro-card receita">
+        <div class="fin-header">
+          <span class="fin-icon">💰</span>
+          <span class="fin-title">Receita Mensal</span>
+        </div>
+        <span class="fin-value">R$ ${receitaMensal.toLocaleString('pt-BR')}</span>
+        <span class="fin-subtitle">ativos: ${alunosData.filter(a => a.status_pagamento === 'ativo').length} alunos</span>
+      </div>
+      
+      <div class="financeiro-card pendente">
+        <div class="fin-header">
+          <span class="fin-icon">⏳</span>
+          <span class="fin-title">Pendente</span>
+        </div>
+        <span class="fin-value">R$ ${receitaPendentes.toLocaleString('pt-BR')}</span>
+        <span class="fin-subtitle">${alunosData.filter(a => a.status_pagamento === 'pendente').length} aguardando</span>
+      </div>
+      
+      <div class="financeiro-card advertencia">
+        <div class="fin-header">
+          <span class="fin-icon">⚠️</span>
+          <span class="fin-title">Inadimplência</span>
+        </div>
+        <span class="fin-value">R$ ${receitaInadimplente.toLocaleString('pt-BR')}</span>
+        <span class="fin-subtitle">${alunosData.filter(a => a.status_pagamento === 'inadimplente').length} devedores</span>
+      </div>
+      
+      <div class="financeiro-card total">
+        <div class="fin-header">
+          <span class="fin-icon">📊</span>
+          <span class="fin-title">Receita Total</span>
+        </div>
+        <span class="fin-value">R$ ${receitaTotalGeral.toLocaleString('pt-BR')}</span>
+        <span class="fin-subtitle">desde o início</span>
+      </div>
+    </div>
+    
+    <div class="financeiro-section">
+      <h3 class="fin-section-title">Receita por Plano</h3>
+      <div class="fin-chart">
+        ${[
+          { label: 'Elite', value: alunosData.filter(a => a.plano === 'elite').reduce((s, a) => s + (parseFloat(a.valor_pago) || 0), 0), color: '#D4AF37' },
+          { label: 'Private', value: alunosData.filter(a => a.plano === 'private').reduce((s, a) => s + (parseFloat(a.valor_pago) || 0), 0), color: '#22c55e' },
+          { label: 'Assinante', value: alunosData.filter(a => a.plano === 'assinante').reduce((s, a) => s + (parseFloat(a.valor_pago) || 0), 0), color: '#8b5cf6' },
+          { label: 'Despertar', value: alunosData.filter(a => a.plano === 'despertar').reduce((s, a) => s + (parseFloat(a.valor_pago) || 0), 0), color: '#3b82f6' },
+          { label: 'Outros', value: alunosData.filter(a => !a.plano || a.plano === 'nenhum').reduce((s, a) => s + (parseFloat(a.valor_pago) || 0), 0), color: '#94a3b8' }
+        ].map(item => `
+          <div class="fin-row">
+            <span class="fin-label" style="color: ${item.color}">${item.label}</span>
+            <div class="fin-bar-container">
+              <div class="fin-bar" style="width: ${receitaTotalGeral ? (item.value / receitaTotalGeral * 100) : 0}%; background: ${item.color}"></div>
+            </div>
+            <span class="fin-value-text">R$ ${item.value.toLocaleString('pt-BR')}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    
+    <div class="financeiro-section">
+      <h3 class="fin-section-title">Alunos por Plano (Qtd)</h3>
+      <div class="fin-chart">
+        ${[
+          { label: 'Elite', count: alunosData.filter(a => a.plano === 'elite').length, color: '#D4AF37' },
+          { label: 'Private', count: alunosData.filter(a => a.plano === 'private').length, color: '#22c55e' },
+          { label: 'Assinante', count: alunosData.filter(a => a.plano === 'assinante').length, color: '#8b5cf6' },
+          { label: 'Despertar', count: alunosData.filter(a => a.plano === 'despertar').length, color: '#3b82f6' },
+          { label: 'Outros', count: alunosData.filter(a => !a.plano || a.plano === 'nenhum').length, color: '#94a3b8' }
+        ].map(item => `
+          <div class="fin-row">
+            <span class="fin-label" style="color: ${item.color}">${item.label}</span>
+            <div class="fin-bar-container">
+              <div class="fin-bar" style="width: ${alunosData.length ? (item.count / alunosData.length * 100) : 0}%; background: ${item.color}"></div>
+            </div>
+            <span class="fin-value-text">${item.count}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    
+    <div class="financeiro-section">
+      <h3 class="fin-section-title">Lista de Alunos Ativos</h3>
+      <table class="fin-table">
+        <thead>
+          <tr>
+            <th>Aluno</th>
+            <th>Plano</th>
+            <th>Valor Mensal</th>
+            <th>Data Início</th>
+            <th>Próxima Renovação</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${alunosData.filter(a => a.status_pagamento === 'ativo').map(a => `
+            <tr>
+              <td>${a.nome || a.email}</td>
+              <td><span class="badge plano-${a.plano || 'nenhum'}">${a.plano || '-'}</span></td>
+              <td>R$ ${(parseFloat(a.valor_pago) || 0).toLocaleString('pt-BR')}</td>
+              <td>${a.data_inicio ? new Date(a.data_inicio).toLocaleDateString('pt-BR') : '-'}</td>
+              <td>${a.data_renovacao ? new Date(a.data_renovacao).toLocaleDateString('pt-BR') : '-'}</td>
+            </tr>
+          `).join('') || '<tr><td colspan="5">Nenhum ativo</td></tr>'}
+        </tbody>
+      </table>
+    </div>
+  `;
+  
+  board.innerHTML = html;
+};
+
+window.exportFinanceiroCSV = function() {
+  if (!window.financeiroData) return;
+  const { alunosData } = window.financeiroData;
+  let csv = 'Nome,Email,Plano,Status,Valor,Data Início,Data Renovação,Último Acesso\n';
+  alunosData.forEach(a => {
+    csv += `${a.nome || ''},${a.email || ''},${a.plano || ''},${a.status_pagamento || ''},${a.valor_pago || 0},${a.data_inicio || ''},${a.data_renovacao || ''},${a.ultimo_acesso || ''}\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'financeiro_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+};
+
+window.renderConteudoModule = async function() {
+  const board = document.getElementById('kanban-board');
+  if (!board) return;
+  
+  const supabaseDb = window.supabaseApp || window.aficSupabase;
+  
+  let modules = [];
+  let lessons = [];
+  let topics = [];
+  let comments = [];
+  
+  try {
+    if (supabaseDb) {
+      const { data: mods } = await supabaseDb.from('academy_modules').select('*').order('created_at', { ascending: true });
+      modules = mods || [];
+      
+      const { data: less } = await supabaseDb.from('academy_lessons').select('*').order('created_at', { ascending: true });
+      lessons = less || [];
+      
+      const { data: top } = await supabaseDb.from('community_topics').select('*').order('created_at', { ascending: false });
+      topics = top || [];
+      
+      const { data: comm } = await supabaseDb.from('community_comments').select('*').order('created_at', { ascending: false });
+      comments = comm || [];
+    }
+  } catch(e) {
+    console.log('Conteudo load error:', e);
+  }
+  
+  window.conteudoData = { modules, lessons, topics, comments };
+  
+  const totalAulas = lessons.length;
+  const totalVideos = lessons.filter(l => l.video_url && l.video_url.length > 5).length;
+  const totalPDFs = lessons.filter(l => l.pdf_url && l.pdf_url.length > 5).length;
+  const totalTopicos = topics.length;
+  const totalComentarios = comments.length;
+  
+  const html = `
+    <div class="conteudo-grid">
+      <div class="conteudo-card">
+        <span class="conteudo-icon">📚</span>
+        <div class="conteudo-info">
+          <span class="conteudo-number">${modules.length}</span>
+          <span class="conteudo-label">Módulos</span>
+        </div>
+      </div>
+      <div class="conteudo-card">
+        <span class="conteudo-icon">🎬</span>
+        <div class="conteudo-info">
+          <span class="conteudo-number">${totalAulas}</span>
+          <span class="conteudo-label">Total Aulas</span>
+        </div>
+      </div>
+      <div class="conteudo-card">
+        <span class="conteudo-icon">📹</span>
+        <div class="conteudo-info">
+          <span class="conteudo-number">${totalVideos}</span>
+          <span class="conteudo-label">Com Vídeo</span>
+        </div>
+      </div>
+      <div class="conteudo-card">
+        <span class="conteudo-icon">📄</span>
+        <div class="conteudo-info">
+          <span class="contaudo-number">${totalPDFs}</span>
+          <span class="conteudo-label">Com Material</span>
+        </div>
+      </div>
+      <div class="conteudo-card">
+        <span class="conteudo-icon">💬</span>
+        <div class="conteudo-info">
+          <span class="conteudo-number">${totalTopicos}</span>
+          <span class="conteudo-label">Tópicos Fórum</span>
+        </div>
+      </div>
+      <div class="conteudo-card">
+        <span class="conteudo-icon">💭</span>
+        <div class="conteudo-info">
+          <span class="conteudo-number">${totalComentarios}</span>
+          <span class="conteudo-label">Comentários</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="conteudo-section">
+      <h3 class="conteudo-title">Estrutura dos Módulos</h3>
+      <div class="modulos-list">
+        ${modules.length === 0 ? '<p style="color: #64748b; text-align: center; padding: 20px;">Nenhum módulo cadastrado</p>' : modules.map((mod, idx) => {
+          const modLessons = lessons.filter(l => l.module_id === mod.id);
+          return `
+            <div class="modulo-item">
+              <div class="modulo-header">
+                <span class="modulo-num">${idx + 1}</span>
+                <span class="modulo-name">${mod.title}</span>
+                <span class="modulo-meta">${modLessons.length} aulas</span>
+              </div>
+              <div class="modulo-lessons">
+                ${modLessons.map(l => `
+                  <div class="lesson-chip">
+                    <span class="lesson-icon">${l.video_url ? '📹' : '📄'}</span>
+                    <span class="lesson-title">${l.title}</span>
+                    <span class="lesson-duration">${l.duration || '-'}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+    
+    <div class="conteudo-section">
+      <h3 class="conteudo-title">Últimos Tópicos do Fórum</h3>
+      <table class="conteudo-table">
+        <thead>
+          <tr>
+            <th>Tópico</th>
+            <th>Autor</th>
+            <th>Comentários</th>
+            <th>Data</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${topics.length === 0 ? '<tr><td colspan="4">Nenhum tópico</td></tr>' : topics.slice(0, 10).map(t => {
+            const topComments = comments.filter(c => c.topic_id === t.id).length;
+            return `
+              <tr>
+                <td><strong>${t.title}</strong></td>
+                <td>${t.author_name || '-'}</td>
+                <td>${topComments}</td>
+                <td>${new Date(t.created_at).toLocaleDateString('pt-BR')}</td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="conteudo-actions">
+      <button class="btn-action" onclick="alert('Funcionalidade em desenvolvimento')">+ Novo Módulo</button>
+      <button class="btn-action" onclick="alert('Funcionalidade em desenvolvimento')">+ Nova Aula</button>
+      <button class="btn-action secondary" onclick="alert('Funcionalidade em desenvolvimento')">Gerenciar Fórum</button>
+    </div>
+  `;
+  
+  board.innerHTML = html;
+};
+
+window.exportConteudoCSV = function() {
+  if (!window.conteudoData) return;
+  const { modules, lessons } = window.conteudoData;
+  let csv = 'Módulo,Aula,Duração,URL Vídeo,URL PDF\n';
+  modules.forEach(mod => {
+    const modLessons = lessons.filter(l => l.module_id === mod.id);
+    modLessons.forEach(l => {
+      csv += `${mod.title},${l.title},${l.duration || ''},${l.video_url || ''},${l.pdf_url || ''}\n`;
+    });
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'conteudo_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+};
+
+window.updateAdminQuickStats = async function() {
+  const supabaseDb = window.supabaseApp || window.aficSupabase;
+  const container = document.getElementById('admin-quick-stats');
+  if (!container) return;
+  
+  let alunos = 0, assessment = 0, modules = 0, progress = 0, topics = 0;
+  
+  try {
+    if (supabaseDb) {
+      const { data: a } = await supabaseDb.from('afic_alunos').select('id');
+      alunos = a?.length || 0;
+      
+      const { data: assess } = await supabaseDb.from('afic_assessment_responses').select('id');
+      assessment = assess?.length || 0;
+      
+      const { data: mods } = await supabaseDb.from('academy_modules').select('id');
+      modules = mods?.length || 0;
+      
+      const { data: prog } = await supabaseDb.from('academy_user_progress').select('id');
+      progress = prog?.length || 0;
+      
+      const { data: tpc } = await supabaseDb.from('community_topics').select('id');
+      topics = tpc?.length || 0;
+    }
+  } catch(e) {}
+  
+  const badgeAlunos = document.getElementById('badge-alunos');
+  if (badgeAlunos) badgeAlunos.textContent = alunos;
+  
+  container.innerHTML = `
+    <div class="quick-stat">
+      <div class="quick-stat-icon blue">👥</div>
+      <div>
+        <div class="quick-stat-value">${alunos}</div>
+        <div class="quick-stat-label">Alunos</div>
+      </div>
+    </div>
+    <div class="quick-stat">
+      <div class="quick-stat-icon green">✅</div>
+      <div>
+        <div class="quick-stat-value">${assessment}</div>
+        <div class="quick-stat-label">Avaliações</div>
+      </div>
+    </div>
+    <div class="quick-stat">
+      <div class="quick-stat-icon yellow">📚</div>
+      <div>
+        <div class="quick-stat-value">${modules}</div>
+        <div class="quick-stat-label">Módulos</div>
+      </div>
+    </div>
+    <div class="quick-stat">
+      <div class="quick-stat-icon purple">📖</div>
+      <div>
+        <div class="quick-stat-value">${progress}</div>
+        <div class="quick-stat-label">Progresso</div>
+      </div>
+    </div>
+    <div class="quick-stat">
+      <div class="quick-stat-icon red">💬</div>
+      <div>
+        <div class="quick-stat-value">${topics}</div>
+        <div class="quick-stat-label">Tópicos</div>
+      </div>
+    </div>
+  `;
+};
+
+window.signOut = async function() {
+  if (confirm('Deseja sair?')) {
+    const supabaseDb = window.supabaseApp || window.aficSupabase;
+    if (supabaseDb) await supabaseDb.auth.signOut();
+    window.location.reload();
+  }
+};
+
+

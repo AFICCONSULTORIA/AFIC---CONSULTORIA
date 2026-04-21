@@ -150,6 +150,7 @@ const ReactApp = ({ isAdmin = false }) => {
 document.addEventListener('DOMContentLoaded', () => {
   const container = document.createElement('div');
   container.id = 'react-global-container';
+  container.style.cssText = 'position:absolute;z-index:0;pointer-events:none;';
   document.body.appendChild(container);
 
   const isAdmin = window.adminMode || window.location.pathname.includes('admin-plans') || window.location.href.includes('admin-plans');
