@@ -4367,3 +4367,69 @@ select.param-input {
     background: var(--bg-light-blue);
     border-color: var(--gold-rich);
 }
+
+/* Assessment Admin Cards */
+.assessment-card {
+    background: #051845;
+    border: 1px solid #D4AF37;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.btn-analysis:hover {
+    background: #e8cc6e !important;
+}
+
+.assessment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.assessment-nome {
+    color: #D4AF37;
+    font-size: 18px;
+}
+
+.assessment-email {
+    color: #94a3b8;
+    margin-left: 12px;
+}
+
+.assessment-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.status-select {
+    background: #0a2460;
+    color: #f1f5f9;
+    border: 1px solid #D4AF37;
+    padding: 6px 12px;
+    border-radius: 4px;
+}
+
+.assessment-date {
+    color: #64748b;
+    font-size: 12px;
+}
+
+.assessment-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    font-size: 14px;
+}
+
+.assessment-label {
+    color: #94a3b8;
+}
+
+.assessment-label.tier {
+    color: #fbbf24;
+}

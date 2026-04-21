@@ -72,7 +72,7 @@ window.initApp = function() {
         'community': 'page-community',
         'account': 'page-account',
         'plans': 'page-plans',
-        'admin-plans': 'page-admin-plans',
+        'admin-assessment': 'page-admin-assessment',
         'assessment': 'page-assessment'
     };
 
@@ -104,6 +104,10 @@ window.initApp = function() {
 
             if (pageName === 'account') {
                 loadProfileType();
+            }
+            
+            if (pageName === 'admin-assessment') {
+                loadAssessmentResponses();
             }
         } catch(err) {
             console.error('switchPage error:', err);
@@ -355,15 +359,14 @@ window.initApp = function() {
     const navLinks = document.querySelectorAll('.nav-link');
     const pages = document.querySelectorAll('.page-content');
     
-    // Hide/show admin link based on user role
+    // Hide/show admin links based on user role
     function checkAdminLink() {
-        const adminLink = document.querySelector('.nav-link[data-page="admin-plans"]');
-        if (!adminLink) return;
+        const assessmentLink = document.querySelector('.nav-link[data-page="admin-assessment"]');
         const isAdminEmail = currentUser?.email === 'aficconsultoria@gmail.com';
-        if (window.isUserAdmin || isAdminEmail) {
-            adminLink.style.display = '';
-        } else {
-            adminLink.style.display = 'none';
+        const isAdmin = window.isUserAdmin || isAdminEmail;
+        
+        if (assessmentLink) {
+            assessmentLink.style.display = isAdmin ? '' : 'none';
         }
     }
     
@@ -2509,4 +2512,240 @@ window.handleAssessmentSubmit = async function(e) {
   }, 3000);
   
   return false;
+};
+
+window.loadAssessmentResponses = async function() {
+  const container = document.getElementById('assessment-responses-list');
+  if (!container) return;
+  
+  const supabaseDb = window.supabaseApp || window.aficSupabase;
+  if (!supabaseDb) {
+    container.innerHTML = '<p style="color: red;">Supabase não conectado</p>';
+    return;
+  }
+  
+  try {
+    const { data, error } = await supabaseDb.from('afic_assessment_responses')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    
+    if (!data || data.length === 0) {
+      container.innerHTML = '<p>Nenhuma resposta encontrada.</p>';
+      return;
+    }
+    
+    const statusLabels = {
+      'novo': 'Pendente',
+      'aprovado': 'Aprovado',
+      'rejeitado': 'Rejeitado'
+    };
+    
+    container.innerHTML = data.map(r => `
+      <div class="assessment-card" data-id="${r.id}">
+        <div class="assessment-header">
+          <div>
+            <strong class="assessment-nome">${r.nome || '-'}</strong>
+            <span class="assessment-email">${r.email || '-'}</span>
+          </div>
+          <div class="assessment-actions">
+            <button class="btn-analysis" data-id="${r.id}" style="background: #D4AF37; color: #000; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px;">Análise</button>
+            <select class="status-select" data-id="${r.id}">
+              <option value="novo" ${r.status === 'novo' ? 'selected' : ''}>Pendente</option>
+              <option value="aprovado" ${r.status === 'aprovado' ? 'selected' : ''}>Aprovado</option>
+              <option value="rejeitado" ${r.status === 'rejeitado' ? 'selected' : ''}>Rejeitado</option>
+            </select>
+            <span class="assessment-date">${r.created_at ? new Date(r.created_at).toLocaleString('pt-BR') : ''}</span>
+          </div>
+        </div>
+        <div class="assessment-grid">
+          <div><span class="assessment-label">WhatsApp:</span> <span style="color: #fff;">${r.whatsapp || '-'}</span></div>
+        </div>
+      </div>
+    `).join('');
+    
+    container.querySelectorAll('.btn-analysis').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        const item = data.find(d => d.id === id);
+        if (item) showAssessmentDetail(item);
+      });
+    });
+    
+    container.querySelectorAll('.status-select').forEach(select => {
+      select.addEventListener('change', async (e) => {
+        const id = e.target.dataset.id;
+        const newStatus = e.target.value;
+        const { error } = await supabaseDb.from('afic_assessment_responses')
+          .update({ status: newStatus })
+          .eq('id', id);
+        if (error) {
+          alert('Erro ao atualizar: ' + error.message);
+          e.target.value = e.target.dataset.original;
+        }
+      });
+    });
+    
+  } catch(err) {
+    container.innerHTML = '<p style="color: red;">Erro ao carregar: ' + err.message + '</p>';
+  }
+};
+
+window.showAssessmentDetail = function(r) {
+  const modal = document.getElementById('modal-assessment-detail');
+  const nomeEl = document.getElementById('detailNome');
+  const emailEl = document.getElementById('detailEmail');
+  const contentEl = document.getElementById('detailContent');
+  
+  nomeEl.textContent = r.nome || 'Detalhes do Perfil';
+  emailEl.textContent = r.email || '';
+  
+  const answersMap = {
+    dinheiro1: {
+      'some': 'Vai quase tudo para pagar as contas do mês passado e faturas.',
+      'percebe': 'Consigo pagar o básico, mas o resto some sem perceber.',
+      'separo': 'Já separo uma parte antes de começar a gastar.'
+    },
+    emergencia: {
+      'emprestou': 'Usaria limite, cartão ou pediria emprestado.',
+      'atrasar': 'Venderia algo ou atrasaria outras contas.',
+      'fundo': 'Tenho reserva para emergências.'
+    },
+    trava: {
+      'pouco': 'Ganha pouco, só rico investe.',
+      'conhecimento': 'Tenho medo de perder, não entendo o mercado.',
+      'disciplina': 'Tento guardar, mas sempre gasto demais.'
+    },
+    cartao: {
+      'extensao': 'Extensão da renda. Pago mínimo ou parcelo.',
+      'consome': 'Uso muito, pago o total, mas consome o que ganho.',
+      'estrategico': 'Uso estratégico para pontos, sempre pago o total.'
+    },
+    paciencia: {
+      'imediato': 'Quero resultados já.',
+      'medio': 'Aguardo até 1 ano.',
+      'processo': 'Entendo que é um processo longo.'
+    },
+    sucesso: {
+      'acertar': 'Acertar o timing do mercado.',
+      'dividas': 'Sair das dívidas.',
+      'patrimonio': 'Acumular patrimônio institucional.'
+    },
+    corte: {
+      'difcil': 'Muito difícil abrir mão dos luxos.',
+      'sacrificio': 'Consigo com muito sacrifício.',
+      'equilibrio': 'Consigo encontrar equilíbrio.'
+    },
+    tempo: {
+      'pouco': 'Tenho pouco tempo disponível.',
+      'medio': 'Consigo dedicar algumas horas por semana.',
+      '2-3': 'Tenho tempo de dedicarme full time.'
+    }
+  };
+  
+  const getAnswer = (field, value) => {
+    if (!value) return '-';
+    return answersMap[field]?.[value] || value;
+  };
+  
+  const questions = [
+    { q: '1. O que você faz com o seu dinheiro?', a: getAnswer('dinheiro1', r.dinheiro1) },
+    { q: '2. Em uma emergência, você tem reserves?', a: getAnswer('emergencia', r.emergencia) },
+    { q: '3. O que mais trava o seu crescimento financeiro?', a: getAnswer('trava', r.trava) },
+    { q: '4. Como você usa o cartão de crédito?', a: getAnswer('cartao', r.cartao) },
+    { q: '5. Qual o seu nível de paciência para ver resultados?', a: getAnswer('paciencia', r.paciencia) },
+    { q: '6. O que é sucesso financeiro para você?', a: getAnswer('sucesso', r.sucesso) },
+    { q: '7. Como você reage a necessidade de cortar luxos?', a: getAnswer('corte', r.corte) },
+    { q: '8. Quanto tempo disponível você tem para trabalhar nisso?', a: getAnswer('tempo', r.tempo) }
+  ];
+  
+  contentEl.innerHTML = questions.map(item => `
+    <div style="margin-bottom: 18px;">
+      <div style="color: #fbbf24; font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; font-weight: 600;">${item.q}</div>
+      <div style="color: #f1f5f9; font-size: 14px; line-height: 1.5;">${item.a || '-'}</div>
+    </div>
+  `).join('') + `
+    <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(212,175,55,0.3); display: flex; justify-content: space-between; font-size: 13px;">
+      <div>
+        <div style="color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">WhatsApp</div>
+        <div style="color: #fbbf24; font-weight: 600;">${r.whatsapp || '-'}</div>
+      </div>
+      <div style="text-align: right;">
+        <div style="color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Enviado</div>
+        <div style="color: #e2e8f0;">${r.created_at ? new Date(r.created_at).toLocaleDateString('pt-BR') : '-'}</div>
+      </div>
+    </div>
+  `;
+  
+  modal.classList.remove('hidden');
+  
+  document.getElementById('btn-close-detail').onclick = () => {
+    modal.classList.add('hidden');
+  };
+};
+
+window.exportAssessmentExcel = async function() {
+  const supabaseDb = window.supabaseApp || window.aficSupabase;
+  if (!supabaseDb) {
+    alert('Supabase não conectado');
+    return;
+  }
+  
+  try {
+    const { data, error } = await supabaseDb.from('afic_assessment_responses')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      alert('Nenhuma resposta para exportar');
+      return;
+    }
+    
+    const headers = [
+      'Nome',
+      'E-mail',
+      'WhatsApp',
+      '1. O que você faz com o seu dinheiro?',
+      '2. Em uma emergência, você tem reserves?',
+      '3. O que mais trava o seu crescimento financeiro?',
+      '4. Como você usa o cartão de crédito?',
+      '5. Qual o seu nível de paciência para ver resultados?',
+      '6. O que é sucesso financeiro para você?',
+      '7. Como você reage a necessidade de cortar luxos?',
+      '8. Quanto tempo disponível você tem para trabalhar nisso?',
+      'Status',
+      'Data do envio'
+    ];
+    
+    const rows = data.map(r => [
+      r.nome || '',
+      r.email || '',
+      r.whatsapp || '',
+      r.dinheiro1 || '',
+      r.emergencia || '',
+      r.trava || '',
+      r.cartao || '',
+      r.paciencia || '',
+      r.sucesso || '',
+      r.corte || '',
+      r.tempo || '',
+      r.status || '',
+      r.created_at ? new Date(r.created_at).toLocaleString('pt-BR') : ''
+    ]);
+    
+    const csvContent = [headers, ...rows]
+      .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+    
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'Analise-de-Perfil_' + new Date().toISOString().split('T')[0] + '.csv';
+    link.click();
+    
+  } catch(err) {
+    alert('Erro ao exportar: ' + err.message);
+  }
 };

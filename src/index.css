@@ -46,6 +46,16 @@
   .dark .text-purple-600 { color: #a78bfa !important; }
   .dark .text-red-600 { color: #f87171 !important; }
   
+  /* Light Mode (no dark class on html) - Blue text fix */
+  html:not(.dark) .text-blue-600,
+  html:not(.dark) .text-blue-500,
+  html:not(.dark) .text-blue-700 { color: #1e3a8c !important; }
+  
+  html:not(.dark) .text-emerald-600 { color: #065f46 !important; }
+  html:not(.dark) .text-purple-600 { color: #6b21a8 !important; }
+  html:not(.dark) .text-amber-600 { color: #b45309 !important; }
+  html:not(.dark) .text-red-600 { color: #991b1b !important; }
+  
   /* Text Contrast - Tailwind class Map */
   .dark .text-gray-900,
   .dark .text-gray-800 {

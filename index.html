@@ -375,6 +375,19 @@
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <!-- NEW TOPIC MODAL (Community)                 -->
     <!-- ═══════════════════════════════════════════════════════════════ -->
+<div id="modal-assessment-detail" class="auth-modal hidden" style="display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.98);">
+        <div style="max-width: 420px; width: 92%; background: #051845; border: 1px solid #D4AF37; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.4); border: 1px solid rgba(212,175,55,0.3); border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); overflow: hidden;">
+            <div style="padding: 20px 24px; border-bottom: 1px solid rgba(212,175,55,0.3); display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h2 id="detailNome" style="margin: 0; color: #D4AF37; font-size: 18px; font-weight: 600;">Perfil</h2>
+                    <p id="detailEmail" style="margin: 6px 0 0; color: #94a3b8; font-size: 13px;"></p>
+                </div>
+                <button id="btn-close-detail" style="background: none; border: none; color: #64748b; font-size: 24px; cursor: pointer; line-height: 1; padding: 0;">&times;</button>
+            </div>
+            <div id="detailContent" style="padding: 16px 24px 24px; max-height: 55vh; overflow-y: auto; color: #e2e8f0; font-size: 14px;"></div>
+        </div>
+    </div>
+
     <div id="modal-new-topic" class="auth-modal hidden">
         <div class="auth-modal-content" style="max-width: 600px;">
             <div class="auth-header">
@@ -491,12 +504,11 @@
                 </svg>
                 <span>Sair da Conta</span>
             </a>
-            <a href="#" class="nav-link" data-page="admin-plans" style="color: #cda434;">
+            <a href="#" class="nav-link" data-page="admin-assessment" style="color: #cda434;">
                 <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <circle cx="12" cy="12" r="3"/>
-                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                 </svg>
-                <span>Admin Planos</span>
+                <span>Painel Admin</span>
             </a>
         </nav>
 
@@ -761,10 +773,16 @@
             <div id="react-pricing-root"></div>
         </section>
 
-        <section class="page-content page-hidden" id="page-admin-plans">
-            <div id="react-admin-root"></div>
+<section class="page-content page-hidden" id="page-admin-assessment">
+            <div class="admin-assessment-container" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="color: #cda434; margin: 0;">Painel Admin - Análise de Perfis</h2>
+                    <button onclick="exportAssessmentExcel()" style="background: #22c55e; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 500;">Exportar Excel</button>
+                </div>
+                <div id="assessment-responses-list"></div>
+            </div>
         </section>
-
+ 
     </main>
 
     <!-- ═══════════════════════════════════════════ -->
