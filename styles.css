@@ -3798,6 +3798,34 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: 0 0 0 3px rgba(212,175,55,0.15);
 }
 
+.assessment-step-centered {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.assessment-step-centered .assessment-question {
+    text-align: center;
+    width: 100%;
+}
+
+.assessment-step-centered .assessment-contact-fields {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    display: block;
+}
+
+.assessment-step-centered .assessment-input {
+    text-align: center;
+}
+
+.assessment-step-centered .assessment-next {
+    margin-top: 32px;
+    min-width: 200px;
+}
+
 .assessment-submit {
     width: 100%;
     padding: 18px 32px;

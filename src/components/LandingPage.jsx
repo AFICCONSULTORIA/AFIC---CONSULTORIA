@@ -85,21 +85,21 @@ export const LandingPage = () => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#D4AF37] opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[#D4AF37]"></span>
               </span>
-              Negando a Ficção
+              Educação Financeira de Acesso Real
             </div>
             <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-extrabold leading-[1.1] mb-8 tracking-tight text-[#051845]">
-              Da Ficção à <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FFD700] via-[#D4AF37] to-[#B8860B]">Riqueza Real.</span>
+              Aprenda a Investir de Verdade e <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FFD700] via-[#D4AF37] to-[#B8860B]">Fuja das Armadilhas.</span>
             </h1>
             <p className="text-lg md:text-xl text-[#4a5068] mb-10 leading-relaxed max-w-xl">
-              A plataforma definitiva para gestão patrimonial institucional. Dashboards intuitivos, ferramentas de projeção de juros compostos e educação financeira de elite em um só lugar.
+              Saia da estaca zero e comece a construir seu patrimônio com as ferramentas que realmente funcionam. Um sistema simples, acessível e direto ao ponto para você nunca mais perder dinheiro com promessas vazias.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <button onClick={openAuth} className="bg-[#051845] text-white px-10 py-4 text-base font-bold shadow-xl hover:shadow-[0_20px_40px_rgba(5,24,69,0.2)] hover:scale-[1.02] transition-all flex items-center justify-center gap-2">
-                Começar Agora
+                Iniciar Minha Jornada
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
               </button>
               <button onClick={() => scrollToSection('features')} className="bg-white text-[#051845] border border-[#e5e5e5] px-10 py-4 text-base font-bold hover:bg-gray-50 transition-all flex items-center justify-center">
-                Ver Funcionalidades
+                Ver Como Funciona
               </button>
             </div>
             </div>
@@ -129,13 +129,13 @@ export const LandingPage = () => {
       {/* ─── ASSESSMENT CTA ─── */}
       <section className="bg-[#051845] py-20 text-white overflow-hidden relative">
         <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-          <h2 className="text-3xl md:text-5xl font-display font-extrabold mb-6">Pronto para transformar sua vida financeira?</h2>
-          <p className="text-lg text-white/70 mb-10 max-w-2xl mx-auto">Descubra seu perfil financeiro e receba uma análise personalizada para atingir seus objetivos.</p>
+          <h2 className="text-3xl md:text-5xl font-display font-extrabold mb-6">Você Está Protegido ou Apenas com Sorte?</h2>
+          <p className="text-lg text-white/70 mb-10 max-w-2xl mx-auto">Faça um diagnóstico rápido e gratuito da sua saúde financeira e descubra se você está no caminho certo ou caindo em armadilhas invisíveis.</p>
           <button 
             onClick={openAssessment}
             className="inline-block bg-[#D4AF37] hover:bg-[#c9a227] text-[#051845] font-display font-bold text-xl px-12 py-5 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 cursor-pointer"
           >
-            Faça sua Análise de Perfil
+            Testar Meu Perfil de Investidor
           </button>
         </div>
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:20px_20px]"></div>
@@ -146,7 +146,7 @@ export const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="text-sm font-bold text-[#D4AF37] uppercase tracking-[0.3em] mb-4">Para quem é a AFIC?</h2>
-            <h3 className="text-3xl md:text-4xl font-display font-extrabold tracking-tight">A Academia que transforma quem quer sair do lugar comum.</h3>
+            <h3 className="text-3xl md:text-4xl font-display font-extrabold tracking-tight">Chega de Perder Dinheiro por Falta de Conhecimento.</h3>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -154,29 +154,29 @@ export const LandingPage = () => {
               <div className="w-12 h-12 bg-[#051845] flex items-center justify-center mb-6">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
               </div>
-              <h4 className="text-xl font-display font-bold mb-3">Quem quer construir riqueza de verdade</h4>
-              <p className="text-[#4a5068] dark:text-[#94a3b8]">Não busca atalhos, mas métodos comprovados matematicamente.</p>
+              <h4 className="text-xl font-display font-bold mb-3">Iniciantes do Zero</h4>
+              <p className="text-[#4a5068] dark:text-[#94a3b8]">Para quem nunca investiu e quer um passo a passo seguro, sem linguagem técnica complicada.</p>
             </div>
             <div className="p-8 bg-[#faf8ff] dark:bg-[#1a1a2e] border border-[#ebedff] dark:border-[#252545] hover:border-[#D4AF37]/30 transition-all">
               <div className="w-12 h-12 bg-[#051845] flex items-center justify-center mb-6">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
               </div>
-              <h4 className="text-xl font-display font-bold mb-3">Quem está cansado de conselhos genéricos</h4>
-              <p className="text-[#4a5068] dark:text-[#94a3b8]">Quer estratégias práticas, baseadas em dados e não em modismos.</p>
+              <h4 className="text-xl font-display font-bold mb-3">Cansados de Armadilhas</h4>
+              <p className="text-[#4a5068] dark:text-[#94a3b8]">Para quem já percebeu que "dicas quentes" não funcionam e quer a matemática real da riqueza.</p>
             </div>
             <div className="p-8 bg-[#faf8ff] dark:bg-[#1a1a2e] border border-[#ebedff] dark:border-[#252545] hover:border-[#D4AF37]/30 transition-all">
               <div className="w-12 h-12 bg-[#051845] flex items-center justify-center mb-6">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
               </div>
-              <h4 className="text-xl font-display font-bold mb-3">Quem busca independência financeira</h4>
-              <p className="text-[#4a5068] dark:text-[#94a3b8]">Não quer depender de terceiros para tomar decisões sobre seu dinheiro.</p>
+              <h4 className="text-xl font-display font-bold mb-3">Buscadores de Liberdade</h4>
+              <p className="text-[#4a5068] dark:text-[#94a3b8]">Para quem quer que o dinheiro trabalhe para si, pagando um preço justo por educação de qualidade.</p>
             </div>
             <div className="p-8 bg-[#faf8ff] dark:bg-[#1a1a2e] border border-[#ebedff] dark:border-[#252545] hover:border-[#D4AF37]/30 transition-all">
               <div className="w-12 h-12 bg-[#051845] flex items-center justify-center mb-6">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
               </div>
-              <h4 className="text-xl font-display font-bold mb-3">Quem quer pensar como investidor institucional</h4>
-              <p className="text-[#4a5068] dark:text-[#94a3b8]">Aprende a analisar oportunidades com a mesma lógica de quem maneja milhões.</p>
+              <h4 className="text-xl font-display font-bold mb-3">Mentes Práticas</h4>
+              <p className="text-[#4a5068] dark:text-[#94a3b8]">Para quem quer ferramentas que simplificam a vida, sem precisar ser um expert em economia.</p>
             </div>
           </div>
         </div>
@@ -195,43 +195,43 @@ export const LandingPage = () => {
               <div className="w-16 h-16 bg-[#D4AF37]/20 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
               </div>
-              <h4 className="text-xl font-display font-bold mb-3">Método Proprietário</h4>
-              <p className="text-white/70">Framework testado e refinado ao longo de anos de mercado.</p>
+              <h4 className="text-xl font-display font-bold mb-3">Método Anti-Armadilha</h4>
+              <p className="text-white/70">Aprenda a identificar o que é investimento real e o que é pura enganação financeira.</p>
             </div>
             <div className="text-center">
               <div className="w-16 h-16 bg-[#D4AF37]/20 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
               </div>
-              <h4 className="text-xl font-display font-bold mb-3">Ferramentas Poderosas</h4>
-              <p className="text-white/70">Calculadoras, simuladores e dashboards que você não encontra em outro lugar.</p>
+              <h4 className="text-xl font-display font-bold mb-3">Ferramentas Simples</h4>
+              <p className="text-white/70">Calculadoras e dashboards que facilitam sua vida, acessíveis na palma da mão.</p>
             </div>
             <div className="text-center">
               <div className="w-16 h-16 bg-[#D4AF37]/20 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
               </div>
-              <h4 className="text-xl font-display font-bold mb-3">Comunidade de Elite</h4>
-              <p className="text-white/70">Acesso a uma rede de pessoas com o mesmo nível de comprometimento.</p>
+              <h4 className="text-xl font-display font-bold mb-3">Comunidade que se Ajuda</h4>
+              <p className="text-white/70">Um grupo de pessoas que, como você, decidiu tomar as rédeas do próprio dinheiro.</p>
             </div>
             <div className="text-center">
               <div className="w-16 h-16 bg-[#D4AF37]/20 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
               </div>
-              <h4 className="text-xl font-display font-bold mb-3">Atualização Contínua</h4>
-              <p className="text-white/70">Conteúdo sempre atualizado com as tendências do mercado.</p>
+              <h4 className="text-xl font-display font-bold mb-3">Custo-Benefício Real</h4>
+              <p className="text-white/70">Educação de alto nível por um valor que cabe no seu dia a dia.</p>
             </div>
             <div className="text-center">
               <div className="w-16 h-16 bg-[#D4AF37]/20 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
               </div>
-              <h4 className="text-xl font-display font-bold mb-3">Base de Conhecimento</h4>
-              <p className="text-white/70">Biblioteca completa de masterclasses e materiais de estudo.</p>
+              <h4 className="text-xl font-display font-bold mb-3">Aulas Direto ao Ponto</h4>
+              <p className="text-white/70">Nada de enrolação. Você aprende o que precisa para começar a investir com segurança hoje mesmo.</p>
             </div>
             <div className="text-center">
               <div className="w-16 h-16 bg-[#D4AF37]/20 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
               </div>
-              <h4 className="text-xl font-display font-bold mb-3">Suporte Dedicado</h4>
-              <p className="text-white/70">Equipe disponível para tirar suas dúvidas e guiar sua jornada.</p>
+              <h4 className="text-xl font-display font-bold mb-3">Sua Proteção em 1º Lugar</h4>
+              <p className="text-white/70">Foco total em proteger o que você já conquistou enquanto busca o crescimento.</p>
             </div>
           </div>
         </div>
@@ -242,7 +242,7 @@ export const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center max-w-2xl mx-auto mb-20">
             <h2 className="text-sm font-bold text-[#D4AF37] uppercase tracking-[0.3em] mb-4">Módulos Exclusivos</h2>
-            <h3 className="text-3xl md:text-4xl font-display font-extrabold tracking-tight">Tudo o que você precisa para dominar suas finanças.</h3>
+            <h3 className="text-3xl md:text-4xl font-display font-extrabold tracking-tight">O Arsenal do Investidor Consciente.</h3>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -251,9 +251,9 @@ export const LandingPage = () => {
               <div className="w-14 h-14 bg-[#051845] dark:bg-[#252545] flex items-center justify-center mb-6 group-hover:bg-[#D4AF37] transition-colors duration-300">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[#D4AF37] group-hover:text-[#051845]"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
               </div>
-              <h4 className="text-xl font-display font-bold mb-4">Dashboard Inteligente</h4>
+              <h4 className="text-xl font-display font-bold mb-4">Seu Painel de Controle</h4>
               <p className="text-[#4a5068] dark:text-[#94a3b8] leading-relaxed">
-                Visualize seu progresso com gráficos interativos e indicadores de saúde financeira calculados em tempo real.
+                Visualize seu dinheiro crescendo e entenda exatamente para onde cada real está indo, sem complicação.
               </p>
             </div>
 
@@ -262,9 +262,9 @@ export const LandingPage = () => {
               <div className="w-14 h-14 bg-[#051845] dark:bg-[#252545] flex items-center justify-center mb-6 group-hover:bg-[#D4AF37] transition-colors duration-300">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[#D4AF37] group-hover:text-[#051845]"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
               </div>
-              <h4 className="text-xl font-display font-bold mb-4">Academia AFIC</h4>
+              <h4 className="text-xl font-display font-bold mb-4">Escola de Investimento Real</h4>
               <p className="text-[#4a5068] dark:text-[#94a3b8] leading-relaxed">
-                Acesso exclusivo a masterclasses e materiais de inteligência financeira utilizados pelos maiores investidores institucionais.
+                Masterclasses que te ensinam tudo: de como abrir conta na corretora a como montar sua primeira carteira.
               </p>
             </div>
 
@@ -273,9 +273,9 @@ export const LandingPage = () => {
               <div className="w-14 h-14 bg-[#051845] dark:bg-[#252545] flex items-center justify-center mb-6 group-hover:bg-[#D4AF37] transition-colors duration-300">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[#D4AF37] group-hover:text-[#051845]"><rect x="2" y="2" width="20" height="8"></rect><rect x="2" y="14" width="20" height="8"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
               </div>
-              <h4 className="text-xl font-display font-bold mb-4">Toolkit Institucional</h4>
+              <h4 className="text-xl font-display font-bold mb-4">Calculadoras da Liberdade</h4>
               <p className="text-[#4a5068] dark:text-[#94a3b8] leading-relaxed">
-                Calculadoras de juros compostos, simuladores de bola de neve e gerenciadores de orçamentos precisos.
+                Use a matemática a seu favor para projetar seu futuro e sair das dívidas de uma vez por todas.
               </p>
             </div>
           </div>
@@ -287,15 +287,15 @@ export const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center gap-16">
           <div className="flex-1">
             <h2 className="text-sm font-bold text-[#D4AF37] uppercase tracking-[0.3em] mb-4">Conhecimento é Soberania</h2>
-            <h3 className="text-4xl md:text-5xl font-display font-extrabold tracking-tight mb-8">Masterclasses que transformam realidades.</h3>
+            <h3 className="text-4xl md:text-5xl font-display font-extrabold tracking-tight mb-8">Conhecimento que te Protege e Liberta.</h3>
             <ul className="space-y-6 mb-10">
               <li className="flex items-start gap-4">
                 <div className="mt-1 w-5 h-5 bg-[#D4AF37] rounded-full flex items-center justify-center shrink-0">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#051845" strokeWidth="4"><polyline points="20 6 9 17 4 12"></polyline></svg>
                 </div>
                 <div>
-                  <span className="font-bold text-lg">Estratégias de Alocação Macro</span>
-                  <p className="text-[#4a5068] dark:text-[#94a3b8]">Entenda como se posicionar nos ciclos econômicos.</p>
+                  <span className="font-bold text-lg">Investindo do Zero</span>
+                  <p className="text-[#4a5068] dark:text-[#94a3b8]">O mapa completo para dar o seu primeiro passo no mercado financeiro com total confiança.</p>
                 </div>
               </li>
               <li className="flex items-start gap-4">
@@ -303,8 +303,8 @@ export const LandingPage = () => {
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#051845" strokeWidth="4"><polyline points="20 6 9 17 4 12"></polyline></svg>
                 </div>
                 <div>
-                  <span className="font-bold text-lg">Psicologia do Investidor</span>
-                  <p className="text-[#4a5068] dark:text-[#94a3b8]">Controle o emocional para execuções precisas no mercado.</p>
+                  <span className="font-bold text-lg">Escudo Anti-Ficção</span>
+                  <p className="text-[#4a5068] dark:text-[#94a3b8]">Como identificar falsas promessas e gurus financeiros antes de colocar seu dinheiro em risco.</p>
                 </div>
               </li>
               <li className="flex items-start gap-4">
@@ -312,8 +312,8 @@ export const LandingPage = () => {
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#051845" strokeWidth="4"><polyline points="20 6 9 17 4 12"></polyline></svg>
                 </div>
                 <div>
-                  <span className="font-bold text-lg">Independência Financeira Matemática</span>
-                  <p className="text-[#4a5068] dark:text-[#94a3b8]">O roadmap exato do ponto zero à ignição patrimonial.</p>
+                  <span className="font-bold text-lg">A Matemática da Riqueza</span>
+                  <p className="text-[#4a5068] dark:text-[#94a3b8]">Aprenda o poder real dos juros compostos de um jeito simples e aplicável à sua realidade.</p>
                 </div>
               </li>
             </ul>
@@ -339,18 +339,18 @@ export const LandingPage = () => {
       {/* ─── PRICING CTA ─── */}
       <section id="pricing" className="py-24 bg-white dark:bg-[#001240]">
         <div className="max-w-4xl mx-auto px-6 text-center">
-            <h3 className="text-4xl md:text-5xl font-display font-extrabold tracking-tight mb-8">Sua transformação patrimonial começa aqui</h3>
-            <p className="text-[#4a5068] dark:text-[#94a3b8] mb-12 text-lg">Não é sobre quanto você ganha. É sobre como você faz seu dinheiro trabalhar para você.</p>
+            <h3 className="text-4xl md:text-5xl font-display font-extrabold tracking-tight mb-8">Comece Sua Mudança de Vida com um Valor que Cabe no Bolso</h3>
+            <p className="text-[#4a5068] dark:text-[#94a3b8] mb-12 text-lg">Você não precisa de fortunas para começar a investir, mas precisa do conhecimento certo para não ser passado para trás.</p>
             
             <div className="bg-[#051845] p-12 relative overflow-hidden text-left md:flex items-center justify-between gap-8">
                <div className="relative z-10">
                  <div className="text-[#D4AF37] font-bold text-sm uppercase tracking-widest mb-2">O Método AFIC</div>
-                 <h4 className="text-3xl font-display font-extrabold text-white mb-4">Acesso Completo à Academia</h4>
-                 <p className="text-white/70 text-sm mb-6 max-w-sm">Dashboards patrimoniais, calculadoras de juros compostos, simuladores de bola de neve e masterclasses exclusivas.</p>
+                 <h4 className="text-3xl font-display font-extrabold text-white mb-4">Acesso à Academia AFIC</h4>
+                 <p className="text-white/70 text-sm mb-6 max-w-sm">Tudo o que você precisa para aprender a investir de verdade, do zero, por um valor extremamente acessível.</p>
                </div>
                <div className="relative z-10 mt-8 md:mt-0">
                  <button onClick={openAssessment} className="w-full md:w-auto bg-[#D4AF37] text-[#051845] px-10 py-5 font-bold hover:bg-[#e8cc6e] transition-all shadow-xl">
-                   Quero Começar Minha Transformação
+                   Quero Aprender a Investir do Zero
                  </button>
                  <p className="text-white/40 text-[10px] text-center mt-3 uppercase tracking-tighter">Vagas limitadas para novos membros</p>
                </div>
@@ -358,7 +358,7 @@ export const LandingPage = () => {
                <div className="absolute top-0 right-0 w-64 h-full bg-white/5 -skew-x-[30deg]"></div>
             </div>
             
-            <p className="mt-8 text-sm text-[#4a5068] dark:text-[#94a3b8]">Pronto para sair da teoria e entrar na prática? <button onClick={openAssessment} className="text-[#D4AF37] font-bold underline">Faça sua análise de perfil</button> agora.</p>
+            <p className="mt-8 text-sm text-[#4a5068] dark:text-[#94a3b8]">Pare de cair em armadilhas financeiras. <button onClick={openAssessment} className="text-[#D4AF37] font-bold underline">Comece sua análise gratuita</button> agora.</p>
         </div>
       </section>
 

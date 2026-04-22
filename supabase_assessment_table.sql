@@ -12,10 +12,16 @@ CREATE TABLE IF NOT EXISTS public.afic_assessment_responses (
     sucesso TEXT,
     corte TEXT,
     tempo TEXT,
+    renda_atual TEXT,
+    renda_sonho TEXT,
     tier_sugerido TEXT,
     status TEXT DEFAULT 'novo',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Migração: Caso a tabela já exista, rode os comandos abaixo para adicionar as colunas:
+-- ALTER TABLE public.afic_assessment_responses ADD COLUMN IF NOT EXISTS renda_atual TEXT;
+-- ALTER TABLE public.afic_assessment_responses ADD COLUMN IF NOT EXISTS renda_sonho TEXT;
 
 -- Garantir que a tabela existe
 ALTER TABLE public.afic_assessment_responses ENABLE ROW LEVEL SECURITY;

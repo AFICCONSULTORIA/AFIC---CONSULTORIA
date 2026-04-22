@@ -2289,9 +2289,40 @@ window.addEventListener('DOMContentLoaded', function() {
   window.updateProgress();
 });
 
+
+// Função para formatar moeda em tempo real
+function setupCurrencyMask(id) {
+    const input = document.getElementById(id);
+    if (!input) return;
+
+    input.addEventListener('input', function(e) {
+        let value = e.target.value;
+        
+        // Remove tudo que não é dígito
+        value = value.replace(/\D/g, '');
+        
+        // Formata como moeda
+        if (value) {
+            const options = { minimumFractionDigits: 2 };
+            const result = new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(parseFloat(value) / 100);
+            e.target.value = result;
+        } else {
+            e.target.value = '';
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    setupCurrencyMask('assessment-renda-atual');
+    setupCurrencyMask('assessment-renda-sonho');
+});
+
 // Assessment step navigation
 window.currentStep = 1;
-window.totalSteps = 9; // 1 contato + 8 perguntas
+window.totalSteps = 11; // 1 contato + 2 rendas + 8 perguntas
 
 window.updateProgress = function() {
     const progress = (window.currentStep / window.totalSteps) * 100;
@@ -2306,11 +2337,11 @@ window.updateProgress = function() {
 };
 
 window.nextStep = function() {
-    const currentStepEl = document.querySelector(`.assessment-step[data-step="${window.currentStep}"]`);
+    const currentStepEl = document.querySelector('.assessment-step[data-step="' + window.currentStep + '"]');
     const toast = document.getElementById('assessment-toast');
     const toastMessage = toast?.querySelector('.toast-message');
     
-    // Validação do step atual
+    // Validação por step
     if (window.currentStep === 1) {
         const nome = document.getElementById('assessment-nome')?.value.trim();
         const email = document.getElementById('assessment-email')?.value.trim();
@@ -2321,42 +2352,56 @@ window.nextStep = function() {
             return;
         }
     } else if (window.currentStep === 2) {
+        const renda = document.getElementById('assessment-renda-atual')?.value.trim();
+        if (!renda) {
+            if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
+            if (toastMessage) toastMessage.textContent = 'Preencha sua renda atual.';
+            return;
+        }
+    } else if (window.currentStep === 3) {
+        const renda = document.getElementById('assessment-renda-sonho')?.value.trim();
+        if (!renda) {
+            if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
+            if (toastMessage) toastMessage.textContent = 'Preencha a renda dos seus sonhos.';
+            return;
+        }
+    } else if (window.currentStep === 4) {
         if (!document.querySelector('input[name="dinheiro1"]:checked')) {
             if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
             if (toastMessage) toastMessage.textContent = 'Responda o que acontece com seu dinheiro.';
             return;
         }
-    } else if (window.currentStep === 3) {
+    } else if (window.currentStep === 5) {
         if (!document.querySelector('input[name="emergencia"]:checked')) {
             if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
             if (toastMessage) toastMessage.textContent = 'Selecione como resolveria uma emergência.';
             return;
         }
-    } else if (window.currentStep === 4) {
+    } else if (window.currentStep === 6) {
         if (!document.querySelector('input[name="trava"]:checked')) {
             if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
             if (toastMessage) toastMessage.textContent = 'Selecione o que travou seu patrimônio.';
             return;
         }
-    } else if (window.currentStep === 5) {
+    } else if (window.currentStep === 7) {
         if (!document.querySelector('input[name="cartao"]:checked')) {
             if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
             if (toastMessage) toastMessage.textContent = 'Selecione como usa seu cartão.';
             return;
         }
-    } else if (window.currentStep === 6) {
+    } else if (window.currentStep === 8) {
         if (!document.querySelector('input[name="paciencia"]:checked')) {
             if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
             if (toastMessage) toastMessage.textContent = 'Selecione seu nível de paciência.';
             return;
         }
-    } else if (window.currentStep === 7) {
+    } else if (window.currentStep === 9) {
         if (!document.querySelector('input[name="sucesso"]:checked')) {
             if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
             if (toastMessage) toastMessage.textContent = 'Defina o que é sucesso financeiro para você.';
             return;
         }
-    } else if (window.currentStep === 8) {
+    } else if (window.currentStep === 10) {
         if (!document.querySelector('input[name="corte"]:checked')) {
             if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
             if (toastMessage) toastMessage.textContent = 'Selecione como reage a necessidade de cortar luxos.';
@@ -2374,7 +2419,7 @@ window.nextStep = function() {
     window.currentStep++;
     
     // Mostrar próximo step
-    const nextStepEl = document.querySelector(`.assessment-step[data-step="${window.currentStep}"]`);
+    const nextStepEl = document.querySelector('.assessment-step[data-step="' + window.currentStep + '"]');
     if (nextStepEl) {
         nextStepEl.classList.remove('hidden');
         nextStepEl.classList.add('active');
@@ -2402,68 +2447,27 @@ window.handleAssessmentSubmit = async function(e) {
   const toast = document.getElementById('assessment-toast');
   const toastMessage = toast?.querySelector('.toast-message');
   
-  // Validação dados contato
-  if (!nome) {
+  // Validação Final
+  if (!nome || !email || !whatsapp) {
     if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
-    if (toastMessage) toastMessage.textContent = 'Preencha seu nome completo.';
-    return false;
-  }
-  if (!email) {
-    if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
-    if (toastMessage) toastMessage.textContent = 'Preencha seu e-mail.';
-    return false;
-  }
-  if (!whatsapp) {
-    if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
-    if (toastMessage) toastMessage.textContent = 'Preencha seu WhatsApp.';
+    if (toastMessage) toastMessage.textContent = 'Preencha os dados de contato.';
     return false;
   }
   
-  // Validação Bloco 1 - Removido: campos sikap dan janela antigos
-  if (!document.querySelector('input[name="dinheiro1"]:checked')) {
-    if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
-    if (toastMessage) toastMessage.textContent = 'Responda o que acontece com seu dinheiro.';
-    return false;
-  }
-  if (!document.querySelector('input[name="emergencia"]:checked')) {
-    if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
-    if (toastMessage) toastMessage.textContent = 'Selecione como resolveria uma emergência.';
-    return false;
-  }
-  if (!document.querySelector('input[name="trava"]:checked')) {
-    if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
-    if (toastMessage) toastMessage.textContent = 'Selecione o que travou seu patrimônio.';
-    return false;
-  }
-  if (!document.querySelector('input[name="cartao"]:checked')) {
-    if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
-    if (toastMessage) toastMessage.textContent = 'Selecione como usa seu cartão.';
-    return false;
-  }
-  if (!document.querySelector('input[name="paciencia"]:checked')) {
-    if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
-    if (toastMessage) toastMessage.textContent = 'Selecione seu nível de paciência.';
-    return false;
-  }
-  if (!document.querySelector('input[name="sucesso"]:checked')) {
-    if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
-    if (toastMessage) toastMessage.textContent = 'Defina o que é sucesso financeiro para você.';
-    return false;
-  }
-  if (!document.querySelector('input[name="corte"]:checked')) {
-    if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
-    if (toastMessage) toastMessage.textContent = 'Selecione como reage a necessidade de cortar luxos.';
-    return false;
-  }
-  if (!document.querySelector('input[name="tempo"]:checked')) {
-    if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
-    if (toastMessage) toastMessage.textContent = 'Selecione sua disponibilidade de tempo.';
-    return false;
-  }
+  const renda_atual = document.getElementById('assessment-renda-atual')?.value.trim();
+  const renda_sonho = document.getElementById('assessment-renda-sonho')?.value.trim();
   
+  if (!renda_atual || !renda_sonho) {
+    if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
+    if (toastMessage) toastMessage.textContent = 'Preencha as informações de renda.';
+    return false;
+  }
+
   // Coletar dados
   const formData = {
     nome, email, whatsapp,
+    renda_atual,
+    renda_sonho,
     dinheiro1: document.querySelector('input[name="dinheiro1"]:checked')?.value,
     emergencia: document.querySelector('input[name="emergencia"]:checked')?.value,
     trava: document.querySelector('input[name="trava"]:checked')?.value,
@@ -2479,46 +2483,26 @@ window.handleAssessmentSubmit = async function(e) {
   // Salvar no banco de dados
   const supabaseDb = window.supabaseApp || window.aficSupabase;
   
-  // Check what we have
-  console.log('Supabase disponível:', !!supabaseDb);
-  console.log('Keys do supabase:', supabaseDb ? Object.keys(supabaseDb) : 'n/a');
-  
   let saveError = null;
   
   if (!supabaseDb) {
-    console.error('Supabase não initialized');
-    saveError = 'Supabase não initialized';
+    saveError = 'Supabase não conectado';
   } else {
     try {
       const { error } = await supabaseDb.from('afic_assessment_responses').insert([formData]);
-      if (error) {
-        console.error('Erro do Supabase:', error);
-        saveError = error.message;
-      } else {
-        console.log('Salvo!');
-      }
+      if (error) saveError = error.message;
     } catch(err) {
-      console.error('Erro catch:', err);
       saveError = err.message;
     }
   }
   
   if (saveError) {
-    if (toast) {
-      toast.classList.remove('hidden', 'success');
-      toast.classList.add('error');
-    }
+    if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
     if (toastMessage) toastMessage.textContent = 'Erro ao enviar: ' + saveError;
-    setTimeout(() => {
-      if (toast) toast.classList.add('hidden');
-    }, 5000);
     return false;
   }
   
-  if (toast) {
-    toast.classList.remove('hidden', 'error');
-    toast.classList.add('success');
-  }
+  if (toast) { toast.classList.remove('hidden', 'error'); toast.classList.add('success'); }
   if (toastMessage) toastMessage.textContent = 'Respostas enviadas! Nossa equipe entrará em contato em breve.';
   
   setTimeout(() => {
@@ -2527,6 +2511,88 @@ window.handleAssessmentSubmit = async function(e) {
   }, 3000);
   
   return false;
+};
+
+
+window.allAssessmentResponses = []; // Cache local para filtros
+
+window.renderAssessmentList = function(data) {
+    const container = document.getElementById('assessment-responses-list');
+    if (!container) return;
+    
+    if (!data || data.length === 0) {
+        container.innerHTML = '<p style="text-align: center; padding: 40px; color: #94a3b8;">Nenhuma resposta encontrada para os filtros aplicados.</p>';
+        return;
+    }
+
+    container.innerHTML = data.map(r => {
+      return `
+      <div class="assessment-card" data-id="${r.id}" style="margin-bottom: 16px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden; transition: all 0.2s;">
+        <div class="assessment-header" style="padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; background: rgba(5, 24, 69, 0.2);">
+          <div>
+            <strong class="assessment-nome" style="color: #fff; display: block; font-size: 16px;">${r.nome || '-'}</strong>
+            <span class="assessment-email" style="color: #94a3b8; font-size: 13px;">${r.email || '-'}</span>
+          </div>
+          <div class="assessment-actions" style="display: flex; align-items: center; gap: 12px;">
+            <button class="btn-analysis" data-id="${r.id}" style="background: #D4AF37; color: #000; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px;">Análise Completa</button>
+            <select class="status-select" data-id="${r.id}" style="background: rgba(0,0,0,0.3); color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 7px 10px; border-radius: 6px; font-size: 13px; cursor: pointer;">
+              <option value="novo" ${r.status === 'novo' ? 'selected' : ''}>Pendente</option>
+              <option value="aprovado" ${r.status === 'aprovado' ? 'selected' : ''}>Aprovado</option>
+              <option value="rejeitado" ${r.status === 'rejeitado' ? 'selected' : ''}>Rejeitado</option>
+            </select>
+          </div>
+        </div>
+        <div class="assessment-grid" style="padding: 16px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+          <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border-left: 3px solid #D4AF37;">
+            <span style="display: block; color: #94a3b8; font-size: 10px; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px;">Renda Atual</span>
+            <span style="color: #fff; font-weight: 600; font-size: 14px;">${r.renda_atual || 'Não inf.'}</span>
+          </div>
+          <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border-left: 3px solid #22c55e;">
+            <span style="display: block; color: #94a3b8; font-size: 10px; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px;">Pretensão</span>
+            <span style="color: #fff; font-weight: 600; font-size: 14px;">${r.renda_sonho || 'Não inf.'}</span>
+          </div>
+          <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px;">
+            <span style="display: block; color: #94a3b8; font-size: 10px; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px;">WhatsApp</span>
+            <span style="color: #fff; font-size: 14px;">${r.whatsapp || '-'}</span>
+          </div>
+        </div>
+        <div style="padding: 8px 16px; background: rgba(0,0,0,0.1); display: flex; justify-content: flex-end;">
+            <span style="color: #64748b; font-size: 11px;">Enviado em ${r.created_at ? new Date(r.created_at).toLocaleString('pt-BR') : ''}</span>
+        </div>
+      </div>
+    `}).join('');
+
+    // Reatachar listeners
+    container.querySelectorAll('.btn-analysis').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        const item = data.find(d => d.id === id);
+        if (item) showAssessmentDetail(item);
+      });
+    });
+    
+    container.querySelectorAll('.status-select').forEach(select => {
+      select.addEventListener('change', async (e) => {
+        const id = e.target.dataset.id;
+        const newStatus = e.target.value;
+        const supabaseDb = window.supabaseApp || window.aficSupabase;
+        const { error } = await supabaseDb.from('afic_assessment_responses').update({ status: newStatus }).eq('id', id);
+        if (error) alert('Erro ao atualizar: ' + error.message);
+      });
+    });
+};
+
+window.filterAssessmentList = function() {
+    const search = document.getElementById('filter-assessment-search')?.value.toLowerCase() || '';
+    const status = document.getElementById('filter-assessment-status')?.value || 'all';
+
+    const filtered = window.allAssessmentResponses.filter(r => {
+        const matchesSearch = (r.nome?.toLowerCase().includes(search) || r.email?.toLowerCase().includes(search));
+        const matchesStatus = (status === 'all' || r.status === status);
+        return matchesSearch && matchesStatus;
+    });
+
+    window.renderAssessmentList(filtered);
 };
 
 window.loadAssessmentResponses = async function() {
@@ -2546,66 +2612,27 @@ window.loadAssessmentResponses = async function() {
     
     if (error) throw error;
     
-    if (!data || data.length === 0) {
-      container.innerHTML = '<p>Nenhuma resposta encontrada.</p>';
-      return;
+    window.allAssessmentResponses = data || [];
+    window.renderAssessmentList(window.allAssessmentResponses);
+    
+    // Listeners de filtro
+    const searchInput = document.getElementById('filter-assessment-search');
+    const statusSelect = document.getElementById('filter-assessment-status');
+    
+    if (searchInput && !searchInput.dataset.listening) {
+        searchInput.addEventListener('input', window.filterAssessmentList);
+        searchInput.dataset.listening = 'true';
     }
-    
-    const statusLabels = {
-      'novo': 'Pendente',
-      'aprovado': 'Aprovado',
-      'rejeitado': 'Rejeitado'
-    };
-    
-    container.innerHTML = data.map(r => `
-      <div class="assessment-card" data-id="${r.id}">
-        <div class="assessment-header">
-          <div>
-            <strong class="assessment-nome">${r.nome || '-'}</strong>
-            <span class="assessment-email">${r.email || '-'}</span>
-          </div>
-          <div class="assessment-actions">
-            <button class="btn-analysis" data-id="${r.id}" style="background: #D4AF37; color: #000; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px;">Análise</button>
-            <select class="status-select" data-id="${r.id}">
-              <option value="novo" ${r.status === 'novo' ? 'selected' : ''}>Pendente</option>
-              <option value="aprovado" ${r.status === 'aprovado' ? 'selected' : ''}>Aprovado</option>
-              <option value="rejeitado" ${r.status === 'rejeitado' ? 'selected' : ''}>Rejeitado</option>
-            </select>
-            <span class="assessment-date">${r.created_at ? new Date(r.created_at).toLocaleString('pt-BR') : ''}</span>
-          </div>
-        </div>
-        <div class="assessment-grid">
-          <div><span class="assessment-label">WhatsApp:</span> <span style="color: #fff;">${r.whatsapp || '-'}</span></div>
-        </div>
-      </div>
-    `).join('');
-    
-    container.querySelectorAll('.btn-analysis').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = btn.dataset.id;
-        const item = data.find(d => d.id === id);
-        if (item) showAssessmentDetail(item);
-      });
-    });
-    
-    container.querySelectorAll('.status-select').forEach(select => {
-      select.addEventListener('change', async (e) => {
-        const id = e.target.dataset.id;
-        const newStatus = e.target.value;
-        const { error } = await supabaseDb.from('afic_assessment_responses')
-          .update({ status: newStatus })
-          .eq('id', id);
-        if (error) {
-          alert('Erro ao atualizar: ' + error.message);
-          e.target.value = e.target.dataset.original;
-        }
-      });
-    });
+    if (statusSelect && !statusSelect.dataset.listening) {
+        statusSelect.addEventListener('change', window.filterAssessmentList);
+        statusSelect.dataset.listening = 'true';
+    }
     
   } catch(err) {
     container.innerHTML = '<p style="color: red;">Erro ao carregar: ' + err.message + '</p>';
   }
 };
+
 
 window.showAssessmentDetail = function(r) {
   const modal = document.getElementById('modal-assessment-detail');
@@ -2664,16 +2691,20 @@ window.showAssessmentDetail = function(r) {
     return answersMap[field]?.[value] || value;
   };
   
+  
   const questions = [
-    { q: '1. O que você faz com o seu dinheiro?', a: getAnswer('dinheiro1', r.dinheiro1) },
-    { q: '2. Em uma emergência, você tem reserves?', a: getAnswer('emergencia', r.emergencia) },
-    { q: '3. O que mais trava o seu crescimento financeiro?', a: getAnswer('trava', r.trava) },
-    { q: '4. Como você usa o cartão de crédito?', a: getAnswer('cartao', r.cartao) },
-    { q: '5. Qual o seu nível de paciência para ver resultados?', a: getAnswer('paciencia', r.paciencia) },
-    { q: '6. O que é sucesso financeiro para você?', a: getAnswer('sucesso', r.sucesso) },
-    { q: '7. Como você reage a necessidade de cortar luxos?', a: getAnswer('corte', r.corte) },
-    { q: '8. Quanto tempo disponível você tem para trabalhar nisso?', a: getAnswer('tempo', r.tempo) }
+    { q: 'Renda Atual', a: r.renda_atual || '-' },
+    { q: 'Renda Pretendida', a: r.renda_sonho || '-' },
+    { q: 'O que faz com o dinheiro?', a: getAnswer('dinheiro1', r.dinheiro1) },
+    { q: 'Emergência financeira?', a: getAnswer('emergencia', r.emergencia) },
+    { q: 'O que trava o crescimento?', a: getAnswer('trava', r.trava) },
+    { q: 'Uso do cartão?', a: getAnswer('cartao', r.cartao) },
+    { q: 'Paciência para resultados?', a: getAnswer('paciencia', r.paciencia) },
+    { q: 'Sucesso financeiro?', a: getAnswer('sucesso', r.sucesso) },
+    { q: 'Corte de luxos?', a: getAnswer('corte', r.corte) },
+    { q: 'Tempo disponível?', a: getAnswer('tempo', r.tempo) }
   ];
+
   
   contentEl.innerHTML = questions.map(item => `
     <div style="margin-bottom: 18px;">
@@ -2769,6 +2800,76 @@ window.exportAssessmentExcel = async function() {
    ADMIN DASHBOARD - KANBAN FUNCTIONS
    ═══════════════════════════════════════════════════════════════ */
 
+
+window.allKanbanData = [];
+
+window.renderKanban = function(data) {
+  const board = document.getElementById('kanban-board');
+  if (!board) return;
+
+  const columns = [
+    { id: 'novo', title: 'Novas Aplicações' },
+    { id: 'analise', title: 'Em Análise' },
+    { id: 'qualificado', title: 'Qualificado (O Despertar)' },
+    { id: 'highticket', title: 'Qualificado (High-Ticket)' },
+    { id: 'reprovado', title: 'Reprovados' }
+  ];
+  
+  const getStatus = (r) => r.status || 'novo';
+  const getFlags = (r) => {
+    const flags = [];
+    if (r.dinheiro1 === 'separo') flags.push({ type: 'green', label: 'Finança' });
+    if (r.emergencia === 'fundo') flags.push({ type: 'green', label: 'Reserva' });
+    if (r.trava === 'pouco') flags.push({ type: 'red', label: 'Income' });
+    if (r.paciencia === 'imediato') flags.push({ type: 'red', label: 'Impaciente' });
+    if (r.cartao === 'estrategico') flags.push({ type: 'green', label: 'Cartão' });
+    return flags;
+  };
+
+  board.innerHTML = columns.map(col => {
+    const cards = data.filter(r => getStatus(r) === col.id);
+    return `
+      <div class="kanban-column">
+        <div class="column-header">
+          <span class="column-title">${col.title}</span>
+          <span class="column-count">${cards.length}</span>
+        </div>
+        <div class="kanban-cards">
+          ${cards.map(r => `
+            <div class="candidate-card" onclick="openCandidate('${r.id}')" style="cursor: pointer;">
+              <div class="candidate-name" style="font-weight: 700; color: #fff; margin-bottom: 4px;">${r.nome || '-'}</div>
+              <div class="candidate-contact" style="font-size: 11px; color: #94a3b8; line-height: 1.4;">${r.email || '-'}<br>${r.whatsapp || '-'}</div>
+              
+              <div class="candidate-income-display" style="margin: 8px 0; padding: 6px; background: rgba(212,175,55,0.05); border: 1px solid rgba(212,175,55,0.1); border-radius: 6px;">
+                <div style="font-size: 10px; color: #D4AF37; display: flex; justify-content: space-between;">
+                  <span>Renda: <strong>${r.renda_atual || '-'}</strong></span>
+                  <span>Sonho: <strong>${r.renda_sonho || '-'}</strong></span>
+                </div>
+              </div>
+
+              <div class="candidate-tags" style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px;">
+                ${getFlags(r).map(f => `<span class="tag ${f.type}" style="font-size: 9px; padding: 2px 6px; border-radius: 4px; background: ${f.type === 'green' ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'}; color: ${f.type === 'green' ? '#4ade80' : '#f87171'};">${f.label}</span>`).join('')}
+              </div>
+              <div class="candidate-notes" style="margin-top: 10px; font-size: 11px; color: #64748b; display: flex; align-items: center; gap: 4px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+                Ver detalhes
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+};
+
+window.filterKanban = function() {
+    const search = document.getElementById('filter-kanban-search')?.value.toLowerCase() || '';
+    const filtered = window.allKanbanData.filter(r => {
+        return (r.nome?.toLowerCase().includes(search) || r.email?.toLowerCase().includes(search) || r.whatsapp?.includes(search));
+    });
+    window.renderKanban(filtered);
+};
+
 window.loadKanban = async function() {
   const board = document.getElementById('kanban-board');
   if (!board) return;
@@ -2786,58 +2887,22 @@ window.loadKanban = async function() {
     
     if (error) throw error;
     
-    const columns = [
-      { id: 'novo', title: 'Novas Aplicações' },
-      { id: 'analise', title: 'Em Análise' },
-      { id: 'qualificado', title: 'Qualificado (O Despertar)' },
-      { id: 'highticket', title: 'Qualificado (High-Ticket)' },
-      { id: 'reprovado', title: 'Reprovados' }
-    ];
-    
-    const getStatus = (r) => r.status || 'novo';
-    const getFlags = (r) => {
-      const flags = [];
-      if (r.dinheiro1 === 'separo') flags.push({ type: 'green', label: 'Finança' });
-      if (r.emergencia === 'fundo') flags.push({ type: 'green', label: 'Reserva' });
-      if (r.trava === 'pouco') flags.push({ type: 'red', label: 'Income' });
-      if (r.paciencia === 'imediato') flags.push({ type: 'red', label: 'Impaciente' });
-      if (r.cartao === 'estrategico') flags.push({ type: 'green', label: 'Cartão' });
-      return flags;
-    };
-    
-    board.innerHTML = columns.map(col => {
-      const cards = data.filter(r => getStatus(r) === col.id);
-      return `
-        <div class="kanban-column">
-          <div class="column-header">
-            <span class="column-title">${col.title}</span>
-            <span class="column-count">${cards.length}</span>
-          </div>
-          <div class="kanban-cards">
-            ${cards.map(r => `
-              <div class="candidate-card" onclick="openCandidate('${r.id}')">
-                <div class="candidate-name">${r.nome || '-'}</div>
-                <div class="candidate-contact">${r.email || '-'}<br>${r.whatsapp || '-'}</div>
-                <div class="candidate-tags">
-                  ${getFlags(r).map(f => `<span class="tag ${f.type}">${f.label}</span>`).join('')}
-                </div>
-                <div class="candidate-notes">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
-                  Ver detalhes
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      `;
-    }).join('');
-    
+    window.allKanbanData = data || [];
+    window.renderKanban(window.allKanbanData);
     window.kanbanData = data;
+
+    // Listeners de filtro
+    const searchInput = document.getElementById('filter-kanban-search');
+    if (searchInput && !searchInput.dataset.listening) {
+        searchInput.addEventListener('input', window.filterKanban);
+        searchInput.dataset.listening = 'true';
+    }
     
   } catch(err) {
     board.innerHTML = '<p style="color: #ef4444; padding: 20px;">Erro ao carregar: ' + err.message + '</p>';
   }
 };
+
 
 window.openCandidate = function(id) {
   const data = window.kanbanData;

@@ -163,7 +163,7 @@
             </div>
             
             <div class="assessment-progress">
-                    <div class="assessment-headline" id="assessment-progress-text">1/9</div>
+                    <div class="assessment-headline" id="assessment-progress-text">1/11</div>
                     <div class="assessment-subheadline">Pergunta</div>
                     <div class="assessment-progress-bar-container">
                         <div class="assessment-progress-bar" id="assessment-progress-bar"></div>
@@ -188,9 +188,33 @@
                         <button type="button" class="assessment-next" onclick="nextStep()">Próximo</button>
                     </div>
                     
-                    <!-- Step 2: Rotina -->
-                    <div class="assessment-step hidden" data-step="2">
-                        <div class="step-indicator">I. Mapeamento de Rotina</div>
+                    <!-- Step 2: Renda Atual -->
+                    <div class="assessment-step assessment-step-centered hidden" data-step="2">
+                        <div class="step-indicator">I. Ponto de Partida</div>
+                        <h3 class="assessment-question">Qual é a sua renda mensal atual?</h3>
+                        <div class="assessment-contact-fields">
+                            <div class="assessment-input-wrapper">
+                                <input type="text" id="assessment-renda-atual" class="assessment-input" placeholder="Ex: R$ 5.000,00">
+                            </div>
+                        </div>
+                        <button type="button" class="assessment-next" onclick="nextStep()">Próximo</button>
+                    </div>
+
+                    <!-- Step 3: Renda dos Sonhos -->
+                    <div class="assessment-step assessment-step-centered hidden" data-step="3">
+                        <div class="step-indicator">I. Ponto de Partida</div>
+                        <h3 class="assessment-question">Qual é a renda mensal dos seus sonhos para o futuro?</h3>
+                        <div class="assessment-contact-fields">
+                            <div class="assessment-input-wrapper">
+                                <input type="text" id="assessment-renda-sonho" class="assessment-input" placeholder="Ex: R$ 50.000,00">
+                            </div>
+                        </div>
+                        <button type="button" class="assessment-next" onclick="nextStep()">Próximo</button>
+                    </div>
+
+                    <!-- Step 4: Rotina -->
+                    <div class="assessment-step hidden" data-step="4">
+                        <div class="step-indicator">II. Mapeamento de Rotina</div>
                         <h3 class="assessment-question">O que acontece com o seu dinheiro na primeira semana após receber o pagamento?</h3>
                         <div class="assessment-cards assessment-cards-vertical">
                             <label class="assessment-card">
@@ -209,8 +233,8 @@
                         <button type="button" class="assessment-next" onclick="nextStep()">Próximo</button>
                     </div>
                     
-                    <!-- Step 3: Emergência -->
-                    <div class="assessment-step hidden" data-step="3">
+                    <!-- Step 5: Emergência -->
+                    <div class="assessment-step hidden" data-step="5">
                         <h3 class="assessment-question">Se uma emergência exigisse R$ 2.000,00 hoje, como você resolveria?</h3>
                         <div class="assessment-cards assessment-cards-vertical">
                             <label class="assessment-card">
@@ -229,9 +253,9 @@
                         <button type="button" class="assessment-next" onclick="nextStep()">Próximo</button>
                     </div>
                     
-                    <!-- Step 4: Crenças -->
-                    <div class="assessment-step hidden" data-step="4">
-                        <div class="step-indicator">II. Raio-X de Crenças</div>
+                    <!-- Step 6: Crenças -->
+                    <div class="assessment-step hidden" data-step="6">
+                        <div class="step-indicator">III. Raio-X de Crenças</div>
                         <h3 class="assessment-question">O que mais te travou de construir patrimônio até hoje?</h3>
                         <div class="assessment-cards assessment-cards-vertical">
                             <label class="assessment-card">
@@ -250,8 +274,8 @@
                         <button type="button" class="assessment-next" onclick="nextStep()">Próximo</button>
                     </div>
                     
-                    <!-- Step 5: Cartão -->
-                    <div class="assessment-step hidden" data-step="5">
+                    <!-- Step 7: Cartão -->
+                    <div class="assessment-step hidden" data-step="7">
                         <h3 class="assessment-question">Como você utiliza o cartão de crédito hoje?</h3>
                         <div class="assessment-cards assessment-cards-vertical">
                             <label class="assessment-card">
@@ -270,9 +294,9 @@
                         <button type="button" class="assessment-next" onclick="nextStep()">Próximo</button>
                     </div>
                     
-                    <!-- Step 6: Paciência -->
-                    <div class="assessment-step hidden" data-step="6">
-                        <div class="step-indicator">III. Filtro Anti-Ficção</div>
+                    <!-- Step 8: Paciência -->
+                    <div class="assessment-step hidden" data-step="8">
+                        <div class="step-indicator">IV. Filtro Anti-Ficção</div>
                         <h3 class="assessment-question">Qual seu nível de paciência para ver o dinheiro crescer de forma segura?</h3>
                         <div class="assessment-cards assessment-cards-vertical">
                             <label class="assessment-card">
@@ -291,8 +315,8 @@
                         <button type="button" class="assessment-next" onclick="nextStep()">Próximo</button>
                     </div>
                     
-                    <!-- Step 7: Sucesso -->
-                    <div class="assessment-step hidden" data-step="7">
+                    <!-- Step 9: Sucesso -->
+                    <div class="assessment-step hidden" data-step="9">
                         <h3 class="assessment-question">O que significa "ter sucesso financeiro" para você?</h3>
                         <div class="assessment-cards assessment-cards-vertical">
                             <label class="assessment-card">
@@ -311,9 +335,9 @@
                         <button type="button" class="assessment-next" onclick="nextStep()">Próximo</button>
                     </div>
                     
-                    <!-- Step 8: Comprometimento -->
-                    <div class="assessment-step hidden" data-step="8">
-                        <div class="step-indicator">IV. skin in the Game</div>
+                    <!-- Step 10: Comprometimento -->
+                    <div class="assessment-step hidden" data-step="10">
+                        <div class="step-indicator">V. Skin in the Game</div>
                         <h3 class="assessment-question">Se precisar cortar luxos temporários, qual sua reação?</h3>
                         <div class="assessment-cards assessment-cards-vertical">
                             <label class="assessment-card">
@@ -332,8 +356,8 @@
                         <button type="button" class="assessment-next" onclick="nextStep()">Próximo</button>
                     </div>
                     
-                    <!-- Step 9: Tempo -->
-                    <div class="assessment-step hidden" data-step="9">
+                    <!-- Step 11: Tempo -->
+                    <div class="assessment-step hidden" data-step="11">
                         <h3 class="assessment-question">Quanto tempo por semana para estudar e aplicar o método?</h3>
                         <div class="assessment-cards assessment-cards-vertical">
                             <label class="assessment-card">
@@ -778,6 +802,21 @@
                     <h2 style="color: #cda434; margin: 0;">Painel Admin - Análise de Perfis</h2>
                     <button onclick="exportAssessmentExcel()" style="background: #22c55e; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 500;">Exportar Excel</button>
                 </div>
+                <div class="admin-filters" style="display: flex; gap: 16px; margin-bottom: 24px; background: rgba(5, 24, 69, 0.4); padding: 16px; border-radius: 8px; border: 1px solid rgba(212,175,55,0.2);">
+                    <div style="flex: 1;">
+                        <label style="display: block; color: #94a3b8; font-size: 11px; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Buscar por nome ou e-mail</label>
+                        <input type="text" id="filter-assessment-search" placeholder="Ex: João Silva..." style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 10px 14px; border-radius: 6px; color: white; outline: none; transition: border-color 0.2s;">
+                    </div>
+                    <div style="width: 200px;">
+                        <label style="display: block; color: #94a3b8; font-size: 11px; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Status</label>
+                        <select id="filter-assessment-status" style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 10px 14px; border-radius: 6px; color: white; outline: none; cursor: pointer;">
+                            <option value="all">Todos os Status</option>
+                            <option value="novo">Pendente</option>
+                            <option value="aprovado">Aprovado</option>
+                            <option value="rejeitado">Rejeitado</option>
+                        </select>
+                    </div>
+                </div>
                 <div id="assessment-responses-list"></div>
             </div>
         </section>
@@ -844,6 +883,13 @@
                     </button>
                 </div>
             </header>
+            
+            <div class="admin-kanban-filters" style="display: flex; gap: 16px; padding: 0 32px; margin-bottom: 24px;">
+                <div style="flex: 1; position: relative;">
+                    <input type="text" id="filter-kanban-search" placeholder="Filtrar candidatos por nome ou e-mail..." 
+                        style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 12px 16px; border-radius: 8px; color: white; outline: none; font-size: 14px; transition: all 0.2s;">
+                </div>
+            </div>
             
             <div class="admin-quick-stats" id="admin-quick-stats"></div>
             
