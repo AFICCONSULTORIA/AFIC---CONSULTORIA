@@ -1971,7 +1971,7 @@ if (el) el.textContent = data.profile_type ? profileLabels[data.profile_type] ||
             if (!data) throw new Error("Postagem não encontrada.");
 
             const date = new Date(data.created_at).toLocaleDateString('pt-BR');
-            const author = data.profiles?.nickname || 'Identidade Protegida';
+            const author = data.profiles?.nickname || 'Membro AFIC';
             
             // Populate view
             document.getElementById('detail-topic-title').textContent = data.title;
@@ -2041,37 +2041,65 @@ if (el) el.textContent = data.profile_type ? profileLabels[data.profile_type] ||
     // Comments Logic
     async function loadComments(topicId) {
         const container = document.getElementById('comments-list');
+        if (!container) return;
         container.innerHTML = '<p style="color:var(--text-muted); font-size:13px;">Carregando debate...</p>';
 
         try {
-            const { data: comments, error: commentsError } = await supabase
+            console.log("Buscando comentários para o tópico:", topicId);
+            
+            // Usar join para buscar apelido do autor diretamente
+            let { data, error } = await supabase
                 .from('community_comments')
-                .select('*')
+                .select(`
+                    *,
+                    profiles:user_id (nickname)
+                `)
                 .eq('topic_id', topicId)
                 .order('created_at', { ascending: true });
             
-            if (commentsError) throw commentsError;
+            if (error) {
+                console.warn("Erro no join de comentários, tentando fallback...", error.message);
+                // Fallback: Busca simples e depois associa perfis (mais lento mas seguro)
+                const fallback = await supabase
+                    .from('community_comments')
+                    .select('*')
+                    .eq('topic_id', topicId)
+                    .order('created_at', { ascending: true });
+                
+                if (fallback.error) throw fallback.error;
+                
+                // Buscar perfis dos autores envolvidos
+                const userIds = [...new Set(fallback.data.map(c => c.user_id))];
+                const { data: profiles } = await supabase
+                    .from('profiles')
+                    .select('id, nickname')
+                    .in('id', userIds);
+                
+                const pMap = {};
+                profiles?.forEach(p => pMap[p.id] = p.nickname);
+                data = fallback.data.map(c => ({ 
+                    ...c, 
+                    profiles: { nickname: pMap[c.user_id] } 
+                }));
+            }
             
-            const { data: profiles } = await supabase.from('profiles').select('id, nickname');
-            const profileMap = {};
-            profiles?.forEach(p => profileMap[p.id] = p.nickname || 'Membro');
-            
-            let data = comments.map(c => ({ ...c, profiles: { nickname: profileMap[c.user_id] } }));
-
             container.innerHTML = data.length === 0 ? '<p style="color:var(--text-muted); font-size:13px; text-align:center;">Nenhum comentário ainda. Seja o primeiro a contribuir!</p>' : '';
             
             data.forEach(comment => {
                 const div = document.createElement('div');
                 div.className = 'comment-item';
                 const date = new Date(comment.created_at).toLocaleDateString('pt-BR');
-                const authorNickname = comment.profiles?.nickname || 'Membro';
+                const authorNickname = comment.profiles?.nickname || 'Membro AFIC';
                 
                 div.innerHTML = `
                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <div class="comment-avatar" style="width:24px; height:24px; border-radius:50%; background:var(--navy-medium); display:flex; align-items:center; justify-content:center; color:white; font-size:10px; font-weight:bold;">
+                            ${authorNickname.substring(0, 2).toUpperCase()}
+                        </div>
                         <strong style="font-size: 14px;">${authorNickname}</strong>
                         <span style="font-size: 11px; color: var(--text-muted);">${date}</span>
                     </div>
-                    <p style="font-size: 14px; color: var(--text-primary);">${comment.content}</p>
+                    <p style="font-size: 14px; color: var(--text-primary); line-height:1.5;">${comment.content}</p>
                 `;
                 container.appendChild(div);
             });
