@@ -86,36 +86,35 @@ const ReactApp = ({ isAdmin = false }) => {
 
   return (
     <TierProvider>
-      <UserProfileProvider>
-        {landingRoot && createPortal(
-          <LandingPage />,
-          landingRoot
-        )}
-        {adminRoot && createPortal(
-          <AdminPanel />,
-          adminRoot
-        )}
-        {dashboardRoot && createPortal(
-          <div className="space-y-6">
-            <ProfileOnboarding />
-            <DashboardWidgets />
-          </div>,
-          dashboardRoot
-        )}
-        {!dashboardRoot && (
-          <div className="space-y-6">
-            <ProfileOnboarding />
-          </div>
-        )}
+      <FinancialProvider>
+        <UserProfileProvider>
+          {landingRoot && createPortal(
+            <LandingPage />,
+            landingRoot
+          )}
+          {adminRoot && createPortal(
+            <AdminPanel />,
+            adminRoot
+          )}
+          {dashboardRoot && createPortal(
+            <div className="space-y-6">
+              <ProfileOnboarding />
+              <DashboardWidgets />
+            </div>,
+            dashboardRoot
+          )}
+          {!dashboardRoot && (
+            <div className="space-y-6">
+              <ProfileOnboarding />
+            </div>
+          )}
 
-      {toolsRoot && createPortal(
-        <div className="pt-6">
-          <FinancialProvider>
+        {toolsRoot && createPortal(
+          <div className="pt-6">
             <FinancialTools />
-          </FinancialProvider>
-        </div>,
-        toolsRoot
-      )}
+          </div>,
+          toolsRoot
+        )}
 
       {educationRoot && createPortal(
         <div className="pt-6">
@@ -142,8 +141,9 @@ const ReactApp = ({ isAdmin = false }) => {
         pricingRoot
       )}
       </UserProfileProvider>
-    </TierProvider>
-  );
+    </FinancialProvider>
+  </TierProvider>
+);
 };
 
 // Ponto de entrada Global do React

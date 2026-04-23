@@ -559,7 +559,7 @@
                     <p class="page-subtitle">Seu painel personalizado</p>
                 </div>
                 <div class="page-header-actions">
-                    <div id="header-user-info" onclick="switchPage('account')" style="display: flex; align-items: center; gap: 12px; margin-left: 20px; padding: 8px 16px; background: var(--bg-light-blue); border-radius: 12px; cursor: pointer;">
+                    <div class="header-user-info" onclick="switchPage('account')" style="display: flex; align-items: center; gap: 12px; margin-left: 20px; padding: 8px 16px; background: var(--bg-light-blue); border-radius: 12px; cursor: pointer;">
                         <span class="header-user-initials" style="width: 36px; height: 36px; border-radius: 50%; background: var(--navy-deep); color: var(--gold-rich); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">CA</span>
                         <div style="display: flex; flex-direction: column; align-items: center;">
                             <span class="header-user-name" style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Usuário</span>
@@ -582,7 +582,7 @@
                     <p class="page-subtitle">Hub de gerenciamento patrimonial.</p>
                 </div>
                 <div class="page-header-actions">
-                    <div id="header-user-info" onclick="switchPage('account')" style="display: flex; align-items: center; gap: 12px; margin-left: 20px; padding: 8px 16px; background: var(--bg-light-blue); border-radius: 12px; cursor: pointer;">
+                    <div class="header-user-info" onclick="switchPage('account')" style="display: flex; align-items: center; gap: 12px; margin-left: 20px; padding: 8px 16px; background: var(--bg-light-blue); border-radius: 12px; cursor: pointer;">
                         <span class="header-user-initials" style="width: 36px; height: 36px; border-radius: 50%; background: var(--navy-deep); color: var(--gold-rich); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">CA</span>
                         <div style="display: flex; flex-direction: column; align-items: center;">
                             <span class="header-user-name" style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Usuário</span>
@@ -604,7 +604,7 @@
                     <p class="page-subtitle">Acesso exclusivo ao acervo de inteligência financeira e masterclasses.</p>
                 </div>
                 <div class="page-header-actions">
-                    <div id="header-user-info" onclick="switchPage('account')" style="display: flex; align-items: center; gap: 12px; margin-left: 20px; padding: 8px 16px; background: var(--bg-light-blue); border-radius: 12px; cursor: pointer;">
+                    <div class="header-user-info" onclick="switchPage('account')" style="display: flex; align-items: center; gap: 12px; margin-left: 20px; padding: 8px 16px; background: var(--bg-light-blue); border-radius: 12px; cursor: pointer;">
                         <span class="header-user-initials" style="width: 36px; height: 36px; border-radius: 50%; background: var(--navy-deep); color: var(--gold-rich); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">CA</span>
                         <div style="display: flex; flex-direction: column; align-items: center;">
                             <span class="header-user-name" style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Usuário</span>
@@ -629,7 +629,7 @@
                     <p class="page-subtitle">Conexão com investidores institucionais.</p>
                 </div>
                 <div class="page-header-actions">
-                    <div id="header-user-info" onclick="switchPage('account')" style="display: flex; align-items: center; gap: 12px; margin-left: 20px; padding: 8px 16px; background: var(--bg-light-blue); border-radius: 12px; cursor: pointer;">
+                    <div class="header-user-info" onclick="switchPage('account')" style="display: flex; align-items: center; gap: 12px; margin-left: 20px; padding: 8px 16px; background: var(--bg-light-blue); border-radius: 12px; cursor: pointer;">
                         <span class="header-user-initials" style="width: 36px; height: 36px; border-radius: 50%; background: var(--navy-deep); color: var(--gold-rich); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">CA</span>
                         <div style="display: flex; flex-direction: column; align-items: center;">
                             <span class="header-user-name" style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Usuário</span>
@@ -644,15 +644,71 @@
         <!-- ═══════════════════════════════════════ -->
         <!-- ACCOUNT PAGE — Profile & Nickname       -->
         <!-- ═══════════════════════════════════════ -->
-        <section class="page-content page-hidden" id="page-account">
-            <header class="section-header">
-                <div>
-                    <h1 class="page-title">Minha Conta</h1>
-                    <p class="page-subtitle">Gerencie seu perfil público na Comunidade AFIC.</p>
+        <section class="page-content page-hidden" id="page-account" style="padding-bottom: 80px;">
+            <header class="dashboard-header" style="text-align: center; margin-bottom: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <div class="header-main" style="text-align: center;">
+                    <h1 class="page-title" style="margin: 0 auto;">Minha Conta</h1>
+                    <p class="page-subtitle" style="margin: 8px auto 0 auto;">Gerencie seu perfil e configurações do AFIC.</p>
                 </div>
             </header>
 
-            <div class="card" style="max-width: 800px;">
+            <!-- Informações do Perfil (Nickname, Bio, Redes Sociais) -->
+            <div class="card" style="max-width: 800px; margin: 0 auto 32px auto; background: white !important; border: 1.5px solid #e5e7eb !important; border-radius: 16px !important; padding: 32px !important; display: block !important; visibility: visible !important; opacity: 1 !important;">
+                <div class="card-label" style="font-size: 16px !important; font-weight: 800 !important; color: #0a2540 !important; border-bottom: 2px solid #f3f4f6 !important; padding-bottom: 16px !important; margin-bottom: 32px !important; text-transform: uppercase !important; letter-spacing: 0.05em !important; display: flex !important; align-items: center !important; gap: 10px !important;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    CONFIGURAÇÕES DO PERFIL
+                </div>
+                
+                <form id="form-profile" class="auth-form" style="display: block !important; visibility: visible !important; opacity: 1 !important;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; display: grid !important;">
+                        <div class="param-group" style="display: block !important; visibility: visible !important;">
+                            <label class="param-label" for="user-nickname" style="display: block !important; font-size: 13px !important; font-weight: 700 !important; color: #374151 !important; margin-bottom: 8px !important;">Apelido (Nickname) *</label>
+                            <input type="text" class="param-input" id="user-nickname" placeholder="Ex: GestorAFIC" required style="width: 100% !important; height: 48px !important; border: 1.5px solid #e5e7eb !important; border-radius: 8px !important; padding: 0 16px !important; font-size: 15px !important; color: #111827 !important; background: #fff !important; display: block !important;">
+                        </div>
+                        
+                        <div class="param-group" style="display: block !important; visibility: visible !important;">
+                            <label class="param-label" for="user-email" style="display: block !important; font-size: 13px !important; font-weight: 700 !important; color: #374151 !important; margin-bottom: 8px !important;">E-mail de Contato</label>
+                            <input type="email" class="param-input" id="user-email" placeholder="seu@email.com" style="width: 100% !important; height: 48px !important; border: 1.5px solid #e5e7eb !important; border-radius: 8px !important; padding: 0 16px !important; font-size: 15px !important; color: #111827 !important; background: #fff !important; display: block !important;">
+                        </div>
+                    </div>
+                    
+                    <div class="param-group" style="margin-bottom: 32px; display: block !important; visibility: visible !important;">
+                        <label class="param-label" for="user-about" style="display: block !important; font-size: 13px !important; font-weight: 700 !important; color: #374151 !important; margin-bottom: 8px !important;">Bio / Descrição</label>
+                        <textarea class="param-input" id="user-about" rows="3" placeholder="Conte um pouco sobre sua trajetória..." style="width: 100% !important; border: 1.5px solid #e5e7eb !important; border-radius: 8px !important; padding: 12px 16px !important; font-size: 15px !important; color: #111827 !important; background: #fff !important; min-height: 80px !important; display: block !important;"></textarea>
+                    </div>
+
+                    <div style="margin-top: 40px; padding-top: 32px; border-top: 1.5px solid #f3f4f6; display: block !important;">
+                        <h4 style="font-size: 14px !important; font-weight: 800 !important; color: #0a2540 !important; margin-bottom: 24px !important; text-transform: uppercase !important; letter-spacing: 0.05em !important; display: flex !important; align-items: center !important; gap: 8px !important;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                            REDES SOCIAIS
+                        </h4>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; display: grid !important;">
+                            <div class="param-group" style="display: block !important; visibility: visible !important;">
+                                <label class="param-label" for="user-linkedin" style="display: flex !important; align-items: center !important; gap: 8px !important; font-size: 13px !important; font-weight: 700 !important; color: #374151 !important; margin-bottom: 8px !important;">LinkedIn</label>
+                                <input type="url" class="param-input" id="user-linkedin" placeholder="https://linkedin.com/in/perfil" style="width: 100% !important; height: 44px !important; border: 1.5px solid #e5e7eb !important; border-radius: 8px !important; padding: 0 12px !important; display: block !important;">
+                            </div>
+                            <div class="param-group" style="display: block !important; visibility: visible !important;">
+                                <label class="param-label" for="user-instagram" style="display: flex !important; align-items: center !important; gap: 8px !important; font-size: 13px !important; font-weight: 700 !important; color: #374151 !important; margin-bottom: 8px !important;">Instagram</label>
+                                <input type="url" class="param-input" id="user-instagram" placeholder="https://instagram.com/perfil" style="width: 100% !important; height: 44px !important; border: 1.5px solid #e5e7eb !important; border-radius: 8px !important; padding: 0 12px !important; display: block !important;">
+                            </div>
+                            <div class="param-group" style="display: block !important; visibility: visible !important;">
+                                <label class="param-label" for="user-twitter" style="display: flex !important; align-items: center !important; gap: 8px !important; font-size: 13px !important; font-weight: 700 !important; color: #374151 !important; margin-bottom: 8px !important;">Twitter / X</label>
+                                <input type="url" class="param-input" id="user-twitter" placeholder="https://twitter.com/perfil" style="width: 100% !important; height: 44px !important; border: 1.5px solid #e5e7eb !important; border-radius: 8px !important; padding: 0 12px !important; display: block !important;">
+                            </div>
+                            <div class="param-group" style="display: block !important; visibility: visible !important;">
+                                <label class="param-label" for="user-whatsapp" style="display: flex !important; align-items: center !important; gap: 8px !important; font-size: 13px !important; font-weight: 700 !important; color: #374151 !important; margin-bottom: 8px !important;">WhatsApp</label>
+                                <input type="text" class="param-input" id="user-whatsapp" placeholder="Ex: 5565999999999" style="width: 100% !important; height: 44px !important; border: 1.5px solid #e5e7eb !important; border-radius: 8px !important; padding: 0 12px !important; display: block !important;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-calculate" style="width: 100% !important; max-width: 240px !important; padding: 16px 32px !important; margin-top: 32px !important; background: #0a2540 !important; color: white !important; border: none !important; border-radius: 8px !important; font-weight: 800 !important; cursor: pointer !important; text-transform: uppercase !important; letter-spacing: 0.05em !important; display: block !important;">SALVAR ALTERAÇÕES</button>
+                    <p id="profile-msg" style="font-size: 13px; margin-top: 12px; display: none; font-weight: 600;"></p>
+                </form>
+            </div>
+
+            <div class="card" style="max-width: 800px; margin: 0 auto; display: block !important;">
                 <div class="card-label">Foto de Perfil</div>
                 <div class="profile-photo-section" style="display: flex; align-items: center; gap: 24px; margin-bottom: 24px;">
                     <div class="avatar-upload" style="position: relative;">
@@ -673,7 +729,7 @@
             </div>
 
             <!-- Perfil de Investimento -->
-            <div class="card" style="max-width: 800px; margin-top: 24px;">
+            <div class="card" style="max-width: 800px; margin: 24px auto 0 auto; display: block !important;">
                 <div class="card-label">Perfil de Investimento</div>
                 <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">Seu perfil define quais ferramentas e recomendações são mais relevantes para você.</p>
                 <p id="current-profile-display" style="font-size: 14px; color: var(--gold-rich); font-weight: 600; margin-bottom: 12px;"></p>
@@ -685,103 +741,87 @@
             </div>
 
             <!-- Configurações do Orçamento -->
-            <div class="card" style="max-width: 800px; margin-top: 24px;">
-                <div class="card-label">Configurações do Orçamento (50/30/20)</div>
-                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">Defina seus próprios percentuais para a regra 50/30/20 ou personalize conforme sua realidade.</p>
+            <div class="card" style="max-width: 800px; margin: 24px auto 0 auto; background: white !important; border: 1.5px solid #e5e7eb !important; border-radius: 16px !important; padding: 32px !important; display: block !important; visibility: visible !important;">
+                <div class="card-label" style="font-size: 16px !important; font-weight: 800 !important; color: #0a2540 !important; border-bottom: 2px solid #f3f4f6 !important; padding-bottom: 16px !important; margin-bottom: 32px !important; text-transform: uppercase !important;">Configurações do Orçamento (50/30/20)</div>
+                <p style="font-size: 13px !important; color: #4b5563 !important; margin-bottom: 24px !important; line-height: 1.5 !important;">Personalize os percentuais da regra 50/30/20 conforme sua realidade financeira.</p>
                 
-                <form id="form-budget-settings" class="auth-form">
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
-                        <div class="param-group">
-                            <label class="param-label" for="budget-fixed-pct">Gastos Fixos (%)</label>
-                            <input type="number" class="param-input" id="budget-fixed-pct" min="0" max="100" value="50">
-                            <p class="param-help" style="font-size: 10px; color: var(--text-muted);">% da renda para necessidades</p>
+                <form id="form-budget-settings" class="auth-form" style="display: block !important; visibility: visible !important;">
+                    <div style="display: flex !important; flex-direction: column !important; gap: 32px !important;">
+                        <!-- Fixo -->
+                        <div class="param-group" style="display: block !important; visibility: visible !important;">
+                            <label class="param-label" style="display: flex !important; justify-content: space-between !important; align-items: center !important; font-weight: 700 !important; color: #374151 !important; margin-bottom: 12px !important;">
+                                <span>🏠 Gastos Fixos</span>
+                                <span id="val-fixed-pct" style="color: #0a2540 !important; font-weight: 800 !important; font-size: 16px !important;">50%</span>
+                            </label>
+                            <div style="display: flex !important; align-items: center !important; gap: 20px !important;">
+                                <input type="range" class="param-slider" id="budget-fixed-range" min="0" max="100" value="50" style="flex: 1 !important; height: 6px !important; cursor: pointer !important; accent-color: #0a2540 !important;">
+                                <input type="number" class="param-input" id="budget-fixed-pct" min="0" max="100" value="50" style="width: 80px !important; height: 44px !important; text-align: center !important; border: 1.5px solid #e5e7eb !important; border-radius: 8px !important; font-weight: 700 !important;">
+                            </div>
                         </div>
                         
-                        <div class="param-group">
-                            <label class="param-label" for="budget-var-pct">Gastos Variáveis (%)</label>
-                            <input type="number" class="param-input" id="budget-var-pct" min="0" max="100" value="30">
-                            <p class="param-help" style="font-size: 10px; color: var(--text-muted);">% da renda para desejos</p>
+                        <!-- Variável -->
+                        <div class="param-group" style="display: block !important; visibility: visible !important;">
+                            <label class="param-label" style="display: flex !important; justify-content: space-between !important; align-items: center !important; font-weight: 700 !important; color: #374151 !important; margin-bottom: 12px !important;">
+                                <span>🎢 Gastos Variáveis</span>
+                                <span id="val-var-pct" style="color: #0a2540 !important; font-weight: 800 !important; font-size: 16px !important;">30%</span>
+                            </label>
+                            <div style="display: flex !important; align-items: center !important; gap: 20px !important;">
+                                <input type="range" class="param-slider" id="budget-var-range" min="0" max="100" value="30" style="flex: 1 !important; height: 6px !important; cursor: pointer !important; accent-color: #0a2540 !important;">
+                                <input type="number" class="param-input" id="budget-var-pct" min="0" max="100" value="30" style="width: 80px !important; height: 44px !important; text-align: center !important; border: 1.5px solid #e5e7eb !important; border-radius: 8px !important; font-weight: 700 !important;">
+                            </div>
                         </div>
                         
-                        <div class="param-group">
-                            <label class="param-label" for="budget-save-pct">Poupança (%)</label>
-                            <input type="number" class="param-input" id="budget-save-pct" min="0" max="100" value="20">
-                            <p class="param-help" style="font-size: 10px; color: var(--text-muted);">% da renda para investimentos</p>
+                        <!-- Poupança -->
+                        <div class="param-group" style="display: block !important; visibility: visible !important;">
+                            <label class="param-label" style="display: flex !important; justify-content: space-between !important; align-items: center !important; font-weight: 700 !important; color: #374151 !important; margin-bottom: 12px !important;">
+                                <span>💰 Poupança / Investimento</span>
+                                <span id="val-save-pct" style="color: #0a2540 !important; font-weight: 800 !important; font-size: 16px !important;">20%</span>
+                            </label>
+                            <div style="display: flex !important; align-items: center !important; gap: 20px !important;">
+                                <input type="range" class="param-slider" id="budget-save-range" min="0" max="100" value="20" style="flex: 1 !important; height: 6px !important; cursor: pointer !important; accent-color: #0a2540 !important;">
+                                <input type="number" class="param-input" id="budget-save-pct" min="0" max="100" value="20" style="width: 80px !important; height: 44px !important; text-align: center !important; border: 1.5px solid #e5e7eb !important; border-radius: 8px !important; font-weight: 700 !important;">
+                            </div>
                         </div>
                     </div>
                     
-                    <div style="margin-top: 12px; padding: 12px; background: var(--bg-light-blue); border-radius: 8px;">
-                        <p style="font-size: 13px; color: var(--text-primary);">
-                            <strong>Total:</strong> <span id="budget-total-pct">100</span>% 
-                            <span id="budget-total-msg" style="color: var(--gold-rich); margin-left: 8px;">✓ Configuração válida</span>
+                    <div style="margin-top: 32px !important; padding: 20px !important; background: #f9fafb !important; border: 2px dashed #e5e7eb !important; border-radius: 12px !important; text-align: center !important;">
+                        <p style="font-size: 16px !important; color: #111827 !important; display: flex !important; align-items: center !important; justify-content: center !important; gap: 12px !important; margin: 0 !important;">
+                            <span style="font-weight: 600 !important;">Total Alocado:</span>
+                            <span style="background: #0a2540 !important; color: white !important; padding: 4px 12px !important; border-radius: 20px !important; font-weight: 800 !important;"><span id="budget-total-pct">100</span>%</span>
                         </p>
+                        <p id="budget-total-msg" style="font-size: 12px !important; color: #059669 !important; margin-top: 8px !important; font-weight: 600 !important;">✓ Configuração válida (Total = 100%)</p>
                     </div>
                     
-                    <button type="submit" class="btn-calculate" style="width: auto; padding: 10px 24px; margin-top: 12px;">Salvar Configurações</button>
-                    <p id="budget-settings-msg" style="font-size: 13px; margin-top: 12px; display: none;"></p>
+                    <button type="submit" class="btn-calculate" style="width: 100% !important; padding: 16px !important; margin-top: 24px !important; background: #0a2540 !important; color: white !important; border: none !important; border-radius: 8px !important; font-weight: 800 !important; cursor: pointer !important; text-transform: uppercase !important; letter-spacing: 0.05em !important;">SALVAR NOVO PLANO</button>
+                    <p id="budget-settings-msg" style="font-size: 13px; margin-top: 12px; text-align: center; font-weight: 600; display: none;"></p>
                 </form>
             </div>
 
-            <div class="card" style="max-width: 800px; margin-top: 24px;">
-                <div class="card-label">Informações do Perfil</div>
-                <form id="form-profile" class="auth-form">
-                    <div class="param-group">
-                        <label class="param-label" for="user-nickname">Apelido (Nickname) *</label>
-                        <input type="text" class="param-input" id="user-nickname" placeholder="Ex: GestorAFIC" required>
-                        <p class="param-help" style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">Este nome será exibido publicamente nos seus tópicos.</p>
-                    </div>
-                    
-                    <div class="param-group">
-                        <label class="param-label" for="user-email">E-mail de Contato</label>
-                        <input type="email" class="param-input" id="user-email" placeholder="seu@email.com">
-                        <p class="param-help" style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">E-mail visível para outros membros. Deixe vazio para privado.</p>
-                    </div>
-                    
-                    <div class="param-group">
-                        <label class="param-label" for="user-about">Fale sobre você</label>
-                        <textarea class="param-input" id="user-about" rows="4" placeholder="Conte um pouco sobre sua trajetória, investimentos, área de atuação..."></textarea>
-                        <p class="param-help" style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">Breve biografia que aparecerá no seu perfil público.</p>
-                    </div>
 
-                    <!-- Redes Sociais -->
-                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color);">
-                        <div class="card-label" style="margin-bottom: 16px;">Redes Sociais (público)</div>
-                        
-                        <div class="param-group">
-                            <label class="param-label" for="user-linkedin">
-                                <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" style="display: inline-block; vertical-align: middle; margin-right: 6px;"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-                                LinkedIn
-                            </label>
-                            <input type="url" class="param-input" id="user-linkedin" placeholder="https://linkedin.com/in/seu-perfil">
-                        </div>
-                        
-                        <div class="param-group">
-                            <label class="param-label" for="user-instagram">
-                                <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" style="display: inline-block; vertical-align: middle; margin-right: 6px;"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 1.69.073 7.053.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 1.703 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-1.704 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-1.696-6.762-6.979-6.979C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
-                                Instagram
-                            </label>
-                            <input type="url" class="param-input" id="user-instagram" placeholder="https://instagram.com/seuperfil">
-                        </div>
-                    </div>
 
-                    <button type="submit" class="btn-calculate" style="width: auto; padding: 12px 32px; margin-top: 16px;">Salvar Perfil</button>
-                    <p id="profile-msg" style="font-size: 13px; margin-top: 12px; display: none;"></p>
-                </form>
-            </div>
 
             <!-- Preview do Perfil Público -->
-            <div class="card" style="max-width: 800px; margin-top: 24px;">
-                <div class="card-label">Pré-visualização do Perfil Público</div>
-                <div class="public-profile-preview" style="display: flex; gap: 20px; padding: 20px; background: var(--bg-light-blue); border-radius: 12px;">
-                    <div class="preview-avatar" id="preview-avatar" style="width: 80px; height: 80px; border-radius: 50%; background: var(--navy-deep); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                        <span id="preview-initials" style="font-size: 24px; font-weight: 700; color: var(--gold-rich);">CA</span>
+            <div class="card" style="max-width: 800px; margin: 32px auto 0 auto; background: linear-gradient(135deg, #0a2540 0%, #05142b 100%) !important; color: white !important; border: none !important; border-radius: 20px !important; overflow: hidden !important; position: relative !important; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2) !important;">
+                <!-- Decorative elements -->
+                <div style="position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: rgba(212, 175, 55, 0.05); border-radius: 50%; pointer-events: none;"></div>
+                <div style="position: absolute; bottom: -20px; left: -20px; width: 100px; height: 100px; background: rgba(212, 175, 55, 0.03); border-radius: 50%; pointer-events: none;"></div>
+
+                <div class="card-label" style="color: #d4af37 !important; border-bottom: 1px solid rgba(212, 175, 55, 0.2) !important; padding: 24px 32px !important; margin: 0 !important; font-size: 14px !important; letter-spacing: 0.1em !important;">SEU CARTÃO DE IDENTIDADE AFIC</div>
+                
+                <div class="public-profile-preview" style="padding: 32px !important; display: flex !important; gap: 32px !important; align-items: center !important; position: relative !important; z-index: 1 !important;">
+                    <div class="preview-avatar" id="preview-avatar" style="width: 100px !important; height: 100px !important; border-radius: 50% !important; background: #1a3a5a !important; border: 3px solid #d4af37 !important; display: flex !important; align-items: center !important; justify-content: center !important; flex-shrink: 0 !important; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;">
+                        <span id="preview-initials" style="font-size: 32px !important; font-weight: 800 !important; color: #d4af37 !important;">CA</span>
                     </div>
-                    <div class="preview-info">
-                        <h3 id="preview-nickname" style="font-size: 18px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">Carlos Eduardo</h3>
-                        <p id="preview-about" style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">Investidor institucional com +15 anos de pengalaman di bidang keuangan.</p>
-                        <div id="preview-social" class="preview-social-links" style="display: flex; gap: 12px; margin-top: 12px;">
-                            <a href="javascript:void(0)" id="preview-linkedin" class="social-link" style="display: none; color: #0A66C2;">
-                                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                    <div class="preview-info" style="flex: 1 !important;">
+                        <h3 id="preview-nickname" style="font-size: 24px !important; font-weight: 800 !important; color: #fff !important; margin-bottom: 8px !important; letter-spacing: -0.02em !important;">Carlos Eduardo</h3>
+                        <p id="preview-about" style="font-size: 14px !important; color: #94a3b8 !important; line-height: 1.6 !important; margin-bottom: 20px !important; max-width: 450px !important;">Sua biografia aparecerá aqui. Conte aos outros membros sobre sua experiência e objetivos.</p>
+                        
+                        <div id="preview-social" class="preview-social-links" style="display: flex !important; gap: 16px !important;">
+                            <a href="javascript:void(0)" id="preview-linkedin" class="social-link" style="display: none; color: #d4af37 !important; background: rgba(212, 175, 55, 0.1); width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                            </a>
+                            <a href="javascript:void(0)" id="preview-instagram" class="social-link" style="display: none; color: #d4af37 !important; background: rgba(212, 175, 55, 0.1); width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 1.69.073 7.053.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 1.703 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-1.704 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-1.696-6.762-6.979-6.979C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
                             </a>
                         </div>
                     </div>

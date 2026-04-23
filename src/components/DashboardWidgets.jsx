@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useUserProfile } from './UserProfileContext';
+import { useFinancial } from './FinancialContext';
 import { supabase } from '../lib/supabase';
 
 export const DashboardWidgets = () => {
   const { userProfile } = useUserProfile();
+  const { budgetLimits, getBudgetSummary } = useFinancial();
+  const { incomes, fixed, varC, net } = getBudgetSummary();
+  
+  const pctFixed = incomes > 0 ? Math.round((fixed / incomes) * 100) : 0;
+  const pctVar = incomes > 0 ? Math.round((varC / incomes) * 100) : 0;
+
   const [userNickname, setUserNickname] = useState('');
   const [userPlan, setUserPlan] = useState('');
   const [showScoreModal, setShowScoreModal] = useState(false);
@@ -41,37 +48,72 @@ const [liberdadeData, setLiberdadeData] = useState({
 
   useEffect(() => {
     async function loadUserInfo() {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        // Get profile data
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('nickname')
-          .eq('id', session.user.id)
-          .maybeSingle();
-        
-        // Get subscription to find the plan
-        const { data: subscription } = await supabase
-          .from('afic_subscriptions')
-          .select('plan_id')
-          .eq('user_id', session.user.id)
-          .eq('status', 'active')
-          .maybeSingle();
-        
-        let name = profile?.nickname;
-        let plan = subscription?.plan_id;
-        
-        // If no nickname, use email
-        if (!name && session.user.email) {
-          name = session.user.email.split('@')[0];
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          // 1. Get profile data
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('nickname')
+            .eq('id', session.user.id)
+            .maybeSingle();
+          
+          // 2. Get subscription (check both tables)
+          let plan = 'free';
+          const { data: subTier } = await supabase
+            .from('afic_subscriptions_tier')
+            .select('tier_id')
+            .eq('user_id', session.user.id)
+            .eq('status', 'active')
+            .maybeSingle();
+          
+          if (subTier) {
+            plan = subTier.tier_id;
+          } else {
+            const { data: subscription } = await supabase
+              .from('afic_subscriptions')
+              .select('plan_id')
+              .eq('user_id', session.user.id)
+              .eq('status', 'active')
+              .maybeSingle();
+            if (subscription) plan = subscription.plan_id;
+          }
+          
+          // 3. Get investor profile from the latest analysis
+          let investorProfile = 'perfil';
+          if (session.user.email) {
+            const { data: latestAnalysis } = await supabase
+              .from('afic_analise_perfil_responses')
+              .select('perfil_investidor')
+              .eq('email', session.user.email)
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            
+            if (latestAnalysis?.perfil_investidor) {
+              investorProfile = latestAnalysis.perfil_investidor;
+            }
+          }
+          
+          let name = profile?.nickname;
+          if (!name && session.user.email) {
+            name = session.user.email.split('@')[0];
+          }
+          
+          setUserNickname(name || 'Usuário');
+          setUserPlan(plan);
+          // Update the context if it was used for the badge, 
+          // or just use a local state for the dashboard specifically
+          setLocalInvestorProfile(investorProfile);
         }
-        
-        setUserNickname(name || 'Usuário');
-        setUserPlan(plan || 'free');
+      } catch (err) {
+        console.error('Error loading dashboard user info:', err);
       }
     }
     loadUserInfo();
   }, []);
+
+  const [localInvestorProfile, setLocalInvestorProfile] = useState('perfil');
 
   const getPlanLabel = (plan) => {
     const plans = {
@@ -80,7 +122,10 @@ const [liberdadeData, setLiberdadeData] = useState({
       'admin': 'Admin',
       'basic': 'Básico',
       'pro': 'Profissional',
-      'elite': 'Elite'
+      'elite': 'Elite',
+      'despertar': 'Despertar',
+      'assinante': 'Assinante',
+      'private_elite': 'Private Elite'
     };
     return plans[plan] || 'Free';
   };
@@ -602,7 +647,7 @@ const [liberdadeData, setLiberdadeData] = useState({
             </div>
             <div>
               <h3 className="text-white font-bold text-lg">{userNickname || 'Usuário'}</h3>
-              <p className="text-amber-400 text-sm">🛡️ {userProfile === 'conservador' ? 'Conservador' : userProfile === 'equilibrado' ? 'Equilibrado' : userProfile === 'arrojado' ? 'Arrojado' : 'Perfil'}</p>
+              <p className="text-amber-400 text-sm">🛡️ {localInvestorProfile === 'conservador' ? 'Conservador' : localInvestorProfile === 'equilibrado' ? 'Equilibrado' : localInvestorProfile === 'arrojado' ? 'Arrojado' : 'Perfil'}</p>
             </div>
           </div>
           <div className="text-right">
@@ -635,8 +680,8 @@ const [liberdadeData, setLiberdadeData] = useState({
         </div>
       </div>
       
-      {/* WIDGETS ROW - Score, Alocação, Liberdade */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* WIDGETS ROW - Score, Alocação, Liberdade, Orçamento */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* SCORE DE SAÚDE - CLICKABLE */}
         <div onClick={() => setShowScoreModal(true)} className="bg-white p-5 rounded-xl border border-gray-100 cursor-pointer hover:border-amber-400 hover:shadow-md transition-all">
           <div className="flex items-center justify-between mb-2">
@@ -690,6 +735,35 @@ const [liberdadeData, setLiberdadeData] = useState({
         </div>
           );
         })()}
+
+        {/* ORÇAMENTO 50/30/20 */}
+        <div className="bg-white p-5 rounded-xl border border-gray-100 cursor-pointer hover:border-amber-400 transition-colors" onClick={() => window.switchPage && window.switchPage('tools')}>
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="text-base font-bold text-gray-900">💰 Orçamento</h4>
+            <span className="text-xl">📊</span>
+          </div>
+          <div className="space-y-3 mt-2">
+            <div>
+              <div className="flex justify-between text-[10px] mb-1">
+                <span className="text-gray-500 font-medium">Fixo ({pctFixed}%)</span>
+                <span className="text-gray-400">Meta: {budgetLimits.fixed}%</span>
+              </div>
+              <div className="w-full bg-gray-100 rounded-full h-1.5">
+                <div className={`h-1.5 rounded-full ${pctFixed > budgetLimits.fixed ? 'bg-red-500' : 'bg-emerald-500'}`} style={{width: `${Math.min(pctFixed, 100)}%`}}></div>
+              </div>
+            </div>
+            <div>
+              <div className="flex justify-between text-[10px] mb-1">
+                <span className="text-gray-500 font-medium">Variável ({pctVar}%)</span>
+                <span className="text-gray-400">Meta: {budgetLimits.variable}%</span>
+              </div>
+              <div className="w-full bg-gray-100 rounded-full h-1.5">
+                <div className={`h-1.5 rounded-full ${pctVar > budgetLimits.variable ? 'bg-red-500' : 'bg-emerald-500'}`} style={{width: `${Math.min(pctVar, 100)}%`}}></div>
+              </div>
+            </div>
+          </div>
+          <p className="text-[10px] text-gray-400 text-center mt-3">Clique para gerenciar</p>
+        </div>
       </div>
       
       {/* PRÓXIMAS AÇÕES */}

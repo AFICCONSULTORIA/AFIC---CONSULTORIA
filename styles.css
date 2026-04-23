@@ -5705,3 +5705,10 @@ select.param-input {
         padding: 16px;
     }
 }
+
+/* --- Profile Form Visibility Fix --- */
+#form-profile .param-input { border-bottom: 2px solid #e5e7eb !important; font-size: 16px !important; padding-left: 10px !important; color: #1a1a1a !important; background: white !important; height: 40px !important; margin-bottom: 10px !important; }
+#form-profile .param-label { display: flex !important; align-items: center !important; gap: 8px !important; font-size: 13px !important; color: #0a2540 !important; margin-top: 15px !important; font-weight: 600 !important; }
+#form-profile .param-label svg { width: 18px !important; height: 18px !important; color: #d4af37 !important; }
+#form-profile .param-group { margin-bottom: 25px !important; display: block !important; }
+

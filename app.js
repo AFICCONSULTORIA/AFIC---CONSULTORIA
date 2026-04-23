@@ -12,6 +12,7 @@ window.initApp = function() {
     window.supabaseApp = supabase; // Tornar disponível globalmente
     let currentUser = null;
     let currentUserProfile = null;
+    console.log("AFIC App Engine V2.1 — Social Integration Fix Active");
 
     // ─── STRIPE INITIALIZATION ───
     const stripePublicKey = 'pk_test_51TJ2vhCBYPTHESLfqo7K3PBveOrIIJoWM0teVOdvbCJSgbQP6Ywxu98VIKNCexj0a4mMNOe9fKn3bkZRIaVpKp9500bP3nQGMc';
@@ -106,6 +107,7 @@ window.initApp = function() {
 
             if (pageName === 'account') {
                 loadProfileType();
+                loadBudgetSettings();
             }
             
             if (pageName === 'admin-analise-perfil') {
@@ -714,12 +716,12 @@ window.initApp = function() {
 
     async function saveCCData(desc, totalVal, installments, startMonthStr) {
         if (!currentUser) return;
-        const { error } = await supabase.from('credit_cards').insert([{
+        const { error } = await supabase.from('afic_credit_cards').insert([{
             user_id: currentUser.id,
             description: desc,
-            total_val: totalVal,
+            total_amount: totalVal,
             installments: installments,
-            start_month_str: startMonthStr
+            start_month: startMonthStr
         }]);
         if (error) console.error("Error saving CC:", error);
         await reloadCCData();
@@ -727,14 +729,14 @@ window.initApp = function() {
 
     async function reloadCCData() {
         if (!currentUser) return;
-        const { data, error } = await supabase.from('credit_cards').select('*');
+        const { data, error } = await supabase.from('afic_credit_cards').select('*').eq('user_id', currentUser.id);
         if (!error && data) {
             ccData = data.map(row => ({
                 db_id: row.id,
                 desc: row.description,
-                totalVal: parseFloat(row.total_val),
+                totalVal: parseFloat(row.total_amount || row.total_val),
                 installments: row.installments,
-                startMonthStr: row.start_month_str
+                startMonthStr: row.start_month || row.start_month_str
             }));
             if (typeof renderCCManager === 'function') renderCCManager();
             if (typeof renderBudgetManager === 'function') renderBudgetManager();
@@ -742,7 +744,7 @@ window.initApp = function() {
     }
 
     async function deleteCCData(dbId) {
-        const { error } = await supabase.from('credit_cards').delete().eq('id', dbId);
+        const { error } = await supabase.from('afic_credit_cards').delete().eq('id', dbId);
         if (!error) await reloadCCData();
     }
 
@@ -774,9 +776,19 @@ window.initApp = function() {
             budgetSaveLimit = data[0].save_limit_pct || 20;
             
             // Atualizar campos no formulário
-            document.getElementById('budget-fixed-pct').value = budgetFixedLimit;
-            document.getElementById('budget-var-pct').value = budgetVarLimit;
-            document.getElementById('budget-save-pct').value = budgetSaveLimit;
+            const fields = [
+                { id: 'fixed', val: budgetFixedLimit },
+                { id: 'var', val: budgetVarLimit },
+                { id: 'save', val: budgetSaveLimit }
+            ];
+
+            fields.forEach(field => {
+                const num = document.getElementById(`budget-${field.id}-pct`);
+                const range = document.getElementById(`budget-${field.id}-range`);
+                if (num) num.value = field.val;
+                if (range) range.value = field.val;
+            });
+
             updateBudgetTotalPct();
         }
     }
@@ -785,16 +797,25 @@ window.initApp = function() {
         const fixedPct = parseInt(document.getElementById('budget-fixed-pct')?.value || 0);
         const varPct = parseInt(document.getElementById('budget-var-pct')?.value || 0);
         const savePct = parseInt(document.getElementById('budget-save-pct')?.value || 0);
+        
+        // Atualizar labels de exibição
+        const lblFixed = document.getElementById('val-fixed-pct');
+        const lblVar = document.getElementById('val-var-pct');
+        const lblSave = document.getElementById('val-save-pct');
+        if (lblFixed) lblFixed.textContent = fixedPct + '%';
+        if (lblVar) lblVar.textContent = varPct + '%';
+        if (lblSave) lblSave.textContent = savePct + '%';
+
         const total = fixedPct + varPct + savePct;
         const totalEl = document.getElementById('budget-total-pct');
         const msgEl = document.getElementById('budget-total-msg');
         if (totalEl) totalEl.textContent = total;
         if (msgEl) {
             if (total === 100) {
-                msgEl.textContent = '✓ Configuração válida';
+                msgEl.textContent = '✓ Configuração válida (Total = 100%)';
                 msgEl.style.color = 'var(--gold-rich)';
             } else {
-                msgEl.textContent = '⚠ Total deve ser 100%';
+                msgEl.textContent = `⚠ Total incorreto: ${total}% (deve ser 100%)`;
                 msgEl.style.color = '#ff4d4f';
             }
         }
@@ -806,13 +827,13 @@ window.initApp = function() {
             return;
         }
         console.log("Saving budget tx:", { monthKey, desc, value, type, method, userId: currentUser.id });
-        const { error } = await supabase.from('budget_transactions').insert([{
+        const { error } = await supabase.from('afic_financial_transactions').insert([{
             user_id: currentUser.id,
             month_key: monthKey,
             description: desc,
-            value: value,
-            type: type,
-            method: method
+            amount: value,
+            category: type,
+            payment_method: method
         }]);
         if (error) {
             console.error("Error saving TX:", error);
@@ -824,7 +845,7 @@ window.initApp = function() {
     async function reloadBudgetData() {
         if (!currentUser) return;
         console.log("Loading budget data for user:", currentUser.id);
-        const { data, error } = await supabase.from('budget_transactions').select('*').eq('user_id', currentUser.id);
+        const { data, error } = await supabase.from('afic_financial_transactions').select('*').eq('user_id', currentUser.id);
         if (!error && data) {
             console.log("Budget data loaded:", data.length, "transactions");
             budgetData = {};
@@ -833,9 +854,9 @@ window.initApp = function() {
                 budgetData[row.month_key].push({
                     db_id: row.id,
                     desc: row.description,
-                    value: parseFloat(row.value),
-                    type: row.type,
-                    method: row.method
+                    value: parseFloat(row.amount || row.value),
+                    type: row.category || row.type,
+                    method: row.payment_method || row.method
                 });
             });
             if (typeof renderBudgetManager === 'function') renderBudgetManager();
@@ -843,7 +864,7 @@ window.initApp = function() {
     }
 
     async function deleteBudgetDataTx(dbId) {
-        const { error } = await supabase.from('budget_transactions').delete().eq('id', dbId).eq('user_id', currentUser.id);
+        const { error } = await supabase.from('afic_financial_transactions').delete().eq('id', dbId).eq('user_id', currentUser.id);
         if (!error) await reloadBudgetData();
     }
 
@@ -1412,7 +1433,7 @@ function updateAllHeaderUserInfo() {
         if (!currentUser) return;
         let { data, error } = await supabase
             .from('profiles')
-            .select('nickname, profile_type')
+            .select('nickname, profile_type, email_public, about, linkedin, instagram, twitter, whatsapp, avatar_url')
             .eq('id', currentUser.id)
             .maybeSingle();
         
@@ -1420,7 +1441,7 @@ function updateAllHeaderUserInfo() {
             await supabase.from('profiles').insert({ id: currentUser.id });
             ({ data } = await supabase
                 .from('profiles')
-                .select('nickname, profile_type')
+                .select('nickname, profile_type, email_public, about, linkedin, instagram, twitter, whatsapp, avatar_url')
                 .eq('id', currentUser.id)
                 .maybeSingle());
         }
@@ -1442,6 +1463,8 @@ function updateAllHeaderUserInfo() {
             if (document.getElementById('user-about')) document.getElementById('user-about').value = data.about || '';
             if (document.getElementById('user-linkedin')) document.getElementById('user-linkedin').value = data.linkedin || '';
             if (document.getElementById('user-instagram')) document.getElementById('user-instagram').value = data.instagram || '';
+            if (document.getElementById('user-twitter')) document.getElementById('user-twitter').value = data.twitter || '';
+            if (document.getElementById('user-whatsapp')) document.getElementById('user-whatsapp').value = data.whatsapp || '';
             
             // Atualizar preview
             updateProfilePreview(data);
@@ -1480,8 +1503,10 @@ if (el) el.textContent = data.profile_type ? profileLabels[data.profile_type] ||
     function updateProfilePreview(data) {
         const previewNickname = document.getElementById('preview-nickname');
         const previewAbout = document.getElementById('preview-about');
-        const previewSocial = document.getElementById('preview-social');
         const previewLinkedin = document.getElementById('preview-linkedin');
+        const previewInstagram = document.getElementById('preview-instagram');
+        const previewTwitter = document.getElementById('preview-twitter');
+        const previewWhatsapp = document.getElementById('preview-whatsapp');
         const previewInitials = document.getElementById('preview-initials');
         
         if (previewNickname) previewNickname.textContent = data.nickname || 'Seu Nickname';
@@ -1496,6 +1521,39 @@ if (el) el.textContent = data.profile_type ? profileLabels[data.profile_type] ||
                 previewLinkedin.href = data.linkedin;
                 previewLinkedin.style.display = 'block';
             }
+        } else if (previewLinkedin) {
+            previewLinkedin.style.display = 'none';
+        }
+
+        if (data.instagram) {
+            if (previewInstagram) {
+                previewInstagram.href = data.instagram;
+                previewInstagram.style.display = 'block';
+            }
+        } else if (previewInstagram) {
+            previewInstagram.style.display = 'none';
+        }
+
+        if (data.twitter) {
+            if (previewTwitter) {
+                previewTwitter.href = data.twitter;
+                previewTwitter.style.display = 'block';
+            }
+        } else if (previewTwitter) {
+            previewTwitter.style.display = 'none';
+        }
+
+        if (data.whatsapp) {
+            if (previewWhatsapp) {
+                let waLink = data.whatsapp;
+                if (!waLink.startsWith('http')) {
+                    waLink = `https://wa.me/${waLink.replace(/\D/g, '')}`;
+                }
+                previewWhatsapp.href = waLink;
+                previewWhatsapp.style.display = 'block';
+            }
+        } else if (previewWhatsapp) {
+            previewWhatsapp.style.display = 'none';
         }
     }
 
@@ -1510,9 +1568,11 @@ if (el) el.textContent = data.profile_type ? profileLabels[data.profile_type] ||
             const about = document.getElementById('user-about')?.value.trim() || null;
             const linkedin = document.getElementById('user-linkedin')?.value.trim() || null;
             const instagram = document.getElementById('user-instagram')?.value.trim() || null;
+            const twitter = document.getElementById('user-twitter')?.value.trim() || null;
+            const whatsapp = document.getElementById('user-whatsapp')?.value.trim() || null;
             const profileMsg = document.getElementById('profile-msg');
             
-            console.log('Saving profile:', { nickname, emailPublic, about, linkedin, instagram });
+            console.log('Saving profile:', { nickname, emailPublic, about, linkedin, instagram, twitter, whatsapp });
             
             if (!nickname) {
                 alert('Por favor, preencha o apelido!');
@@ -1533,7 +1593,9 @@ if (el) el.textContent = data.profile_type ? profileLabels[data.profile_type] ||
                     about: about,
                     linkedin: linkedin,
                     instagram: instagram,
-                    updated_at: new Date() 
+                    twitter: twitter,
+                    whatsapp: whatsapp,
+                    updated_at: new Date().toISOString() 
                 });
 
             console.log('Save result:', error);
@@ -1668,13 +1730,24 @@ if (el) el.textContent = data.profile_type ? profileLabels[data.profile_type] ||
     // Budget Settings Form
     const budgetSettingsForm = document.getElementById('form-budget-settings');
     if (budgetSettingsForm) {
-        // Atualizar total quando os campos mudarem
-        ['budget-fixed-pct', 'budget-var-pct', 'budget-save-pct'].forEach(id => {
-            const input = document.getElementById(id);
-            if (input) {
-                input.addEventListener('input', updateBudgetTotalPct);
+        // Sincronizar Sliders e Inputs Numéricos
+        const syncBudgetControl = (idBase) => {
+            const range = document.getElementById(`budget-${idBase}-range`);
+            const num = document.getElementById(`budget-${idBase}-pct`);
+            
+            if (range && num) {
+                range.addEventListener('input', () => {
+                    num.value = range.value;
+                    updateBudgetTotalPct();
+                });
+                num.addEventListener('input', () => {
+                    range.value = num.value;
+                    updateBudgetTotalPct();
+                });
             }
-        });
+        };
+        
+        ['fixed', 'var', 'save'].forEach(syncBudgetControl);
         
         budgetSettingsForm.addEventListener('submit', async (e) => {
             e.preventDefault();
