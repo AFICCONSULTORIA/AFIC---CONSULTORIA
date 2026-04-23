@@ -19,9 +19,9 @@ export const TelemetriaAdmin = () => {
     try {
       setLoading(true);
       
-      // 1. Fetch Assessment Leads
+      // 1. Fetch Analise Perfil Leads
       const { data: leadsData, error: leadsError } = await supabase
-        .from('afic_assessment_responses')
+        .from('afic_analise_perfil_responses')
         .select('created_at, status');
       
       if (leadsError) throw leadsError;
@@ -129,7 +129,7 @@ export const TelemetriaAdmin = () => {
         {/* Leads Gerados */}
         <div className="bg-white dark:bg-[#0a2540] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
           <div className="flex justify-between items-start">
-            <p className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">Leads (Assessment)</p>
+            <p className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">Leads (Análise de Perfil)</p>
             <div className="bg-blue-100 text-blue-800 rounded p-1.5 dark:bg-blue-900/30 dark:text-blue-400">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
             </div>

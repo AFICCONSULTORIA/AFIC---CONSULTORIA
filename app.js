@@ -73,9 +73,9 @@ window.initApp = function() {
         'account': 'page-account',
         'plans': 'page-plans',
         'admin-plans': 'page-admin-plans',
-        'admin-assessment': 'page-admin-assessment',
+        'admin-analise-perfil': 'page-admin-analise-perfil',
         'admin-dashboard': 'page-admin-dashboard',
-        'assessment': 'page-assessment'
+        'analise-perfil': 'page-analise-perfil'
     };
 
     const profileTypeSelect = document.getElementById('profile-type-select');
@@ -108,8 +108,8 @@ window.initApp = function() {
                 loadProfileType();
             }
             
-            if (pageName === 'admin-assessment') {
-                loadAssessmentResponses();
+            if (pageName === 'admin-analise-perfil') {
+                loadAnalisePerfilResponses();
             }
             
             if (pageName === 'admin-dashboard') {
@@ -363,13 +363,13 @@ window.initApp = function() {
     // NAVIGATION — Page Switching
     // ═══════════════════════════════════════════════════════════
     function checkAdminLink() {
-        const assessmentLink = document.querySelector('.nav-link[data-page="admin-assessment"]');
+        const analisePerfilLink = document.querySelector('.nav-link[data-page="admin-analise-perfil"]');
         const dashboardLink = document.querySelector('.nav-link[data-page="admin-dashboard"]');
         const isAdminEmail = currentUser?.email === 'aficconsultoria@gmail.com';
         const isAdmin = window.isUserAdmin || isAdminEmail;
         
-        if (assessmentLink) {
-            assessmentLink.style.display = isAdmin ? '' : 'none';
+        if (analisePerfilLink) {
+            analisePerfilLink.style.display = isAdmin ? '' : 'none';
         }
         if (dashboardLink) {
             dashboardLink.style.display = isAdmin ? '' : 'none';
@@ -2251,8 +2251,8 @@ window.toggleAuthTheme = function() {
 // Handle hash navigation
 window.handleHashChange = function() {
   const hash = window.location.hash.replace('#', '');
-  if (hash === 'assessment') {
-    const page = document.getElementById('page-assessment');
+  if (hash === 'analise-perfil') {
+    const page = document.getElementById('page-analise-perfil');
     if (page) {
       page.classList.remove('page-hidden');
       page.style.display = 'flex';
@@ -2276,11 +2276,11 @@ window.addEventListener('DOMContentLoaded', function() {
   // Resetar para step 1
   window.currentStep = 1;
   // Mostrar primeiro step
-  document.querySelectorAll('.assessment-step').forEach(step => {
+  document.querySelectorAll('.analise-perfil-step').forEach(step => {
     step.classList.add('hidden');
     step.style.display = 'none';
   });
-  const firstStep = document.querySelector('.assessment-step[data-step="1"]');
+  const firstStep = document.querySelector('.analise-perfil-step[data-step="1"]');
   if (firstStep) {
     firstStep.classList.remove('hidden');
     firstStep.style.display = 'flex';
@@ -2316,8 +2316,8 @@ function setupCurrencyMask(id) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    setupCurrencyMask('assessment-renda-atual');
-    setupCurrencyMask('assessment-renda-sonho');
+    setupCurrencyMask('analise-perfil-renda-atual');
+    setupCurrencyMask('analise-perfil-renda-sonho');
 });
 
 // Assessment step navigation
@@ -2326,8 +2326,8 @@ window.totalSteps = 11; // 1 contato + 2 rendas + 8 perguntas
 
 window.updateProgress = function() {
     const progress = (window.currentStep / window.totalSteps) * 100;
-    const progressBar = document.getElementById('assessment-progress-bar');
-    const progressText = document.getElementById('assessment-progress-text');
+    const progressBar = document.getElementById('analise-perfil-progress-bar');
+    const progressText = document.getElementById('analise-perfil-progress-text');
     if (progressBar) {
         progressBar.style.width = progress + '%';
     }
@@ -2337,29 +2337,29 @@ window.updateProgress = function() {
 };
 
 window.nextStep = function() {
-    const currentStepEl = document.querySelector('.assessment-step[data-step="' + window.currentStep + '"]');
-    const toast = document.getElementById('assessment-toast');
+    const currentStepEl = document.querySelector('.analise-perfil-step[data-step="' + window.currentStep + '"]');
+    const toast = document.getElementById('analise-perfil-toast');
     const toastMessage = toast?.querySelector('.toast-message');
     
     // Validação por step
     if (window.currentStep === 1) {
-        const nome = document.getElementById('assessment-nome')?.value.trim();
-        const email = document.getElementById('assessment-email')?.value.trim();
-        const whatsapp = document.getElementById('assessment-whatsapp')?.value.trim();
+        const nome = document.getElementById('analise-perfil-nome')?.value.trim();
+        const email = document.getElementById('analise-perfil-email')?.value.trim();
+        const whatsapp = document.getElementById('analise-perfil-whatsapp')?.value.trim();
         if (!nome || !email || !whatsapp) {
             if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
             if (toastMessage) toastMessage.textContent = 'Preencha todos os dados de contato.';
             return;
         }
     } else if (window.currentStep === 2) {
-        const renda = document.getElementById('assessment-renda-atual')?.value.trim();
+        const renda = document.getElementById('analise-perfil-renda-atual')?.value.trim();
         if (!renda) {
             if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
             if (toastMessage) toastMessage.textContent = 'Preencha sua renda atual.';
             return;
         }
     } else if (window.currentStep === 3) {
-        const renda = document.getElementById('assessment-renda-sonho')?.value.trim();
+        const renda = document.getElementById('analise-perfil-renda-sonho')?.value.trim();
         if (!renda) {
             if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
             if (toastMessage) toastMessage.textContent = 'Preencha a renda dos seus sonhos.';
@@ -2419,7 +2419,7 @@ window.nextStep = function() {
     window.currentStep++;
     
     // Mostrar próximo step
-    const nextStepEl = document.querySelector('.assessment-step[data-step="' + window.currentStep + '"]');
+    const nextStepEl = document.querySelector('.analise-perfil-step[data-step="' + window.currentStep + '"]');
     if (nextStepEl) {
         nextStepEl.classList.remove('hidden');
         nextStepEl.classList.add('active');
@@ -2435,16 +2435,16 @@ window.nextStep = function() {
 };
 
 // Assessment form handler
-window.handleAssessmentSubmit = async function(e) {
+window.handleAnalisePerfilSubmit = async function(e) {
   if (e) {
     e.preventDefault();
     e.stopPropagation();
   }
   
-  const nome = document.getElementById('assessment-nome')?.value.trim();
-  const email = document.getElementById('assessment-email')?.value.trim();
-  const whatsapp = document.getElementById('assessment-whatsapp')?.value.trim();
-  const toast = document.getElementById('assessment-toast');
+  const nome = document.getElementById('analise-perfil-nome')?.value.trim();
+  const email = document.getElementById('analise-perfil-email')?.value.trim();
+  const whatsapp = document.getElementById('analise-perfil-whatsapp')?.value.trim();
+  const toast = document.getElementById('analise-perfil-toast');
   const toastMessage = toast?.querySelector('.toast-message');
   
   // Validação Final
@@ -2454,8 +2454,8 @@ window.handleAssessmentSubmit = async function(e) {
     return false;
   }
   
-  const renda_atual = document.getElementById('assessment-renda-atual')?.value.trim();
-  const renda_sonho = document.getElementById('assessment-renda-sonho')?.value.trim();
+  const renda_atual = document.getElementById('analise-perfil-renda-atual')?.value.trim();
+  const renda_sonho = document.getElementById('analise-perfil-renda-sonho')?.value.trim();
   
   if (!renda_atual || !renda_sonho) {
     if (toast) { toast.classList.remove('hidden', 'success'); toast.classList.add('error'); }
@@ -2478,7 +2478,7 @@ window.handleAssessmentSubmit = async function(e) {
     tempo: document.querySelector('input[name="tempo"]:checked')?.value
   };
   
-  console.log('Assessment enviado:', formData);
+  console.log('Análise de Perfil enviado:', formData);
   
   // Salvar no banco de dados
   const supabaseDb = window.supabaseApp || window.aficSupabase;
@@ -2489,7 +2489,7 @@ window.handleAssessmentSubmit = async function(e) {
     saveError = 'Supabase não conectado';
   } else {
     try {
-      const { error } = await supabaseDb.from('afic_assessment_responses').insert([formData]);
+      const { error } = await supabaseDb.from('afic_analise-perfil_responses').insert([formData]);
       if (error) saveError = error.message;
     } catch(err) {
       saveError = err.message;
@@ -2505,6 +2505,17 @@ window.handleAssessmentSubmit = async function(e) {
   if (toast) { toast.classList.remove('hidden', 'error'); toast.classList.add('success'); }
   if (toastMessage) toastMessage.textContent = 'Respostas enviadas! Nossa equipe entrará em contato em breve.';
   
+  // Tenta enviar WhatsApp automático via Meta API
+  import('./src/lib/whatsapp-service.js').then(({ sendWhatsAppTemplate, sendAdminNotification }) => {
+    // 1. Enviar Boas-vindas para o Cliente (Template)
+    // Substitua 'hello_world' pelo nome do seu template aprovado na Meta
+    sendWhatsAppTemplate(formData.whatsapp, 'hello_world', [formData.nome]);
+    
+    // 2. Notificar Administrador (Texto Simples)
+    const adminMsg = `🚀 *Novo Lead na Análise de Perfil!*\n\n*Nome:* ${formData.nome}\n*WhatsApp:* ${formData.whatsapp}\n*Renda Atual:* ${formData.renda_atual}\n*Renda Sonho:* ${formData.renda_sonho}\n\nConfira os detalhes completos no Painel Admin.`;
+    sendAdminNotification(adminMsg);
+  }).catch(err => console.error('Erro ao carregar serviço WhatsApp:', err));
+
   setTimeout(() => {
     if (toast) toast.classList.add('hidden');
     switchPage('home');
@@ -2514,10 +2525,10 @@ window.handleAssessmentSubmit = async function(e) {
 };
 
 
-window.allAssessmentResponses = []; // Cache local para filtros
+window.allAnalisePerfilResponses = []; // Cache local para filtros
 
-window.renderAssessmentList = function(data) {
-    const container = document.getElementById('assessment-responses-list');
+window.renderAnalisePerfilList = function(data) {
+    const container = document.getElementById('analise-perfil-responses-list');
     if (!container) return;
     
     if (!data || data.length === 0) {
@@ -2527,13 +2538,13 @@ window.renderAssessmentList = function(data) {
 
     container.innerHTML = data.map(r => {
       return `
-      <div class="assessment-card" data-id="${r.id}" style="margin-bottom: 16px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden; transition: all 0.2s;">
-        <div class="assessment-header" style="padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; background: rgba(5, 24, 69, 0.2);">
+      <div class="analise-perfil-card" data-id="${r.id}" style="margin-bottom: 16px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden; transition: all 0.2s;">
+        <div class="analise-perfil-header" style="padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; background: rgba(5, 24, 69, 0.2);">
           <div>
-            <strong class="assessment-nome" style="color: #fff; display: block; font-size: 16px;">${r.nome || '-'}</strong>
-            <span class="assessment-email" style="color: #94a3b8; font-size: 13px;">${r.email || '-'}</span>
+            <strong class="analise-perfil-nome" style="color: #fff; display: block; font-size: 16px;">${r.nome || '-'}</strong>
+            <span class="analise-perfil-email" style="color: #94a3b8; font-size: 13px;">${r.email || '-'}</span>
           </div>
-          <div class="assessment-actions" style="display: flex; align-items: center; gap: 12px;">
+          <div class="analise-perfil-actions" style="display: flex; align-items: center; gap: 12px;">
             <button class="btn-analysis" data-id="${r.id}" style="background: #D4AF37; color: #000; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px;">Análise Completa</button>
             <select class="status-select" data-id="${r.id}" style="background: rgba(0,0,0,0.3); color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 7px 10px; border-radius: 6px; font-size: 13px; cursor: pointer;">
               <option value="novo" ${r.status === 'novo' ? 'selected' : ''}>Pendente</option>
@@ -2542,7 +2553,7 @@ window.renderAssessmentList = function(data) {
             </select>
           </div>
         </div>
-        <div class="assessment-grid" style="padding: 16px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+        <div class="analise-perfil-grid" style="padding: 16px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
           <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border-left: 3px solid #D4AF37;">
             <span style="display: block; color: #94a3b8; font-size: 10px; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px;">Renda Atual</span>
             <span style="color: #fff; font-weight: 600; font-size: 14px;">${r.renda_atual || 'Não inf.'}</span>
@@ -2567,7 +2578,7 @@ window.renderAssessmentList = function(data) {
       btn.addEventListener('click', () => {
         const id = btn.dataset.id;
         const item = data.find(d => d.id === id);
-        if (item) showAssessmentDetail(item);
+        if (item) showAnalisePerfilDetail(item);
       });
     });
     
@@ -2576,27 +2587,27 @@ window.renderAssessmentList = function(data) {
         const id = e.target.dataset.id;
         const newStatus = e.target.value;
         const supabaseDb = window.supabaseApp || window.aficSupabase;
-        const { error } = await supabaseDb.from('afic_assessment_responses').update({ status: newStatus }).eq('id', id);
+        const { error } = await supabaseDb.from('afic_analise-perfil_responses').update({ status: newStatus }).eq('id', id);
         if (error) alert('Erro ao atualizar: ' + error.message);
       });
     });
 };
 
-window.filterAssessmentList = function() {
-    const search = document.getElementById('filter-assessment-search')?.value.toLowerCase() || '';
-    const status = document.getElementById('filter-assessment-status')?.value || 'all';
+window.filterAnalisePerfilList = function() {
+    const search = document.getElementById('filter-analise-perfil-search')?.value.toLowerCase() || '';
+    const status = document.getElementById('filter-analise-perfil-status')?.value || 'all';
 
-    const filtered = window.allAssessmentResponses.filter(r => {
+    const filtered = window.allAnalisePerfilResponses.filter(r => {
         const matchesSearch = (r.nome?.toLowerCase().includes(search) || r.email?.toLowerCase().includes(search));
         const matchesStatus = (status === 'all' || r.status === status);
         return matchesSearch && matchesStatus;
     });
 
-    window.renderAssessmentList(filtered);
+    window.renderAnalisePerfilList(filtered);
 };
 
-window.loadAssessmentResponses = async function() {
-  const container = document.getElementById('assessment-responses-list');
+window.loadAnalisePerfilResponses = async function() {
+  const container = document.getElementById('analise-perfil-responses-list');
   if (!container) return;
   
   const supabaseDb = window.supabaseApp || window.aficSupabase;
@@ -2606,25 +2617,25 @@ window.loadAssessmentResponses = async function() {
   }
   
   try {
-    const { data, error } = await supabaseDb.from('afic_assessment_responses')
+    const { data, error } = await supabaseDb.from('afic_analise-perfil_responses')
       .select('*')
       .order('created_at', { ascending: false });
     
     if (error) throw error;
     
-    window.allAssessmentResponses = data || [];
-    window.renderAssessmentList(window.allAssessmentResponses);
+    window.allAnalisePerfilResponses = data || [];
+    window.renderAnalisePerfilList(window.allAnalisePerfilResponses);
     
     // Listeners de filtro
-    const searchInput = document.getElementById('filter-assessment-search');
-    const statusSelect = document.getElementById('filter-assessment-status');
+    const searchInput = document.getElementById('filter-analise-perfil-search');
+    const statusSelect = document.getElementById('filter-analise-perfil-status');
     
     if (searchInput && !searchInput.dataset.listening) {
-        searchInput.addEventListener('input', window.filterAssessmentList);
+        searchInput.addEventListener('input', window.filterAnalisePerfilList);
         searchInput.dataset.listening = 'true';
     }
     if (statusSelect && !statusSelect.dataset.listening) {
-        statusSelect.addEventListener('change', window.filterAssessmentList);
+        statusSelect.addEventListener('change', window.filterAnalisePerfilList);
         statusSelect.dataset.listening = 'true';
     }
     
@@ -2634,8 +2645,8 @@ window.loadAssessmentResponses = async function() {
 };
 
 
-window.showAssessmentDetail = function(r) {
-  const modal = document.getElementById('modal-assessment-detail');
+window.showAnalisePerfilDetail = function(r) {
+  const modal = document.getElementById('modal-analise-perfil-detail');
   const nomeEl = document.getElementById('detailNome');
   const emailEl = document.getElementById('detailEmail');
   const contentEl = document.getElementById('detailContent');
@@ -2731,7 +2742,7 @@ window.showAssessmentDetail = function(r) {
   };
 };
 
-window.exportAssessmentExcel = async function() {
+window.exportAnalisePerfilExcel = async function() {
   const supabaseDb = window.supabaseApp || window.aficSupabase;
   if (!supabaseDb) {
     alert('Supabase não conectado');
@@ -2739,7 +2750,7 @@ window.exportAssessmentExcel = async function() {
   }
   
   try {
-    const { data, error } = await supabaseDb.from('afic_assessment_responses')
+    const { data, error } = await supabaseDb.from('afic_analise-perfil_responses')
       .select('*')
       .order('created_at', { ascending: false });
     
@@ -2881,7 +2892,7 @@ window.loadKanban = async function() {
   }
   
   try {
-    const { data, error } = await supabaseDb.from('afic_assessment_responses')
+    const { data, error } = await supabaseDb.from('afic_analise-perfil_responses')
       .select('*')
       .order('created_at', { ascending: false });
     
@@ -2974,7 +2985,7 @@ window.candidateAction = async function(action) {
   }
   
   try {
-    const { error } = await supabaseDb.from('afic_assessment_responses')
+    const { error } = await supabaseDb.from('afic_analise-perfil_responses')
       .update({ status: newStatus })
       .eq('id', id);
     
@@ -3292,7 +3303,7 @@ window.switchAdminModule = function(module) {
   } else if (module === 'crm') {
     if (exportBtn) {
       exportBtn.style.display = 'flex';
-      exportBtn.onclick = window.exportAssessmentExcel;
+      exportBtn.onclick = window.exportAnalisePerfilExcel;
     }
     window.loadKanban();
     window.updateAdminQuickStats();
@@ -3328,7 +3339,7 @@ window.renderTelemetriaModule = async function() {
   
   let alunosData = [];
   let progressData = [];
-  let assessmentData = [];
+  let analisePerfilData = [];
   
   try {
     if (supabaseDb) {
@@ -3338,8 +3349,8 @@ window.renderTelemetriaModule = async function() {
       const { data: progress } = await supabaseDb.from('academy_user_progress').select('*');
       progressData = progress || [];
       
-      const { data: assessment } = await supabaseDb.from('afic_assessment_responses').select('*');
-      assessmentData = assessment || [];
+      const { data: analisePerfil } = await supabaseDb.from('afic_analise-perfil_responses').select('*');
+      analisePerfilData = analisePerfil || [];
     }
   } catch(e) {
     console.log('Telemetria load error:', e);
@@ -3402,7 +3413,7 @@ window.renderTelemetriaModule = async function() {
       <div class="tele-card">
         <div class="tele-icon">📝</div>
         <div class="tele-content">
-          <span class="tele-number">${assessmentData.length}</span>
+          <span class="tele-number">${analisePerfilData.length}</span>
           <span class="tele-label">Avaliações</span>
         </div>
       </div>
@@ -3828,15 +3839,15 @@ window.updateAdminQuickStats = async function() {
   const container = document.getElementById('admin-quick-stats');
   if (!container) return;
   
-  let alunos = 0, assessment = 0, modules = 0, progress = 0, topics = 0;
+  let alunos = 0, analisePerfil = 0, modules = 0, progress = 0, topics = 0;
   
   try {
     if (supabaseDb) {
       const { data: a } = await supabaseDb.from('afic_alunos').select('id');
       alunos = a?.length || 0;
       
-      const { data: assess } = await supabaseDb.from('afic_assessment_responses').select('id');
-      assessment = assess?.length || 0;
+      const { data: assess } = await supabaseDb.from('afic_analise-perfil_responses').select('id');
+      analisePerfil = assess?.length || 0;
       
       const { data: mods } = await supabaseDb.from('academy_modules').select('id');
       modules = mods?.length || 0;
@@ -3863,7 +3874,7 @@ window.updateAdminQuickStats = async function() {
     <div class="quick-stat">
       <div class="quick-stat-icon green">✅</div>
       <div>
-        <div class="quick-stat-value">${assessment}</div>
+        <div class="quick-stat-value">${analisePerfil}</div>
         <div class="quick-stat-label">Avaliações</div>
       </div>
     </div>

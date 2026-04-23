@@ -129,16 +129,16 @@
 </div>
 
     <!-- ═══════════════════════════════════════════════════════════════ -->
-    <!-- ASSESSMENT PAGE (Full Screen Form)                 -->
+    <!-- ANÁLISE DE PERFIL PAGE (Full Screen Form)                 -->
     <!-- ═══════════════════════════════════════════════════════════════ -->
-    <div id="page-assessment" class="page-content page-hidden" style="display: none;">
-        <button class="assessment-home-btn" onclick="window.location.hash=''; window.location.href='/'" title="Voltar ao início">
+    <div id="page-analise-perfil" class="page-content page-hidden" style="display: none;">
+        <button class="analise-perfil-home-btn" onclick="window.location.hash=''; window.location.href='/'" title="Voltar ao início">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                 <polyline points="9 22 9 12 15 12 15 22"/>
             </svg>
         </button>
-        <button class="assessment-theme-btn" onclick="document.getElementById('page-assessment').classList.toggle('light')" title="Alternar tema">
+        <button class="analise-perfil-theme-btn" onclick="document.getElementById('page-analise-perfil').classList.toggle('light')" title="Alternar tema">
             <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
             </svg>
@@ -146,238 +146,238 @@
                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
             </svg>
         </button>
-        <div class="assessment-container">
-            <div class="assessment-header">
-                <div class="assessment-logo">
+        <div class="analise-perfil-container">
+            <div class="analise-perfil-header">
+                <div class="analise-perfil-logo">
                     <svg width="40" height="40" viewBox="0 0 48 48" fill="none">
                         <path d="M24 4L4 14V34L24 44L44 34V14L24 4Z" stroke="#D4AF37" stroke-width="3" fill="none"/>
                         <path d="M24 14L14 19V29L24 34L34 29V19L24 14Z" fill="#D4AF37"/>
                     </svg>
                     <span>AFIC CONSULTORIA</span>
                 </div>
-                <h1 class="assessment-title">Análise de Perfil</h1>
-                <p class="assessment-subtitle">Avaliação para acesso à Academia AFIC. Negue a ficção.</p>
-                <div class="assessment-progress">
-                    <div class="assessment-progress-bar"></div>
+                <h1 class="analise-perfil-title">Análise de Perfil</h1>
+                <p class="analise-perfil-subtitle">Avaliação para acesso à Academia AFIC. Negue a ficção.</p>
+                <div class="analise-perfil-progress">
+                    <div class="analise-perfil-progress-bar"></div>
                 </div>
             </div>
             
-            <div class="assessment-progress">
-                    <div class="assessment-headline" id="assessment-progress-text">1/11</div>
-                    <div class="assessment-subheadline">Pergunta</div>
-                    <div class="assessment-progress-bar-container">
-                        <div class="assessment-progress-bar" id="assessment-progress-bar"></div>
+            <div class="analise-perfil-progress">
+                    <div class="analise-perfil-headline" id="analise-perfil-progress-text">1/11</div>
+                    <div class="analise-perfil-subheadline">Pergunta</div>
+                    <div class="analise-perfil-progress-bar-container">
+                        <div class="analise-perfil-progress-bar" id="analise-perfil-progress-bar"></div>
                     </div>
                 </div>
                 
-<form id="form-assessment" class="assessment-form">
+<form id="form-analise-perfil" class="analise-perfil-form">
                     <!-- Step 1: Dados Contato -->
-                    <div class="assessment-step active" data-step="1">
-                        <h3 class="assessment-question">Seus Dados para Contato</h3>
-                        <div class="assessment-contact-fields">
-                            <div class="assessment-input-wrapper">
-                                <input type="text" id="assessment-nome" class="assessment-input" placeholder="Nome completo">
+                    <div class="analise-perfil-step active" data-step="1">
+                        <h3 class="analise-perfil-question">Seus Dados para Contato</h3>
+                        <div class="analise-perfil-contact-fields">
+                            <div class="analise-perfil-input-wrapper">
+                                <input type="text" id="analise-perfil-nome" class="analise-perfil-input" placeholder="Nome completo">
                             </div>
-                            <div class="assessment-input-wrapper">
-                                <input type="email" id="assessment-email" class="assessment-input" placeholder="Seu melhor e-mail">
+                            <div class="analise-perfil-input-wrapper">
+                                <input type="email" id="analise-perfil-email" class="analise-perfil-input" placeholder="Seu melhor e-mail">
                             </div>
-                            <div class="assessment-input-wrapper">
-                                <input type="tel" id="assessment-whatsapp" class="assessment-input" placeholder="(00) 00000-0000">
+                            <div class="analise-perfil-input-wrapper">
+                                <input type="tel" id="analise-perfil-whatsapp" class="analise-perfil-input" placeholder="(00) 00000-0000">
                             </div>
                         </div>
-                        <button type="button" class="assessment-next" onclick="nextStep()">Próximo</button>
+                        <button type="button" class="analise-perfil-next" onclick="nextStep()">Próximo</button>
                     </div>
                     
                     <!-- Step 2: Renda Atual -->
-                    <div class="assessment-step assessment-step-centered hidden" data-step="2">
+                    <div class="analise-perfil-step analise-perfil-step-centered hidden" data-step="2">
                         <div class="step-indicator">I. Ponto de Partida</div>
-                        <h3 class="assessment-question">Qual é a sua renda mensal atual?</h3>
-                        <div class="assessment-contact-fields">
-                            <div class="assessment-input-wrapper">
-                                <input type="text" id="assessment-renda-atual" class="assessment-input" placeholder="Ex: R$ 5.000,00">
+                        <h3 class="analise-perfil-question">Qual é a sua renda mensal atual?</h3>
+                        <div class="analise-perfil-contact-fields">
+                            <div class="analise-perfil-input-wrapper">
+                                <input type="text" id="analise-perfil-renda-atual" class="analise-perfil-input" placeholder="Ex: R$ 5.000,00">
                             </div>
                         </div>
-                        <button type="button" class="assessment-next" onclick="nextStep()">Próximo</button>
+                        <button type="button" class="analise-perfil-next" onclick="nextStep()">Próximo</button>
                     </div>
 
                     <!-- Step 3: Renda dos Sonhos -->
-                    <div class="assessment-step assessment-step-centered hidden" data-step="3">
+                    <div class="analise-perfil-step analise-perfil-step-centered hidden" data-step="3">
                         <div class="step-indicator">I. Ponto de Partida</div>
-                        <h3 class="assessment-question">Qual é a renda mensal dos seus sonhos para o futuro?</h3>
-                        <div class="assessment-contact-fields">
-                            <div class="assessment-input-wrapper">
-                                <input type="text" id="assessment-renda-sonho" class="assessment-input" placeholder="Ex: R$ 50.000,00">
+                        <h3 class="analise-perfil-question">Qual é a renda mensal dos seus sonhos para o futuro?</h3>
+                        <div class="analise-perfil-contact-fields">
+                            <div class="analise-perfil-input-wrapper">
+                                <input type="text" id="analise-perfil-renda-sonho" class="analise-perfil-input" placeholder="Ex: R$ 50.000,00">
                             </div>
                         </div>
-                        <button type="button" class="assessment-next" onclick="nextStep()">Próximo</button>
+                        <button type="button" class="analise-perfil-next" onclick="nextStep()">Próximo</button>
                     </div>
 
                     <!-- Step 4: Rotina -->
-                    <div class="assessment-step hidden" data-step="4">
+                    <div class="analise-perfil-step hidden" data-step="4">
                         <div class="step-indicator">II. Mapeamento de Rotina</div>
-                        <h3 class="assessment-question">O que acontece com o seu dinheiro na primeira semana após receber o pagamento?</h3>
-                        <div class="assessment-cards assessment-cards-vertical">
-                            <label class="assessment-card">
+                        <h3 class="analise-perfil-question">O que acontece com o seu dinheiro na primeira semana após receber o pagamento?</h3>
+                        <div class="analise-perfil-cards analise-perfil-cards-vertical">
+                            <label class="analise-perfil-card">
                                 <input type="radio" name="dinheiro1" value="some">
                                 <span class="card-content"><span class="card-text">Vai quase tudo para pagar as contas do mês passado e faturas.</span></span>
                             </label>
-                            <label class="assessment-card">
+                            <label class="analise-perfil-card">
                                 <input type="radio" name="dinheiro1" value="percebe">
                                 <span class="card-content"><span class="card-text">Consigo pagar o básico, mas o resto some sem perceber.</span></span>
                             </label>
-                            <label class="assessment-card">
+                            <label class="analise-perfil-card">
                                 <input type="radio" name="dinheiro1" value="separo">
                                 <span class="card-content"><span class="card-text">Já separo uma parte antes de começar a gastar.</span></span>
                             </label>
                         </div>
-                        <button type="button" class="assessment-next" onclick="nextStep()">Próximo</button>
+                        <button type="button" class="analise-perfil-next" onclick="nextStep()">Próximo</button>
                     </div>
                     
                     <!-- Step 5: Emergência -->
-                    <div class="assessment-step hidden" data-step="5">
-                        <h3 class="assessment-question">Se uma emergência exigisse R$ 2.000,00 hoje, como você resolveria?</h3>
-                        <div class="assessment-cards assessment-cards-vertical">
-                            <label class="assessment-card">
+                    <div class="analise-perfil-step hidden" data-step="5">
+                        <h3 class="analise-perfil-question">Se uma emergência exigisse R$ 2.000,00 hoje, como você resolveria?</h3>
+                        <div class="analise-perfil-cards analise-perfil-cards-vertical">
+                            <label class="analise-perfil-card">
                                 <input type="radio" name="emergencia" value="emprestou">
                                 <span class="card-content"><span class="card-text">Usaria limite, cartão ou pediria emprestado.</span></span>
                             </label>
-                            <label class="assessment-card">
+                            <label class="analise-perfil-card">
                                 <input type="radio" name="emergencia" value="atrasar">
                                 <span class="card-content"><span class="card-text">Venderia algo ou atrasaria outras contas.</span></span>
                             </label>
-                            <label class="assessment-card">
+                            <label class="analise-perfil-card">
                                 <input type="radio" name="emergencia" value="fundo">
                                 <span class="card-content"><span class="card-text">Pagaria tranquilamente, tenho fundo de emergência.</span></span>
                             </label>
                         </div>
-                        <button type="button" class="assessment-next" onclick="nextStep()">Próximo</button>
+                        <button type="button" class="analise-perfil-next" onclick="nextStep()">Próximo</button>
                     </div>
                     
                     <!-- Step 6: Crenças -->
-                    <div class="assessment-step hidden" data-step="6">
+                    <div class="analise-perfil-step hidden" data-step="6">
                         <div class="step-indicator">III. Raio-X de Crenças</div>
-                        <h3 class="assessment-question">O que mais te travou de construir patrimônio até hoje?</h3>
-                        <div class="assessment-cards assessment-cards-vertical">
-                            <label class="assessment-card">
+                        <h3 class="analise-perfil-question">O que mais te travou de construir patrimônio até hoje?</h3>
+                        <div class="analise-perfil-cards analise-perfil-cards-vertical">
+                            <label class="analise-perfil-card">
                                 <input type="radio" name="trava" value="pouco">
                                 <span class="card-content"><span class="card-text">Ganha pouco, só rico investe.</span></span>
                             </label>
-                            <label class="assessment-card">
+                            <label class="analise-perfil-card">
                                 <input type="radio" name="trava" value="conhecimento">
                                 <span class="card-content"><span class="card-text">Tenho medo de perder, não entendo o mercado.</span></span>
                             </label>
-                            <label class="assessment-card">
+                            <label class="analise-perfil-card">
                                 <input type="radio" name="trava" value="disciplina">
                                 <span class="card-content"><span class="card-text">Tento guardar, mas sempre gasto demais.</span></span>
                             </label>
                         </div>
-                        <button type="button" class="assessment-next" onclick="nextStep()">Próximo</button>
+                        <button type="button" class="analise-perfil-next" onclick="nextStep()">Próximo</button>
                     </div>
                     
                     <!-- Step 7: Cartão -->
-                    <div class="assessment-step hidden" data-step="7">
-                        <h3 class="assessment-question">Como você utiliza o cartão de crédito hoje?</h3>
-                        <div class="assessment-cards assessment-cards-vertical">
-                            <label class="assessment-card">
+                    <div class="analise-perfil-step hidden" data-step="7">
+                        <h3 class="analise-perfil-question">Como você utiliza o cartão de crédito hoje?</h3>
+                        <div class="analise-perfil-cards analise-perfil-cards-vertical">
+                            <label class="analise-perfil-card">
                                 <input type="radio" name="cartao" value="extensao">
                                 <span class="card-content"><span class="card-text">Extensão da renda. Pago mínimo ou parcelo.</span></span>
                             </label>
-                            <label class="assessment-card">
+                            <label class="analise-perfil-card">
                                 <input type="radio" name="cartao" value="consome">
                                 <span class="card-content"><span class="card-text">Uso muito, pago o total, mas consome o que ganho.</span></span>
                             </label>
-                            <label class="assessment-card">
+                            <label class="analise-perfil-card">
                                 <input type="radio" name="cartao" value="estrategico">
                                 <span class="card-content"><span class="card-text">Uso estratégico para pontos, sempre pago o total.</span></span>
                             </label>
                         </div>
-                        <button type="button" class="assessment-next" onclick="nextStep()">Próximo</button>
+                        <button type="button" class="analise-perfil-next" onclick="nextStep()">Próximo</button>
                     </div>
                     
                     <!-- Step 8: Paciência -->
-                    <div class="assessment-step hidden" data-step="8">
+                    <div class="analise-perfil-step hidden" data-step="8">
                         <div class="step-indicator">IV. Filtro Anti-Ficção</div>
-                        <h3 class="assessment-question">Qual seu nível de paciência para ver o dinheiro crescer de forma segura?</h3>
-                        <div class="assessment-cards assessment-cards-vertical">
-                            <label class="assessment-card">
+                        <h3 class="analise-perfil-question">Qual seu nível de paciência para ver o dinheiro crescer de forma segura?</h3>
+                        <div class="analise-perfil-cards analise-perfil-cards-vertical">
+                            <label class="analise-perfil-card">
                                 <input type="radio" name="paciencia" value="imediato">
                                 <span class="card-content"><span class="card-text">Preciso de retorno imediato.</span></span>
                             </label>
-                            <label class="assessment-card">
+                            <label class="analise-perfil-card">
                                 <input type="radio" name="paciencia" value="medio">
                                 <span class="card-content"><span class="card-text">Aceito esperar, mas preciso ver resultados em 6-12 meses.</span></span>
                             </label>
-                            <label class="assessment-card">
+                            <label class="analise-perfil-card">
                                 <input type="radio" name="paciencia" value="processo">
                                 <span class="card-content"><span class="card-text">Entendo o processo. Quero resultados em anos.</span></span>
                             </label>
                         </div>
-                        <button type="button" class="assessment-next" onclick="nextStep()">Próximo</button>
+                        <button type="button" class="analise-perfil-next" onclick="nextStep()">Próximo</button>
                     </div>
                     
                     <!-- Step 9: Sucesso -->
-                    <div class="assessment-step hidden" data-step="9">
-                        <h3 class="assessment-question">O que significa "ter sucesso financeiro" para você?</h3>
-                        <div class="assessment-cards assessment-cards-vertical">
-                            <label class="assessment-card">
+                    <div class="analise-perfil-step hidden" data-step="9">
+                        <h3 class="analise-perfil-question">O que significa "ter sucesso financeiro" para você?</h3>
+                        <div class="analise-perfil-cards analise-perfil-cards-vertical">
+                            <label class="analise-perfil-card">
                                 <input type="radio" name="sucesso" value="acertar">
                                 <span class="card-content"><span class="card-text">Acertar a moeda e não trabalhar mais.</span></span>
                             </label>
-                            <label class="assessment-card">
+                            <label class="analise-perfil-card">
                                 <input type="radio" name="sucesso" value="dividas">
                                 <span class="card-content"><span class="card-text">Sair das dívidas, sem ansiedade, não perder para inflação.</span></span>
                             </label>
-                            <label class="assessment-card">
+                            <label class="analise-perfil-card">
                                 <input type="radio" name="sucesso" value="patrimonio">
                                 <span class="card-content"><span class="card-text">Construir patrimônio consistente e viver de renda.</span></span>
                             </label>
                         </div>
-                        <button type="button" class="assessment-next" onclick="nextStep()">Próximo</button>
+                        <button type="button" class="analise-perfil-next" onclick="nextStep()">Próximo</button>
                     </div>
                     
                     <!-- Step 10: Comprometimento -->
-                    <div class="assessment-step hidden" data-step="10">
+                    <div class="analise-perfil-step hidden" data-step="10">
                         <div class="step-indicator">V. Skin in the Game</div>
-                        <h3 class="assessment-question">Se precisar cortar luxos temporários, qual sua reação?</h3>
-                        <div class="assessment-cards assessment-cards-vertical">
-                            <label class="assessment-card">
+                        <h3 class="analise-perfil-question">Se precisar cortar luxos temporários, qual sua reação?</h3>
+                        <div class="analise-perfil-cards analise-perfil-cards-vertical">
+                            <label class="analise-perfil-card">
                                 <input type="radio" name="corte" value="difcil">
                                 <span class="card-content"><span class="card-text">Difícil. Prefiro ganhar mais.</span></span>
                             </label>
-                            <label class="assessment-card">
+                            <label class="analise-perfil-card">
                                 <input type="radio" name="corte" value="sacrificio">
                                 <span class="card-content"><span class="card-text">Pronto para o sacrifício hoje pela paz amanhã.</span></span>
                             </label>
-                            <label class="assessment-card">
+                            <label class="analise-perfil-card">
                                 <input type="radio" name="corte" value="equilibrio">
                                 <span class="card-content"><span class="card-text">Consigo equilibrar qualidade de vida com disciplina.</span></span>
                             </label>
                         </div>
-                        <button type="button" class="assessment-next" onclick="nextStep()">Próximo</button>
+                        <button type="button" class="analise-perfil-next" onclick="nextStep()">Próximo</button>
                     </div>
                     
                     <!-- Step 11: Tempo -->
-                    <div class="assessment-step hidden" data-step="11">
-                        <h3 class="assessment-question">Quanto tempo por semana para estudar e aplicar o método?</h3>
-                        <div class="assessment-cards assessment-cards-vertical">
-                            <label class="assessment-card">
+                    <div class="analise-perfil-step hidden" data-step="11">
+                        <h3 class="analise-perfil-question">Quanto tempo por semana para estudar e aplicar o método?</h3>
+                        <div class="analise-perfil-cards analise-perfil-cards-vertical">
+                            <label class="analise-perfil-card">
                                 <input type="radio" name="tempo" value="pouco">
                                 <span class="card-content"><span class="card-text">Tenho pouco tempo, quero algo passivo.</span></span>
                             </label>
-                            <label class="assessment-card">
+                            <label class="analise-perfil-card">
                                 <input type="radio" name="tempo" value="medio">
                                 <span class="card-content"><span class="card-text">Consigo dedicar 1-2 horas semanais.</span></span>
                             </label>
-                            <label class="assessment-card">
+                            <label class="analise-perfil-card">
                                 <input type="radio" name="tempo" value="2-3">
                                 <span class="card-content"><span class="card-text">Prioridade. 2 a 3 horas semanais.</span></span>
                             </label>
                         </div>
-                        <button type="button" class="assessment-submit" onclick="handleAssessmentSubmit(event)">Submeter Aplicação</button>
+                        <button type="button" class="analise-perfil-submit" onclick="handleAnalisePerfilSubmit(event)">Submeter Aplicação</button>
                     </div>
                 </form>
                 
-                <p class="assessment-footer-lock">
+                <p class="analise-perfil-footer-lock">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                         <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
@@ -386,20 +386,20 @@
                 </p>
             </form>
             
-            <p class="assessment-footer">Orgulhosamente desenvolvido na potência econômica de Mato Grosso.</p>
+            <p class="analise-perfil-footer">Orgulhosamente desenvolvido na potência econômica de Mato Grosso.</p>
         </div>
         
-        <div id="assessment-toast" class="assessment-toast hidden">
+        <div id="analise-perfil-toast" class="analise-perfil-toast hidden">
             <div class="toast-icon"></div>
             <div class="toast-message"></div>
-            <button class="toast-close" onclick="document.getElementById('assessment-toast').classList.add('hidden')">×</button>
+            <button class="toast-close" onclick="document.getElementById('analise-perfil-toast').classList.add('hidden')">×</button>
         </div>
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <!-- NEW TOPIC MODAL (Community)                 -->
     <!-- ═══════════════════════════════════════════════════════════════ -->
-<div id="modal-assessment-detail" class="auth-modal hidden" style="display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.98);">
+<div id="modal-analise-perfil-detail" class="auth-modal hidden" style="display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.98);">
         <div style="max-width: 420px; width: 92%; background: #051845; border: 1px solid #D4AF37; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.4); border: 1px solid rgba(212,175,55,0.3); border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); overflow: hidden;">
             <div style="padding: 20px 24px; border-bottom: 1px solid rgba(212,175,55,0.3); display: flex; justify-content: space-between; align-items: flex-start;">
                 <div>
@@ -796,20 +796,20 @@
             <div id="react-pricing-root"></div>
         </section>
 
-<section class="page-content page-hidden" id="page-admin-assessment">
-            <div class="admin-assessment-container" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+<section class="page-content page-hidden" id="page-admin-analise-perfil">
+            <div class="admin-analise-perfil-container" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h2 style="color: #cda434; margin: 0;">Painel Admin - Análise de Perfis</h2>
-                    <button onclick="exportAssessmentExcel()" style="background: #22c55e; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 500;">Exportar Excel</button>
+                    <button onclick="exportAnalisePerfilExcel()" style="background: #22c55e; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 500;">Exportar Excel</button>
                 </div>
                 <div class="admin-filters" style="display: flex; gap: 16px; margin-bottom: 24px; background: rgba(5, 24, 69, 0.4); padding: 16px; border-radius: 8px; border: 1px solid rgba(212,175,55,0.2);">
                     <div style="flex: 1;">
                         <label style="display: block; color: #94a3b8; font-size: 11px; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Buscar por nome ou e-mail</label>
-                        <input type="text" id="filter-assessment-search" placeholder="Ex: João Silva..." style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 10px 14px; border-radius: 6px; color: white; outline: none; transition: border-color 0.2s;">
+                        <input type="text" id="filter-analise-perfil-search" placeholder="Ex: João Silva..." style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 10px 14px; border-radius: 6px; color: white; outline: none; transition: border-color 0.2s;">
                     </div>
                     <div style="width: 200px;">
                         <label style="display: block; color: #94a3b8; font-size: 11px; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Status</label>
-                        <select id="filter-assessment-status" style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 10px 14px; border-radius: 6px; color: white; outline: none; cursor: pointer;">
+                        <select id="filter-analise-perfil-status" style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 10px 14px; border-radius: 6px; color: white; outline: none; cursor: pointer;">
                             <option value="all">Todos os Status</option>
                             <option value="novo">Pendente</option>
                             <option value="aprovado">Aprovado</option>
@@ -817,7 +817,7 @@
                         </select>
                     </div>
                 </div>
-                <div id="assessment-responses-list"></div>
+                <div id="analise-perfil-responses-list"></div>
             </div>
         </section>
 
@@ -877,7 +877,7 @@
             <header class="admin-header">
                 <h1 id="admin-header-title">Pipeline de Elegibilidade</h1>
                 <div class="admin-header-actions">
-                    <button class="btn-export" id="admin-export-btn" onclick="window.exportAssessmentExcel()">
+                    <button class="btn-export" id="admin-export-btn" onclick="window.exportAnalisePerfilExcel()">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                         Exportar
                     </button>
@@ -896,18 +896,7 @@
             <div class="kanban-board" id="kanban-board"></div>
         </main>
     </div>
-                <h1>Pipeline de Elegibilidade</h1>
-                <button class="btn-export" onclick="exportAssessmentExcel()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    Exportar Relatório
-                </button>
-            </header>
-            
-            <div class="kanban-board" id="kanban-board">
-                <!-- Columns will be rendered by JS -->
-            </div>
-        </main>
-    </div>
+
     
     <!-- Modal de Detalhes do Candidato -->
     <div id="candidate-modal" class="candidate-modal hidden">

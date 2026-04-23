@@ -107,7 +107,7 @@ export const CRMAdmin = () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('afic_assessment_responses')
+        .from('afic_analise_perfil_responses')
         .select('*')
         .order('created_at', { ascending: false });
       
@@ -124,7 +124,7 @@ export const CRMAdmin = () => {
     if (e) e.stopPropagation();
     try {
       const { error } = await supabase
-        .from('afic_assessment_responses')
+        .from('afic_analise_perfil_responses')
         .update({ status: newStatus })
         .eq('id', id);
 
@@ -165,7 +165,7 @@ export const CRMAdmin = () => {
       <div className="mb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Triagem & Formulários</h2>
-          <p className="text-gray-500 dark:text-gray-400">Acompanhe e gerencie as aplicações do Assessment.</p>
+          <p className="text-gray-500 dark:text-gray-400">Acompanhe e gerencie as aplicações da Análise de Perfil.</p>
         </div>
         <div className="bg-white dark:bg-[#0a2540] border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-2 flex gap-4 text-sm font-medium shadow-sm">
           <div className="flex flex-col items-center">

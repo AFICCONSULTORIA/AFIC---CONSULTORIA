@@ -9,12 +9,12 @@ export const LandingPage = () => {
     }
   };
 
-  const openAssessment = () => {
-    const page = document.getElementById('page-assessment');
+  const openAnalisePerfil = () => {
+    const page = document.getElementById('page-analise-perfil');
     if (page) {
       page.classList.remove('page-hidden');
       page.style.display = 'flex';
-      window.location.hash = 'assessment';
+      window.location.hash = 'analise-perfil';
     }
   };
 
@@ -62,7 +62,7 @@ export const LandingPage = () => {
           </nav>
 
           <div className="flex items-center gap-3">
-            <button onClick={openAssessment} className="border border-white/30 text-white px-4 py-2.5 font-bold hover:bg-white/10 transition-all text-sm">
+            <button onClick={openAnalisePerfil} className="border border-white/30 text-white px-4 py-2.5 font-bold hover:bg-white/10 transition-all text-sm">
               Análise de Perfil
             </button>
             <button onClick={openAuth} className="bg-[#D4AF37] text-[#001240] px-5 py-2.5 font-bold hover:shadow-lg hover:translate-y-[-2px] transition-all active:translate-y-0 text-sm">
@@ -132,10 +132,10 @@ export const LandingPage = () => {
           <h2 className="text-3xl md:text-5xl font-display font-extrabold mb-6">Você Está Protegido ou Apenas com Sorte?</h2>
           <p className="text-lg text-white/70 mb-10 max-w-2xl mx-auto">Faça um diagnóstico rápido e gratuito da sua saúde financeira e descubra se você está no caminho certo ou caindo em armadilhas invisíveis.</p>
           <button 
-            onClick={openAssessment}
+            onClick={openAnalisePerfil}
             className="inline-block bg-[#D4AF37] hover:bg-[#c9a227] text-[#051845] font-display font-bold text-xl px-12 py-5 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 cursor-pointer"
           >
-            Testar Meu Perfil de Investidor
+            Fazer Análise de Perfil
           </button>
         </div>
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:20px_20px]"></div>
@@ -349,7 +349,7 @@ export const LandingPage = () => {
                  <p className="text-white/70 text-sm mb-6 max-w-sm">Tudo o que você precisa para aprender a investir de verdade, do zero, por um valor extremamente acessível.</p>
                </div>
                <div className="relative z-10 mt-8 md:mt-0">
-                 <button onClick={openAssessment} className="w-full md:w-auto bg-[#D4AF37] text-[#051845] px-10 py-5 font-bold hover:bg-[#e8cc6e] transition-all shadow-xl">
+                 <button onClick={openAnalisePerfil} className="w-full md:w-auto bg-[#D4AF37] text-[#051845] px-10 py-5 font-bold hover:bg-[#e8cc6e] transition-all shadow-xl">
                    Quero Aprender a Investir do Zero
                  </button>
                  <p className="text-white/40 text-[10px] text-center mt-3 uppercase tracking-tighter">Vagas limitadas para novos membros</p>
@@ -358,7 +358,7 @@ export const LandingPage = () => {
                <div className="absolute top-0 right-0 w-64 h-full bg-white/5 -skew-x-[30deg]"></div>
             </div>
             
-            <p className="mt-8 text-sm text-[#4a5068] dark:text-[#94a3b8]">Pare de cair em armadilhas financeiras. <button onClick={openAssessment} className="text-[#D4AF37] font-bold underline">Comece sua análise gratuita</button> agora.</p>
+            <p className="mt-8 text-sm text-[#4a5068] dark:text-[#94a3b8]">Pare de cair em armadilhas financeiras. <button onClick={openAnalisePerfil} className="text-[#D4AF37] font-bold underline">Comece sua análise gratuita</button> agora.</p>
         </div>
       </section>
 
