@@ -63,7 +63,7 @@ window.renderAnalisePerfilList = function(data) {
         const id = e.target.dataset.id;
         const newStatus = e.target.value;
         const supabaseDb = window.supabaseApp || window.aficSupabase;
-        const { error } = await supabaseDb.from('afic_analise-perfil_responses').update({ status: newStatus }).eq('id', id);
+        const { error } = await supabaseDb.from('afic_analise_perfil_responses').update({ status: newStatus }).eq('id', id);
         if (error) alert('Erro ao atualizar: ' + error.message);
       });
     });
@@ -93,7 +93,7 @@ window.loadAnalisePerfilResponses = async function() {
   }
   
   try {
-    const { data, error } = await supabaseDb.from('afic_analise-perfil_responses')
+    const { data, error } = await supabaseDb.from('afic_analise_perfil_responses')
       .select('*')
       .order('created_at', { ascending: false });
     

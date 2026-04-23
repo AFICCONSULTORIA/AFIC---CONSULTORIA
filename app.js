@@ -2562,7 +2562,7 @@ window.handleAnalisePerfilSubmit = async function(e) {
     saveError = 'Supabase não conectado';
   } else {
     try {
-      const { error } = await supabaseDb.from('afic_analise-perfil_responses').insert([formData]);
+      const { error } = await supabaseDb.from('afic_analise_perfil_responses').insert([formData]);
       if (error) saveError = error.message;
     } catch(err) {
       saveError = err.message;
@@ -2660,7 +2660,7 @@ window.renderAnalisePerfilList = function(data) {
         const id = e.target.dataset.id;
         const newStatus = e.target.value;
         const supabaseDb = window.supabaseApp || window.aficSupabase;
-        const { error } = await supabaseDb.from('afic_analise-perfil_responses').update({ status: newStatus }).eq('id', id);
+        const { error } = await supabaseDb.from('afic_analise_perfil_responses').update({ status: newStatus }).eq('id', id);
         if (error) alert('Erro ao atualizar: ' + error.message);
       });
     });
@@ -2690,7 +2690,7 @@ window.loadAnalisePerfilResponses = async function() {
   }
   
   try {
-    const { data, error } = await supabaseDb.from('afic_analise-perfil_responses')
+    const { data, error } = await supabaseDb.from('afic_analise_perfil_responses')
       .select('*')
       .order('created_at', { ascending: false });
     
@@ -2823,7 +2823,7 @@ window.exportAnalisePerfilExcel = async function() {
   }
   
   try {
-    const { data, error } = await supabaseDb.from('afic_analise-perfil_responses')
+    const { data, error } = await supabaseDb.from('afic_analise_perfil_responses')
       .select('*')
       .order('created_at', { ascending: false });
     
@@ -2965,7 +2965,7 @@ window.loadKanban = async function() {
   }
   
   try {
-    const { data, error } = await supabaseDb.from('afic_analise-perfil_responses')
+    const { data, error } = await supabaseDb.from('afic_analise_perfil_responses')
       .select('*')
       .order('created_at', { ascending: false });
     
@@ -3058,7 +3058,7 @@ window.candidateAction = async function(action) {
   }
   
   try {
-    const { error } = await supabaseDb.from('afic_analise-perfil_responses')
+    const { error } = await supabaseDb.from('afic_analise_perfil_responses')
       .update({ status: newStatus })
       .eq('id', id);
     
@@ -3422,7 +3422,7 @@ window.renderTelemetriaModule = async function() {
       const { data: progress } = await supabaseDb.from('academy_user_progress').select('*');
       progressData = progress || [];
       
-      const { data: analisePerfil } = await supabaseDb.from('afic_analise-perfil_responses').select('*');
+      const { data: analisePerfil } = await supabaseDb.from('afic_analise_perfil_responses').select('*');
       analisePerfilData = analisePerfil || [];
     }
   } catch(e) {
@@ -3919,7 +3919,7 @@ window.updateAdminQuickStats = async function() {
       const { data: a } = await supabaseDb.from('afic_alunos').select('id');
       alunos = a?.length || 0;
       
-      const { data: assess } = await supabaseDb.from('afic_analise-perfil_responses').select('id');
+      const { data: assess } = await supabaseDb.from('afic_analise_perfil_responses').select('id');
       analisePerfil = assess?.length || 0;
       
       const { data: mods } = await supabaseDb.from('academy_modules').select('id');

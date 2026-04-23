@@ -82,7 +82,7 @@ window.loadKanban = async function() {
   }
   
   try {
-    const { data, error } = await supabaseDb.from('afic_analise-perfil_responses')
+    const { data, error } = await supabaseDb.from('afic_analise_perfil_responses')
       .select('*')
       .order('created_at', { ascending: false });
     
