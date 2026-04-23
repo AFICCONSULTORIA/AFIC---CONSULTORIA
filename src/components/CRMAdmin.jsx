@@ -7,6 +7,8 @@ export const CRMAdmin = () => {
   const [expandedLead, setExpandedLead] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [leadToDelete, setLeadToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Status mapping
   const statusOptions = [
@@ -136,6 +138,32 @@ export const CRMAdmin = () => {
     } catch (err) {
       console.error('Error updating status:', err);
       alert('Erro ao atualizar status.');
+    }
+  };
+  const confirmDelete = (lead, e) => {
+    if (e) e.stopPropagation();
+    setLeadToDelete(lead);
+  };
+
+  const executeDelete = async () => {
+    if (!leadToDelete) return;
+    
+    try {
+      setIsDeleting(true);
+      const { error } = await supabase
+        .from('afic_analise_perfil_responses')
+        .delete()
+        .eq('id', leadToDelete.id);
+
+      if (error) throw error;
+      
+      setLeads(leads.filter(l => l.id !== leadToDelete.id));
+      setLeadToDelete(null);
+    } catch (err) {
+      console.error('Error deleting lead:', err);
+      alert('Erro ao excluir lead.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -274,6 +302,16 @@ export const CRMAdmin = () => {
                         </div>
                       </div>
 
+                      <button 
+                        onClick={(e) => confirmDelete(lead, e)}
+                        className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                        title="Excluir Lead"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                      </button>
+
                       <button className="text-gray-400 hover:text-gray-600 transition-colors">
                         <svg className={`w-5 h-5 transform transition-transform ${isExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
@@ -318,6 +356,44 @@ export const CRMAdmin = () => {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {leadToDelete && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-[#0a2540] rounded-2xl shadow-2xl max-w-sm w-full p-6 border border-gray-100 dark:border-gray-800 animate-scale-in">
+            <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400 mb-4 mx-auto">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+              </svg>
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white text-center mb-2">Excluir Lead?</h3>
+            <p className="text-gray-500 dark:text-gray-400 text-center text-sm mb-6">
+              Você tem certeza que deseja excluir <strong>{leadToDelete.nome}</strong>? Esta ação não pode ser desfeita.
+            </p>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setLeadToDelete(null)}
+                disabled={isDeleting}
+                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 font-bold text-sm hover:bg-gray-50 dark:hover:bg-white/5 transition-all disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={executeDelete}
+                disabled={isDeleting}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 text-white font-bold text-sm hover:bg-red-700 transition-all shadow-lg shadow-red-600/20 disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isDeleting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    Excluindo...
+                  </>
+                ) : 'Excluir'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
