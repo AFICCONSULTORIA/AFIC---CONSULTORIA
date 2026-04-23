@@ -1848,7 +1848,7 @@ if (el) el.textContent = data.profile_type ? profileLabels[data.profile_type] ||
             // Detecção de erro no Join
             if (error) {
                 console.warn(`[Aviso] Busca com join falhou (Status: ${status}). Erro:`, error.message);
-                console.log("Tentando Fallback: Busca simples (sem join)...");
+                console.log("Tentando Fallback: Busca simples + mapeamento manual...");
                 
                 const fallback = await supabase
                     .from('community_topics')
@@ -1860,8 +1860,21 @@ if (el) el.textContent = data.profile_type ? profileLabels[data.profile_type] ||
                     throw fallback.error;
                 }
                 
-                data = fallback.data;
-                console.log("Fallback bem sucedido. Dados recuperados sem perfis.");
+                // Mapeamento manual de perfis para garantir o apelido
+                const userIds = [...new Set(fallback.data.map(t => t.user_id))];
+                const { data: profiles } = await supabase
+                    .from('profiles')
+                    .select('id, nickname')
+                    .in('id', userIds);
+                
+                const pMap = {};
+                profiles?.forEach(p => pMap[p.id] = p.nickname);
+                
+                data = fallback.data.map(t => ({
+                    ...t,
+                    profiles: { nickname: pMap[t.user_id] }
+                }));
+                console.log("Fallback com mapeamento manual concluído.");
             }
 
             console.log(`Tópicos encontrados: ${data ? data.length : 0}`);
@@ -1955,9 +1968,9 @@ if (el) el.textContent = data.profile_type ? profileLabels[data.profile_type] ||
                 .eq('id', topicId)
                 .single();
 
-            // FALLBACK: Se o join falhar, tenta buscar apenas o tópico
+            // FALLBACK: Se o join falhar, tenta buscar apenas o tópico e depois o perfil
             if (error) {
-                console.warn("Topic details join failed, attempting fallback...", error.message);
+                console.warn("Topic details join failed, attempting manual fallback...", error.message);
                 const fallback = await supabase
                     .from('community_topics')
                     .select('*')
@@ -1966,6 +1979,17 @@ if (el) el.textContent = data.profile_type ? profileLabels[data.profile_type] ||
                 
                 if (fallback.error) throw fallback.error;
                 data = fallback.data;
+
+                // Busca manual do perfil
+                const { data: prof } = await supabase
+                    .from('profiles')
+                    .select('nickname')
+                    .eq('id', data.user_id)
+                    .maybeSingle();
+                
+                if (prof) {
+                    data.profiles = prof;
+                }
             }
 
             if (!data) throw new Error("Postagem não encontrada.");
