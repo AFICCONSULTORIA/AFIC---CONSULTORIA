@@ -393,7 +393,7 @@ const NewTopicModal = ({ isOpen, onClose }) => {
 
 // ──────────── Topic Detail ────────────
 const TopicDetail = ({ topicId, onBack }) => {
-  const { getTopicDetail, getComments, addComment, getLikes, toggleLike, deleteComment, deleteTopic, updateTopicCover, userId, isAdmin } = useCommunity();
+  const { getTopicDetail, getComments, addComment, updateTopic, updateComment, getLikes, toggleLike, deleteComment, deleteTopic, updateTopicCover, userId, isAdmin } = useCommunity();
   const [topic, setTopic] = useState(null);
   const [comments, setComments] = useState([]);
   const [likes, setLikes] = useState({ count: 0, userLiked: false });
@@ -402,33 +402,36 @@ const TopicDetail = ({ topicId, onBack }) => {
   const [deleting, setDeleting] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [loadingError, setLoadingError] = useState(null);
+  
+  // Edit state for Topic
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
+  const [editContent, setEditContent] = useState('');
+  const [saving, setSaving] = useState(false);
+
   const { confirm, Dialog } = useConfirm();
 
-  useEffect(() => {
-    async function load() {
-      setLoadingError(null);
-      try {
-        if (!topicId) {
-          onBack();
-          return;
-        }
-        const t = await getTopicDetail(topicId);
-        if (!t) {
-          console.error('Topic not found:', topicId);
-          onBack();
-          return;
-        }
-        setTopic(t);
-        const [c, l] = await Promise.all([getComments(topicId), getLikes(topicId)]);
-        setComments(c);
-        setLikes(l);
-      } catch (err) {
-        console.error('Error loading topic:', err);
-        setLoadingError(err.message);
-      }
+  const loadData = useCallback(async () => {
+    setLoadingError(null);
+    try {
+      if (!topicId) { onBack(); return; }
+      const t = await getTopicDetail(topicId);
+      if (!t) { onBack(); return; }
+      setTopic(t);
+      setEditTitle(t.title);
+      setEditContent(t.content);
+      const [c, l] = await Promise.all([getComments(topicId), getLikes(topicId)]);
+      setComments(c);
+      setLikes(l);
+    } catch (err) {
+      console.error('Error loading topic:', err);
+      setLoadingError(err.message);
     }
-    load();
-  }, [topicId]);
+  }, [topicId, onBack, getTopicDetail, getComments, getLikes]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   if (loadingError) {
     return (
@@ -461,6 +464,17 @@ const TopicDetail = ({ topicId, onBack }) => {
     onBack();
   };
 
+  const handleSaveEdit = async () => {
+    if (!editTitle.trim() || !editContent.trim()) return;
+    setSaving(true);
+    const ok = await updateTopic(topicId, editTitle, editContent);
+    if (ok) {
+      setTopic({ ...topic, title: editTitle, content: editContent });
+      setIsEditing(false);
+    }
+    setSaving(false);
+  };
+
   const handleCoverChange = async (e) => {
     const f = e.target.files[0];
     if (!f) return;
@@ -477,7 +491,7 @@ const TopicDetail = ({ topicId, onBack }) => {
   const isOwner = topic.user_id === userId;
 
   return (
-    <div className="max-w-4xl mx-auto w-full">
+    <div className="max-w-4xl mx-auto w-full pb-20">
       {Dialog}
 
       {/* Back */}
@@ -494,11 +508,20 @@ const TopicDetail = ({ topicId, onBack }) => {
         {/* Overlay info */}
         <div className="absolute bottom-0 left-0 right-0 p-6">
           <span className="text-xs font-bold text-white/80 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full mb-3 inline-block">{topic.category}</span>
-          <h1 className="text-2xl font-black text-white leading-tight drop-shadow">{topic.title}</h1>
+          {!isEditing ? (
+            <h1 className="text-2xl font-black text-white leading-tight drop-shadow">{topic.title}</h1>
+          ) : (
+            <input 
+              className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-lg px-4 py-2 text-white font-black text-xl outline-none focus:bg-white/20"
+              value={editTitle}
+              onChange={e => setEditTitle(e.target.value)}
+              placeholder="Título da publicação..."
+            />
+          )}
         </div>
 
         {/* Change cover button — only for owner */}
-        {isOwner && (
+        {isOwner && !isEditing && (
           <label className="absolute top-4 right-4 cursor-pointer bg-black/40 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 hover:bg-black/60 transition-colors">
             {uploadingCover
               ? <svg className="animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13"><circle cx="12" cy="12" r="10" strokeOpacity="0.3"/><path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round"/></svg>
@@ -510,7 +533,7 @@ const TopicDetail = ({ topicId, onBack }) => {
         )}
       </div>
 
-      {/* Author + delete row */}
+      {/* Author + Actions row */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-xs font-black text-gray-500">
@@ -521,22 +544,62 @@ const TopicDetail = ({ topicId, onBack }) => {
             <span className="text-xs text-gray-400">{fmtDate(topic.created_at)}</span>
           </div>
         </div>
-        {isAdmin && (
-          <button type="button" disabled={deleting} onClick={handleDelete}
-            className="flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-red-500 bg-gray-50 hover:bg-red-50 px-4 py-2 rounded-lg transition-colors disabled:opacity-50">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-            {deleting ? 'Excluindo...' : 'Excluir Tópico'}
-          </button>
-        )}
+        
+        <div className="flex items-center gap-2">
+          {isOwner && !isEditing && (
+            <button 
+              onClick={() => setIsEditing(true)}
+              className="flex items-center gap-2 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg transition-colors"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Editar
+            </button>
+          )}
+
+          {(isAdmin || isOwner) && !isEditing && (
+            <button type="button" disabled={deleting} onClick={handleDelete}
+              className="flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-red-500 bg-gray-50 hover:bg-red-50 px-4 py-2 rounded-lg transition-colors disabled:opacity-50">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              {deleting ? 'Excluindo...' : 'Excluir'}
+            </button>
+          )}
+
+          {isEditing && (
+            <>
+              <button 
+                onClick={() => { setIsEditing(false); setEditTitle(topic.title); setEditContent(topic.content); }}
+                className="text-xs font-bold text-gray-500 hover:text-gray-700 px-4 py-2"
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={handleSaveEdit}
+                disabled={saving}
+                className="bg-blue-600 text-white text-xs font-bold px-5 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              >
+                {saving ? 'Salvando...' : 'Salvar Alterações'}
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Content */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-6">
-        <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{topic.content}</p>
+        {!isEditing ? (
+          <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{topic.content}</p>
+        ) : (
+          <textarea 
+            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg outline-none resize-none text-gray-700 leading-relaxed min-h-[200px]"
+            value={editContent}
+            onChange={e => setEditContent(e.target.value)}
+            placeholder="O que você deseja compartilhar?"
+          />
+        )}
       </div>
 
       {/* PDF Attachment */}
-      {topic.attachment_url && (
+      {topic.attachment_url && !isEditing && (
         <a href={topic.attachment_url} target="_blank" rel="noreferrer"
            className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-sm font-bold text-amber-700 hover:bg-amber-100 transition-colors">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
@@ -570,28 +633,105 @@ const TopicDetail = ({ topicId, onBack }) => {
         </form>
         <div className="space-y-6">
           {comments.length === 0 && <p className="text-sm text-gray-400 text-center py-4">Nenhum comentário ainda. Seja o primeiro!</p>}
-          {comments.map(c => {
-            const cAuthor = c.profiles?.nickname || 'Membro';
-            const isOwner = c.user_id === userId;
-            return (
-              <div key={c.id} className="bg-white border border-gray-100 rounded-xl p-5">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-black text-gray-500">{cAuthor.substring(0, 2).toUpperCase()}</div>
-                  <span className="text-sm font-bold text-gray-700">{cAuthor}</span>
-                  <span className="text-xs text-gray-400">{fmtDate(c.created_at)}</span>
-                  {isOwner && (
-                    <button
-                      onClick={async () => { if (confirm('Apagar comentário?')) { await deleteComment(c.id); setComments(await getComments(topicId)); }}}
-                      className="ml-auto text-xs text-red-500 hover:text-red-700"
-                    >🗑️</button>
-                  )}
-                </div>
-                <p className="text-sm text-gray-600 leading-relaxed">{c.content}</p>
-              </div>
-            );
-          })}
+          {comments.map(c => (
+            <CommentItem 
+              key={c.id} 
+              comment={c} 
+              userId={userId} 
+              isAdmin={isAdmin} 
+              onDelete={async () => {
+                await deleteComment(c.id);
+                setComments(await getComments(topicId));
+              }}
+              onUpdate={async (newContent) => {
+                const ok = await updateComment(c.id, newContent);
+                if (ok) setComments(await getComments(topicId));
+                return ok;
+              }}
+            />
+          ))}
         </div>
       </div>
+    </div>
+  );
+};
+
+// ──────────── Comment Item Component ────────────
+const CommentItem = ({ comment, userId, isAdmin, onDelete, onUpdate }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(comment.content);
+  const [saving, setSaving] = useState(false);
+  
+  const isOwner = comment.user_id === userId;
+  const authorName = comment.profiles?.nickname || 'Membro AFIC';
+
+  const handleSave = async () => {
+    if (!editContent.trim() || editContent === comment.content) {
+      setIsEditing(false);
+      return;
+    }
+    setSaving(true);
+    const ok = await onUpdate(editContent);
+    if (ok) setIsEditing(false);
+    setSaving(false);
+  };
+
+  return (
+    <div className="bg-white border border-gray-100 rounded-xl p-5 group transition-all hover:border-blue-100 hover:shadow-sm">
+      <div className="flex items-center gap-3 mb-3">
+        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-black text-gray-500">
+          {authorName.substring(0, 2).toUpperCase()}
+        </div>
+        <span className="text-sm font-bold text-gray-700">{authorName}</span>
+        <span className="text-xs text-gray-400">{fmtDate(comment.created_at)}</span>
+        
+        <div className="ml-auto flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          {isOwner && !isEditing && (
+            <button 
+              onClick={() => setIsEditing(true)}
+              className="text-[10px] font-bold text-blue-500 hover:text-blue-700 px-2 py-1 rounded hover:bg-blue-50"
+            >
+              EDITAR
+            </button>
+          )}
+          {(isAdmin || isOwner) && (
+            <button
+              onClick={() => { if (window.confirm('Apagar comentário?')) onDelete(); }}
+              className="text-[10px] font-bold text-red-400 hover:text-red-600 px-2 py-1 rounded hover:bg-red-50"
+            >
+              EXCLUIR
+            </button>
+          )}
+        </div>
+      </div>
+
+      {!isEditing ? (
+        <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">{comment.content}</p>
+      ) : (
+        <div className="space-y-3">
+          <textarea 
+            className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none resize-none text-sm text-gray-600"
+            rows="3"
+            value={editContent}
+            onChange={e => setEditContent(e.target.value)}
+          />
+          <div className="flex justify-end gap-2">
+            <button 
+              onClick={() => { setIsEditing(false); setEditContent(comment.content); }}
+              className="text-xs font-bold text-gray-400 hover:text-gray-600 px-3 py-1"
+            >
+              Cancelar
+            </button>
+            <button 
+              onClick={handleSave}
+              disabled={saving}
+              className="bg-[#0a2540] text-white text-[10px] font-black uppercase tracking-wider px-4 py-1.5 rounded-lg hover:bg-black transition-all disabled:opacity-50"
+            >
+              {saving ? 'Salvando...' : 'Salvar'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -613,3 +753,4 @@ export const CommunityForum = () => {
     </div>
   );
 };
+

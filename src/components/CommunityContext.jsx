@@ -23,39 +23,54 @@ const fetchAnnouncements = async (setAnnouncements) => {
 
 const fetchTopics = async (setTopics) => {
   if (!supabase) return;
+  
+  // Tentar busca com join
   const { data, error } = await supabase
     .from('community_topics')
-    .select('*')
+    .select('*, profiles:user_id (nickname)')
     .order('created_at', { ascending: false });
-  if (!error) setTopics(data || []);
+  
+  if (error) {
+    console.warn("Topic fetch join failed, falling back to manual mapping:", error.message);
+    const { data: topics } = await supabase.from('community_topics').select('*').order('created_at', { ascending: false });
+    if (!topics) return;
+    
+    const userIds = [...new Set(topics.map(t => t.user_id))];
+    const { data: profiles } = await supabase.from('profiles').select('id, nickname').in('id', userIds);
+    const map = {};
+    profiles?.forEach(p => map[p.id] = p.nickname);
+    
+    setTopics(topics.map(t => ({ ...t, nickname: map[t.user_id] || 'Membro AFIC' })));
+  } else {
+    setTopics(data.map(t => ({ 
+      ...t, 
+      nickname: t.profiles?.nickname || 'Membro AFIC' 
+    })));
+  }
 };
 
 export const CommunityProvider = ({ children }) => {
   const [topics, setTopics] = useState([]);
-  const [announcements, setAnnouncements] = useState([]); // [NOVO]
+  const [announcements, setAnnouncements] = useState([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [userId, setUserId] = useState(null);
   const [userNickname, setUserNickname] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false); // [NOVO]
+  const [isAdmin, setIsAdmin] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     async function init() {
       try {
         if (!supabase) {
-          console.warn("CommunityContext: supabase not ready yet");
           setIsLoaded(true);
           return;
         }
-
-        console.log("CommunityContext: Initializing...");
         
         const session = await getCurrentSession();
         if (session?.user) {
           setUserId(session.user.id);
           const { data: profiles } = await supabase.from('profiles').select('nickname, role').eq('id', session.user.id).limit(1);
           const profile = profiles?.[0];
-          console.log("DEBUG: Perfil Carregado ->", profile, "Email ->", session.user.email);
           
           if (profile?.nickname) setUserNickname(profile.nickname);
           
@@ -74,7 +89,7 @@ export const CommunityProvider = ({ children }) => {
     }
     
     init();
-  }, []); // Dependências vazias - funções não recriam
+  }, []);
 
   const uploadFile = async (bucket, folder, file) => {
     if (!supabase || !file) return null;
@@ -110,6 +125,21 @@ export const CommunityProvider = ({ children }) => {
     return !error;
   };
 
+  const updateTopic = async (topicId, title, content) => {
+    if (!supabase) return false;
+    const { error } = await supabase
+      .from('community_topics')
+      .update({ 
+        title, 
+        content, 
+        updated_at: new Date().toISOString() 
+      })
+      .eq('id', topicId);
+    
+    if (!error) await fetchTopics(setTopics);
+    return !error;
+  };
+
   const updateTopicCover = async (topicId, coverFile) => {
     if (!supabase) return false;
     const coverImageUrl = await uploadFile('community-attachments', 'covers', coverFile);
@@ -133,12 +163,6 @@ export const CommunityProvider = ({ children }) => {
 
     if (error) {
       console.error('Moderation error:', error);
-      alert("Erro ao moderar tópico: " + error.message);
-      return false;
-    }
-
-    if (!deleteResult || deleteResult.length === 0) {
-      alert("⚠️ Moderação recusada pelo banco. Verifique as permissões de acesso!");
       return false;
     }
 
@@ -148,34 +172,64 @@ export const CommunityProvider = ({ children }) => {
 
   const getTopicDetail = async (topicId) => {
     if (!supabase) return null;
-    const { data } = await supabase.from('community_topics').select('*').eq('id', topicId).limit(1);
-    return data?.[0] || null;
+    
+    // Tentar busca com join
+    const { data, error } = await supabase
+      .from('community_topics')
+      .select('*, profiles:user_id (nickname)')
+      .eq('id', topicId)
+      .maybeSingle();
+    
+    if (error || !data?.profiles) {
+      // Fallback manual
+      const { data: topic } = await supabase.from('community_topics').select('*').eq('id', topicId).maybeSingle();
+      if (!topic) return null;
+      
+      const { data: profile } = await supabase.from('profiles').select('nickname').eq('id', topic.user_id).maybeSingle();
+      return { ...topic, nickname: profile?.nickname || 'Membro AFIC' };
+    }
+    
+    return { ...data, nickname: data.profiles?.nickname || 'Membro AFIC' };
   };
 
   const getComments = async (topicId) => {
     if (!supabase) return [];
-    const { data: comments } = await supabase
+    
+    // Tentar busca com join
+    const { data, error } = await supabase
       .from('community_comments')
-      .select('*')
+      .select('*, profiles:user_id (nickname)')
       .eq('topic_id', topicId)
       .order('created_at', { ascending: true });
-    if (!comments) return [];
-    const { data: profiles } = await supabase.from('profiles').select('id, nickname');
-    const map = {};
-    profiles?.forEach(p => map[p.id] = p.nickname || 'Membro');
-    return comments.map(c => ({ ...c, profiles: { nickname: map[c.user_id] } }));
+    
+    if (error) {
+      const { data: comments } = await supabase
+        .from('community_comments')
+        .select('*')
+        .eq('topic_id', topicId)
+        .order('created_at', { ascending: true });
+      if (!comments) return [];
+      
+      const userIds = [...new Set(comments.map(c => c.user_id))];
+      const { data: profiles } = await supabase.from('profiles').select('id, nickname').in('id', userIds);
+      const map = {};
+      profiles?.forEach(p => map[p.id] = p.nickname);
+      
+      return comments.map(c => ({ 
+        ...c, 
+        profiles: { nickname: map[c.user_id] || 'Membro AFIC' } 
+      }));
+    }
+    
+    return data.map(c => ({
+      ...c,
+      profiles: { nickname: c.profiles?.nickname || 'Membro AFIC' }
+    }));
   };
 
   const addComment = async (topicId, content) => {
     const session = await getCurrentSession();
-    if (!supabase || !session?.user) {
-      console.error('addComment: usuário não autenticado');
-      return false;
-    }
-
-    const { data: profiles } = await supabase.from('profiles').select('nickname').eq('id', session.user.id).limit(1);
-    const profile = profiles?.[0];
-    const nickname = profile?.nickname || 'Membro AFIC';
+    if (!supabase || !session?.user) return false;
 
     const { error } = await supabase.from('community_comments').insert([{
       topic_id: topicId,
@@ -186,58 +240,47 @@ export const CommunityProvider = ({ children }) => {
     return !error;
   };
 
+  const updateComment = async (commentId, content) => {
+    if (!supabase) return false;
+    const { error } = await supabase
+      .from('community_comments')
+      .update({ 
+        content, 
+        updated_at: new Date().toISOString() 
+      })
+      .eq('id', commentId);
+    
+    return !error;
+  };
+
   const getLikes = async (topicId) => {
     if (!supabase) return { count: 0, userLiked: false };
-
     const session = await getCurrentSession();
-
-    const { data, count, error } = await supabase
+    const { data, count } = await supabase
       .from('community_likes')
       .select('user_id', { count: 'exact' })
       .eq('topic_id', topicId);
 
     const userLiked = session?.user ? data?.some(l => l.user_id === session.user.id) : false;
-
     return { count: count || 0, userLiked };
   };
 
   const toggleLike = async (topicId) => {
     const session = await getCurrentSession();
-    if (!supabase || !session?.user) {
-      console.error('toggleLike: usuário não autenticado');
-      return;
-    }
-
+    if (!supabase || !session?.user) return;
     const uid = session.user.id;
-
-    const { data: existingLikes } = await supabase
-      .from('community_likes')
-      .select('*')
-      .eq('topic_id', topicId)
-      .eq('user_id', uid)
-      .limit(1);
-    const existingLike = existingLikes?.[0];
-
-    if (existingLike) {
-      const { error } = await supabase
-        .from('community_likes')
-        .delete()
-        .eq('topic_id', topicId)
-        .eq('user_id', uid);
-      if (error) console.error('toggleLike delete error:', error.message);
+    const { data: existingLikes } = await supabase.from('community_likes').select('*').eq('topic_id', topicId).eq('user_id', uid).limit(1);
+    
+    if (existingLikes?.length > 0) {
+      await supabase.from('community_likes').delete().eq('topic_id', topicId).eq('user_id', uid);
     } else {
-      const { error } = await supabase
-        .from('community_likes')
-        .insert([{ topic_id: topicId, user_id: uid }]);
-      if (error) console.error('toggleLike insert error:', error.message);
+      await supabase.from('community_likes').insert([{ topic_id: topicId, user_id: uid }]);
     }
   };
 
   const deleteComment = async (commentId) => {
     const session = await getCurrentSession();
     if (!supabase || !session?.user) return false;
-    const { data } = await supabase.from('community_comments').select('user_id').eq('id', commentId).limit(1);
-    if (data?.[0]?.user_id !== session.user.id) return false;
     const { error } = await supabase.from('community_comments').delete().eq('id', commentId);
     return !error;
   };
@@ -245,8 +288,8 @@ export const CommunityProvider = ({ children }) => {
   return (
     <CommunityContext.Provider value={{
       topics, isLoaded, userId, userNickname, announcements, isAdmin, setIsAdmin,
-      fetchTopics, createTopic, deleteTopic, updateTopicCover,
-      getTopicDetail, getComments, addComment, getLikes, toggleLike, deleteComment,
+      fetchTopics, createTopic, updateTopic, deleteTopic, updateTopicCover,
+      getTopicDetail, getComments, addComment, updateComment, getLikes, toggleLike, deleteComment,
       fetchAnnouncements, 
       addAnnouncement: async (content, isPriority) => {
         const sb = getSB();
