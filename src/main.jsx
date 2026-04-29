@@ -155,6 +155,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const isAdmin = window.adminMode || window.location.pathname.includes('admin-plans') || window.location.href.includes('admin-plans');
   
+  // Check for payment success
+  const urlParams = new URLSearchParams(window.location.search);
+  const paymentSuccess = urlParams.get('payment') === 'success';
+  
+  if (paymentSuccess) {
+    console.log('Payment successful, processing...');
+    // Limpar URL
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+
   ReactDOM.createRoot(container).render(
     <ReactApp isAdmin={isAdmin} />
   );

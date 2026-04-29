@@ -47,17 +47,33 @@ export const DebtDestroyerCalc = () => {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden max-w-4xl w-full text-left">
-      <div className="grid grid-cols-1 md:grid-cols-5">
-        
-        {/* Área Esquerda (Inputs) */}
-        <div className="md:col-span-3 p-8 border-b md:border-b-0 md:border-r border-gray-100">
-          <div className="mb-8">
-            <h2 className="text-2xl font-black text-[#0a2540] tracking-tight uppercase">Destruidor de Dívidas</h2>
-            <p className="text-xs text-gray-400 mt-1 font-bold uppercase tracking-widest">Auditoria de Passivos Financeiros</p>
+    <>
+      <div className="w-full max-w-4xl mb-6">
+        <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-5 text-sm text-blue-800">
+          <div className="flex items-start gap-3">
+            <svg className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <p className="font-bold mb-1">Como usar o Destruidor de Dívidas?</p>
+              <p className="text-blue-700/80 leading-relaxed">
+                Descubra o verdadeiro peso dos juros. Insira o valor atualizado da dívida, a taxa de juros mensal cobrada pelo banco e quanto você tem disponível para pagar por mês. A ferramenta revelará quanto tempo levará para a quitação total e quanto do seu dinheiro será sugado apenas pelos juros.
+              </p>
+            </div>
           </div>
+        </div>
+      </div>
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden max-w-4xl w-full text-left">
+        <div className="grid grid-cols-1 md:grid-cols-5">
+          
+          {/* Área Esquerda (Inputs) */}
+          <div className="md:col-span-3 p-8 border-b md:border-b-0 md:border-r border-gray-100">
+            <div className="mb-8">
+              <h2 className="text-2xl font-black text-[#0a2540] tracking-tight uppercase">Destruidor de Dívidas</h2>
+              <p className="text-xs text-gray-400 mt-1 font-bold uppercase tracking-widest">Auditoria de Passivos Financeiros</p>
+            </div>
 
-          <div className="space-y-6">
+            <div className="space-y-6">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">Valor Total da Dívida Atual (R$)</label>
               <input 
@@ -122,6 +138,7 @@ export const DebtDestroyerCalc = () => {
 
       </div>
     </div>
+    </>
   );
 };
 
@@ -145,17 +162,33 @@ export const FeeAuditorCalc = () => {
   const finalNetWealth = FV_net;
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden max-w-4xl w-full text-left mt-8">
-      <div className="grid grid-cols-1 md:grid-cols-5">
-        
-        {/* Área Esquerda (Inputs) */}
-        <div className="md:col-span-3 p-8 border-b md:border-b-0 md:border-r border-gray-100">
-          <div className="mb-8">
-            <h2 className="text-2xl font-black text-[#0a2540] tracking-tight uppercase">Auditoria de Custos</h2>
-            <p className="text-[10px] text-gray-400 mt-1 font-bold uppercase tracking-[0.2em]">Expondo a Ineficiência de Taxas</p>
+    <>
+      <div className="w-full max-w-4xl mb-6">
+        <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-5 text-sm text-blue-800">
+          <div className="flex items-start gap-3">
+            <svg className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <p className="font-bold mb-1">Como usar a Auditoria de Custos?</p>
+              <p className="text-blue-700/80 leading-relaxed">
+                Muitos fundos e planos de previdência cobram taxas ocultas que corroem seu patrimônio. Informe seu capital inicial, expectativa de rentabilidade, taxa de administração cobrada e o prazo em anos. Veja com clareza a verdadeira fortuna que as instituições financeiras capturam do seu retorno.
+              </p>
+            </div>
           </div>
+        </div>
+      </div>
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden max-w-4xl w-full text-left mt-8">
+        <div className="grid grid-cols-1 md:grid-cols-5">
+          
+          {/* Área Esquerda (Inputs) */}
+          <div className="md:col-span-3 p-8 border-b md:border-b-0 md:border-r border-gray-100">
+            <div className="mb-8">
+              <h2 className="text-2xl font-black text-[#0a2540] tracking-tight uppercase">Auditoria de Custos</h2>
+              <p className="text-[10px] text-gray-400 mt-1 font-bold uppercase tracking-[0.2em]">Expondo a Ineficiência de Taxas</p>
+            </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="sm:col-span-2">
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">Capital Inicial Investido (R$)</label>
               <input 
@@ -218,5 +251,6 @@ export const FeeAuditorCalc = () => {
 
       </div>
     </div>
+    </>
   );
 };

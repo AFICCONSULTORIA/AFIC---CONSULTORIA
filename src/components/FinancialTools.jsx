@@ -97,6 +97,22 @@ const months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Jul
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left mt-6">
+       <div className="md:col-span-2">
+         <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-5 mb-2 text-sm text-blue-800">
+           <div className="flex items-start gap-3">
+             <svg className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+             </svg>
+             <div>
+               <p className="font-bold mb-1">Como usar o Orçamento 50/30/20?</p>
+               <p className="text-blue-700/80 leading-relaxed">
+                 O Orçamento 50/30/20 divide sua renda em necessidades (50%), desejos (30%) e poupança/investimentos (20%). Registre suas receitas e despesas do mês, categorizando-as corretamente. O algoritmo alertará automaticamente caso você ultrapasse os limites ideais de proteção de capital.
+               </p>
+             </div>
+           </div>
+         </div>
+       </div>
+
        <div className="md:col-span-2 mb-2">
          <div className="flex items-center justify-between bg-[#0a2540] rounded-lg p-3">
            <button onClick={goPrevMonth} className="px-4 py-2 bg-transparent text-amber-500 font-bold">← Mês Anterior</button>
@@ -225,6 +241,21 @@ const CreditCardTab = () => {
  
    return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left mt-6">
+         <div className="md:col-span-2">
+           <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-5 text-sm text-blue-800">
+             <div className="flex items-start gap-3">
+               <svg className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+               </svg>
+               <div>
+                 <p className="font-bold mb-1">Como usar o Matador de Cartões?</p>
+                 <p className="text-blue-700/80 leading-relaxed">
+                   Use esta ferramenta para mapear todas as suas compras parceladas e dívidas de cartão. Insira a descrição, o valor total devido, o número de parcelas e o mês de início. O sistema calculará o impacto mensal na sua renda, ajudando você a visualizar o quanto da sua capacidade financeira futura já está comprometida.
+                 </p>
+               </div>
+             </div>
+           </div>
+         </div>
          <div>
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
                <h3 className="text-lg font-bold text-gray-900 mb-4">Novo Puxadinho (Cartão)</h3>
@@ -305,6 +336,21 @@ const EmergencyTab = () => {
 
    return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left mt-6">
+         <div className="md:col-span-2">
+           <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-5 text-sm text-blue-800">
+             <div className="flex items-start gap-3">
+               <svg className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+               </svg>
+               <div>
+                 <p className="font-bold mb-1">Como usar o Fundo Blindado?</p>
+                 <p className="text-blue-700/80 leading-relaxed">
+                   A reserva de emergência é seu escudo financeiro. Informe seu custo fixo mensal calculado e quantos meses de segurança deseja ter. A ferramenta calcula o valor ideal da sua reserva, acompanha seu progresso atual e estima o tempo necessário para atingir sua meta com base nos seus aportes mensais.
+                 </p>
+               </div>
+             </div>
+           </div>
+         </div>
          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <h3 className="text-lg font-bold text-gray-900 mb-4">Escala de Sobrevivência</h3>
             <div className="space-y-4">
@@ -390,6 +436,21 @@ return { data, crossoverYear, finalData: data[data.length - 1] || { invested: 0,
 
    return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left mt-6">
+         <div className="md:col-span-2">
+           <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-5 text-sm text-blue-800">
+             <div className="flex items-start gap-3">
+               <svg className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+               </svg>
+               <div>
+                 <p className="font-bold mb-1">Como usar a Bola de Neve?</p>
+                 <p className="text-blue-700/80 leading-relaxed">
+                   Simule o poder dos juros compostos no longo prazo. Insira seu investimento inicial, aportes mensais, prazo e taxa de juros anual esperada. O gráfico mostrará a evolução do seu patrimônio e destacará o "Crossover" – o ponto de inflexão onde os rendimentos superam o valor que você tira do próprio bolso.
+                 </p>
+               </div>
+             </div>
+           </div>
+         </div>
          <div>
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
                <h3 className="text-lg font-bold text-gray-900 mb-4">Parâmetros da Simulação</h3>
@@ -574,8 +635,8 @@ export const FinancialTools = () => {
             {activeTab === 'cards' && <CreditCardTab />}
             {activeTab === 'emergency' && <EmergencyTab />}
             {activeTab === 'snowball' && (canAccessTool('snowball') ? <CompoundInterestTab /> : <ToolLocked />)}
-            {activeTab === 'debt_calc' && (canAccessTool('debt_calc') ? <div className="mt-8 flex justify-center"><DebtDestroyerCalc /></div> : <ToolLocked />)}
-            {activeTab === 'fee_calc' && (canAccessTool('fee_calc') ? <div className="mt-8 flex justify-center"><FeeAuditorCalc /></div> : <ToolLocked />)}
+            {activeTab === 'debt_calc' && (canAccessTool('debt_calc') ? <div className="mt-8 flex flex-col items-center"><DebtDestroyerCalc /></div> : <ToolLocked />)}
+            {activeTab === 'fee_calc' && (canAccessTool('fee_calc') ? <div className="mt-8 flex flex-col items-center"><FeeAuditorCalc /></div> : <ToolLocked />)}
          </div>
      </div>
    );

@@ -9,6 +9,7 @@ export const TierProvider = ({ children }) => {
   const [currentTier, setCurrentTier] = useState('despertar');
   const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // Tier hierarchy for comparison
   const TIER_LEVELS = {
@@ -19,6 +20,13 @@ export const TierProvider = ({ children }) => {
 
   // Check if user has access to a specific tier level
   const hasAccess = (requiredTier) => {
+    if (isAdmin) return true; // Admin tem acesso total
+    
+    // Usuário com assinatura ativa tem acesso total a todas ferramentas
+    if (subscription?.status === 'active') {
+      return true;
+    }
+    
     const userLevel = TIER_LEVELS[currentTier] || 0;
     const requiredLevel = TIER_LEVELS[requiredTier] || 0;
     return userLevel >= requiredLevel;
@@ -34,6 +42,16 @@ export const TierProvider = ({ children }) => {
         return;
       }
 
+      // Check if user is admin
+      const { data: profile } = await supabase
+        .from('afic_profiles')
+        .select('role')
+        .eq('id', user.id)
+        .maybeSingle();
+      
+      const adminRole = profile?.role === 'admin' || user.email === 'aficconsultoria@gmail.com';
+      setIsAdmin(adminRole);
+
       // Get user's subscription
       const { data: sub } = await supabase
         .from('afic_subscriptions_tier')
@@ -45,6 +63,9 @@ export const TierProvider = ({ children }) => {
       if (sub) {
         setSubscription(sub);
         setCurrentTier(sub.tier_id);
+      } else if (adminRole) {
+        // Admin tem acesso total por padrão
+        setCurrentTier('private_elite');
       } else {
         // Default to despertar if no subscription
         setCurrentTier('despertar');
@@ -54,6 +75,26 @@ export const TierProvider = ({ children }) => {
       setCurrentTier('despertar');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Upgrade user to especific tier (for admin use)
+  const upgradeUserTier = async (userId, newTier) => {
+    try {
+      const { error } = await supabase
+        .from('afic_subscriptions_tier')
+        .upsert({
+          user_id: userId,
+          tier_id: newTier,
+          status: 'active',
+          started_at: new Date().toISOString()
+        }, { onConflict: 'user_id' });
+
+      if (error) throw error;
+      return { success: true };
+    } catch (err) {
+      console.error('Error upgrading tier:', err);
+      return { success: false, error: err.message };
     }
   };
 
@@ -95,8 +136,10 @@ export const TierProvider = ({ children }) => {
     currentTier,
     subscription,
     loading,
+    isAdmin,
     hasAccess,
     refreshTier: loadUserTier,
+    upgradeUserTier,
     markModuleCompleted,
     tiers: {
       despertar: { name: 'Despertar', price: 'R$ 497', priceMonthly: 'Grátis' },
