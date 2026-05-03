@@ -226,35 +226,86 @@ window.initApp = function() {
     const chatInput = document.getElementById('chat-input');
     const chatHistory = document.getElementById('chat-history');
 
-    function addChatMessage(text, side) {
+    const typingIndicator = document.getElementById('typing-indicator');
+
+    function addChatMessage(text, side, isHtml = false) {
         if (!chatHistory) return;
         const msgDiv = document.createElement('div');
         msgDiv.className = `message ${side === 'user' ? 'user-message' : 'bot-message'}`;
-        msgDiv.textContent = text;
-        chatHistory.appendChild(msgDiv);
+        
+        if (isHtml) {
+            msgDiv.innerHTML = text;
+        } else {
+            msgDiv.textContent = text;
+        }
+        
+        // Inserir antes do indicador de digitação
+        if (typingIndicator) {
+            chatHistory.insertBefore(msgDiv, typingIndicator);
+        } else {
+            chatHistory.appendChild(msgDiv);
+        }
+        
         chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+
+    function showTyping() {
+        if (typingIndicator) {
+            typingIndicator.classList.remove('hidden');
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+    }
+
+    function hideTyping() {
+        if (typingIndicator) {
+            typingIndicator.classList.add('hidden');
+        }
     }
 
     function getBotResponse(query) {
         const q = query.toLowerCase();
         
-        if (q.includes('agendar') || q.includes('consultoria') || q.includes('falar')) {
-            return "Com certeza. Podemos agendar um call de alocação estratégica diretamente com nosso consultor sênior. Gostaria de receber o link do calendário ou prefere que entremos em contato via WhatsApp?";
-        }
-        if (q.includes('plano') || q.includes('premium') || q.includes('elite') || q.includes('preço')) {
-            return "Atualmente oferecemos dois tiers institucionais: o Private (R$ 490/mês) para gestão autônoma assistida, e o Elite (R$ 1.850/mês) com mentoria individual 1:1 e revisão trimestral de portfólio. Você pode ver mais detalhes na aba 'Minha Conta'.";
-        }
-        if (q.includes('seguro') || q.includes('dados') || q.includes('supabase')) {
-            return "A AFIC utiliza criptografia de nível bancário e infraestrutura Supabase para garantir que seus dados patrimoniais estejam protegidos e sob sua total soberania.";
+        if (q.includes('dashboard') || q.includes('resumo') || q.includes('início')) {
+            return "O <strong>Dashboard</strong> é a sua central de comando. Nele você tem uma visão rápida do seu progresso, metas e atalhos rápidos para as outras áreas da plataforma. <a href='#' onclick='window.switchPage(\"dashboard\"); return false;'>Acessar Dashboard</a>";
         }
         if (q.includes('ferramenta') || q.includes('calculadora') || q.includes('juros') || q.includes('simular')) {
-            return "Nossas calculadoras de Projeção Institucional e Bola de Neve Patrimonial estão disponíveis na aba 'Ferramentas'. Elas utilizam modelos de capitalização composta para prever o seu ponto de ignição financeira.";
+            return "Nossas ferramentas de Projeção Institucional e Bola de Neve Patrimonial estão no módulo <strong>Ferramentas Financeiras</strong>. Elas ajudam você a calcular os juros compostos e definir metas claras. <a href='#' onclick='window.switchPage(\"tools\"); return false;'>Acessar Ferramentas</a>";
+        }
+        if (q.includes('educação') || q.includes('aula') || q.includes('curso') || q.includes('aprender')) {
+            return "Temos um acervo completo de aulas no módulo de <strong>Educação</strong>, onde você pode aprender sobre arquitetura patrimonial, investimentos e mentalidade. <a href='#' onclick='window.switchPage(\"education\"); return false;'>Acessar Educação</a>";
+        }
+        if (q.includes('comunidade') || q.includes('fórum') || q.includes('interagir') || q.includes('rede')) {
+            return "Você pode trocar ideias e fazer networking com outros membros na nossa <strong>Comunidade Elite</strong>. É um ótimo lugar para tirar dúvidas do dia a dia. <a href='#' onclick='window.switchPage(\"community\"); return false;'>Acessar Comunidade</a>";
+        }
+        if (q.includes('conta') || q.includes('perfil') || q.includes('senha') || q.includes('configuração')) {
+            return "Para alterar suas informações, metas financeiras ou resetar a senha, visite a seção <strong>Minha Conta</strong>. <a href='#' onclick='window.switchPage(\"account\"); return false;'>Minha Conta</a>";
+        }
+        if (q.includes('plano') || q.includes('premium') || q.includes('elite') || q.includes('preço')) {
+            return "Temos diferentes níveis de acesso à plataforma AFIC. Você pode realizar o upgrade da sua conta diretamente no painel para ter acesso irrestrito às planilhas avançadas e ferramentas.";
+        }
+        if (q.includes('bug') || q.includes('erro') || q.includes('problema') || q.includes('falha')) {
+            return "Sentimos muito pelo inconveniente. A sua experiência é nossa prioridade. Por favor, detalhe o problema para a nossa equipe técnica de suporte avançado para correção imediata. <br><br><a href='https://wa.me/5566996893617?text=Ol%C3%A1!%20Encontrei%20um%20bug/erro%20na%20plataforma%20e%20gostaria%20de%20reportar%20para%20o%20suporte%20t%C3%A9cnico.' target='_blank'>Reportar Bug à Equipe (WhatsApp)</a>";
+        }
+        if (q.includes('consultoria') || q.includes('agendar') || q.includes('suporte')) {
+            return "Posso conectar você diretamente com um de nossos consultores humanos para uma conversa aprofundada ou suporte técnico. <br><br><a href='https://wa.me/5566996893617?text=Ol%C3%A1!%20Vim%20pelo%20AFIC%20Concierge%20e%20gostaria%20de%20falar%20com%20um%20especialista.' target='_blank'>Falar com um Especialista no WhatsApp</a>";
         }
         if (q.includes('oi') || q.includes('olá') || q.includes('bom dia') || q.includes('boa tarde')) {
-            return "Olá! Sou o Concierge Digital da AFIC. Como posso auxiliar na arquitetura do seu patrimônio hoje?";
+            return "Olá! Sou o seu AFIC Concierge. Posso guiar você pelos nossos módulos (Ferramentas, Educação, Comunidade) ou te conectar a um de nossos consultores. O que você procura hoje?";
         }
 
-        return "Entendo sua dúvida. Como esta é uma questão técnica, gostaria de ser transferido para um consultor humano ou prefere que eu procure informações mais detalhadas na nossa base de conhecimento institucional?";
+        // Fallback for unrecognized queries
+        return "Desculpe, ainda não tenho essa informação pré-programada. Mas não se preocupe! Você pode conversar diretamente com nossa equipe de especialistas humanos.<br><br><a href='https://wa.me/5566996893617?text=Ol%C3%A1!%20Vim%20pelo%20AFIC%20Concierge%20e%20preciso%20de%20ajuda%20com%20uma%20d%C3%BAvida%20espec%C3%ADfica.' target='_blank'>Transferir para um Humano 👨‍💼</a>";
+    }
+
+    function processBotReply(msg) {
+        showTyping();
+        
+        // Simular o tempo de pensamento/digitação (1.5 segundos)
+        setTimeout(() => {
+            hideTyping();
+            const response = getBotResponse(msg);
+            addChatMessage(response, 'bot', true); // isHtml = true
+        }, 1500);
     }
 
     if (supportToggle && supportWidget) {
@@ -277,13 +328,10 @@ window.initApp = function() {
                 const msg = chatInput.value.trim();
                 if (!msg) return;
 
-                addChatMessage(msg, 'user');
+                addChatMessage(msg, 'user', false);
                 chatInput.value = '';
-
-                setTimeout(() => {
-                    const response = getBotResponse(msg);
-                    addChatMessage(response, 'bot');
-                }, 700);
+                
+                processBotReply(msg);
             });
         }
 
@@ -291,11 +339,8 @@ window.initApp = function() {
         document.querySelectorAll('.quick-action-tag').forEach(tag => {
             tag.addEventListener('click', () => {
                 const query = tag.getAttribute('data-query');
-                addChatMessage(query, 'user');
-                setTimeout(() => {
-                    const response = getBotResponse(query);
-                    addChatMessage(response, 'bot');
-                }, 700);
+                addChatMessage(query, 'user', false);
+                processBotReply(query);
             });
         });
     }

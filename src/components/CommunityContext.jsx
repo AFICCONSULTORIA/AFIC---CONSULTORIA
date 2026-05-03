@@ -127,17 +127,29 @@ export const CommunityProvider = ({ children }) => {
 
   const updateTopic = async (topicId, title, content) => {
     if (!supabase) return false;
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('community_topics')
       .update({ 
         title, 
         content, 
         updated_at: new Date().toISOString() 
       })
-      .eq('id', topicId);
+      .eq('id', topicId)
+      .select();
     
-    if (!error) await fetchTopics(setTopics);
-    return !error;
+    if (error) {
+      console.error("Erro ao atualizar tópico:", error);
+      alert("Erro técnico ao salvar: " + error.message);
+      return false;
+    }
+
+    if (!data || data.length === 0) {
+      alert("⚠️ O banco de dados recusou a edição. Política RLS (Update) ausente na tabela community_topics. Execute o script SQL no Supabase para permitir edições.");
+      return false;
+    }
+
+    await fetchTopics(setTopics);
+    return true;
   };
 
   const updateTopicCover = async (topicId, coverFile) => {
@@ -242,15 +254,27 @@ export const CommunityProvider = ({ children }) => {
 
   const updateComment = async (commentId, content) => {
     if (!supabase) return false;
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('community_comments')
       .update({ 
         content, 
         updated_at: new Date().toISOString() 
       })
-      .eq('id', commentId);
+      .eq('id', commentId)
+      .select();
     
-    return !error;
+    if (error) {
+      console.error("Erro ao atualizar comentário:", error);
+      alert("Erro técnico ao salvar comentário: " + error.message);
+      return false;
+    }
+
+    if (!data || data.length === 0) {
+      alert("⚠️ O banco de dados recusou a edição. Política RLS (Update) ausente na tabela community_comments. Execute o script SQL no Supabase para permitir edições.");
+      return false;
+    }
+
+    return true;
   };
 
   const getLikes = async (topicId) => {
