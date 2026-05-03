@@ -362,6 +362,70 @@ export const LandingPage = () => {
         </div>
       </section>
 
+      {/* ─── NEWSLETTER CTA ─── */}
+      <section className="py-20 bg-[#D4AF37] relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#051845_1px,transparent_1px)] [background-size:20px_20px]"></div>
+        <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
+          <h2 className="text-3xl md:text-4xl font-display font-extrabold text-[#051845] mb-4">AFIC Insights</h2>
+          <p className="text-lg text-[#051845]/80 mb-8 max-w-2xl mx-auto font-medium">Receba teses de investimento, análises de mercado e estratégias de proteção patrimonial diretamente no seu e-mail. Sem spam, apenas conteúdo de alto valor.</p>
+          
+          <form 
+            className="flex flex-col sm:flex-row gap-3 max-w-xl mx-auto"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const emailInput = e.target.elements.email;
+              const btn = e.target.elements.submitBtn;
+              const msgDiv = document.getElementById('nl-msg-main');
+              
+              try {
+                btn.disabled = true;
+                btn.textContent = 'Inscrevendo...';
+                msgDiv.style.display = 'none';
+                
+                const { error } = await window.aficSupabase
+                  .from('newsletter_subscribers')
+                  .insert([{ email: emailInput.value }]);
+                  
+                if (error) {
+                   if (error.code === '23505') {
+                      throw new Error('Este e-mail já está inscrito em nossa base.');
+                   }
+                   throw error;
+                }
+                
+                emailInput.value = '';
+                msgDiv.textContent = 'Inscrição confirmada com sucesso! Bem-vindo(a).';
+                msgDiv.className = 'text-sm text-[#051845] font-extrabold mt-3 bg-white/50 inline-block px-4 py-2 rounded';
+                msgDiv.style.display = 'block';
+              } catch (err) {
+                msgDiv.textContent = err.message || 'Erro ao se inscrever. Tente novamente.';
+                msgDiv.className = 'text-sm text-red-700 font-extrabold mt-3 bg-red-100/80 inline-block px-4 py-2 rounded';
+                msgDiv.style.display = 'block';
+              } finally {
+                btn.disabled = false;
+                btn.textContent = 'Quero Receber Insights';
+              }
+            }}
+          >
+            <input 
+              type="email" 
+              name="email"
+              placeholder="Digite seu melhor e-mail" 
+              className="flex-1 bg-white border-2 border-transparent text-base px-6 py-4 focus:outline-none focus:border-[#051845] text-[#051845] placeholder:text-[#051845]/40 shadow-lg font-medium rounded-sm"
+              required
+            />
+            <button 
+              type="submit" 
+              name="submitBtn"
+              className="bg-[#051845] text-white px-8 py-4 font-bold text-base hover:bg-[#0a2460] transition-colors shadow-lg rounded-sm whitespace-nowrap"
+            >
+              Quero Receber Insights
+            </button>
+          </form>
+          <div id="nl-msg-main" className="hidden"></div>
+        </div>
+      </section>
+
       {/* ─── FOOTER ─── */}
       <footer className="py-20 bg-[#faf8ff] dark:bg-[#1a1a2e] border-t border-[#ebedff] dark:border-[#252545]">
         <div className="max-w-7xl mx-auto px-6">
@@ -376,6 +440,8 @@ export const LandingPage = () => {
               <p className="text-sm text-[#4a5068] dark:text-[#94a3b8] leading-relaxed mb-6">
                 A AFIC Consultoria é a força de Mato Grosso construindo riqueza e inteligência financeira institucional no Centro-Oeste brasileiro.
               </p>
+              
+
               <div className="flex gap-4">
                 <a href="#" className="w-8 h-8 rounded-full bg-[#ebedff] dark:bg-[#252545] flex items-center justify-center hover:bg-[#D4AF37] transition-colors"><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M22.23 0H1.77C.8 0 0 .77 0 1.72v20.56C0 23.23.8 24 1.77 24h20.46c.98 0 1.77-.77 1.77-1.72V1.72C24 .77 23.2 0 22.23 0zM7.12 20.45H3.56V9h3.56v11.45zM5.34 7.58c-1.14 0-2.06-.92-2.06-2.06 0-1.14.92-2.06 2.06-2.06 1.14 0 2.06.92 2.06 2.06 0 1.14-.92 2.06-2.06 2.06zM20.45 20.45h-3.56v-5.6c0-1.34-.03-3.06-1.87-3.06-1.87 0-2.15 1.46-2.15 2.96v5.7h-3.56V9h3.42v1.56h.05c.48-.91 1.65-1.86 3.4-1.86 3.63 0 4.3 2.39 4.3 5.5v6.25z"/></svg></a>
                 <a href="#" className="w-8 h-8 rounded-full bg-[#ebedff] dark:bg-[#252545] flex items-center justify-center hover:bg-[#D4AF37] transition-colors"><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 1.69.073 7.053.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 1.703 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-1.704 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-1.696-6.762-6.979-6.979C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></a>

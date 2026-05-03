@@ -6,6 +6,7 @@ import { TelemetriaAdmin } from './TelemetriaAdmin';
 import { FinanceiroAdmin } from './FinanceiroAdmin';
 import { AcademyProvider } from './AcademyContext';
 import { UserTierAdmin } from './UserTierAdmin';
+import { NewsletterAdmin } from './NewsletterAdmin';
 
 export const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('crm');
@@ -14,6 +15,7 @@ export const AdminPanel = () => {
     { id: 'crm', label: 'CRM & Triagem' },
     { id: 'alunos', label: 'Gestão de Alunos' },
     { id: 'usuarios', label: 'Acesso Usuários' },
+    { id: 'marketing', label: 'Marketing' },
     { id: 'telemetria', label: 'Telemetria' },
     { id: 'financeiro', label: 'Motor Financeiro' },
     { id: 'conteudo', label: 'Conteúdo' }
@@ -60,6 +62,13 @@ export const AdminPanel = () => {
         {activeTab === 'usuarios' && (
           <div className="py-8 px-4 max-w-4xl mx-auto animate-fade-in-up">
             <UserTierAdmin />
+          </div>
+        )}
+
+        {/* Marketing / Newsletter */}
+        {activeTab === 'marketing' && (
+          <div className="py-8 px-4 max-w-6xl mx-auto animate-fade-in-up">
+            <NewsletterAdmin />
           </div>
         )}
 
