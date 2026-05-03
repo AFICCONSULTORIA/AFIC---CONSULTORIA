@@ -131,8 +131,7 @@ export const CommunityProvider = ({ children }) => {
       .from('community_topics')
       .update({ 
         title, 
-        content, 
-        updated_at: new Date().toISOString() 
+        content
       })
       .eq('id', topicId)
       .select();
@@ -257,8 +256,7 @@ export const CommunityProvider = ({ children }) => {
     const { data, error } = await supabase
       .from('community_comments')
       .update({ 
-        content, 
-        updated_at: new Date().toISOString() 
+        content
       })
       .eq('id', commentId)
       .select();
