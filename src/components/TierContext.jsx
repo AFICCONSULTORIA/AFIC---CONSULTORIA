@@ -44,7 +44,7 @@ export const TierProvider = ({ children }) => {
 
       // Check if user is admin
       const { data: profile } = await supabase
-        .from('afic_profiles')
+        .from('profiles')
         .select('role')
         .eq('id', user.id)
         .maybeSingle();
@@ -81,7 +81,8 @@ export const TierProvider = ({ children }) => {
   // Upgrade user to especific tier (for admin use)
   const upgradeUserTier = async (userId, newTier) => {
     try {
-      const { error } = await supabase
+      // Tentar upsert primeiro (mais eficiente se houver PK/Unique)
+      const { error: upsertError } = await supabase
         .from('afic_subscriptions_tier')
         .upsert({
           user_id: userId,
@@ -90,11 +91,42 @@ export const TierProvider = ({ children }) => {
           started_at: new Date().toISOString()
         }, { onConflict: 'user_id' });
 
-      if (error) throw error;
+      // Se falhar por erro de onConflict/relationship, tentar manual
+      if (upsertError) {
+        console.warn('Upsert failed, trying manual update/insert:', upsertError.message);
+        
+        const { data: existing } = await supabase
+          .from('afic_subscriptions_tier')
+          .select('id')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+        if (existing) {
+          const { error: updateError } = await supabase
+            .from('afic_subscriptions_tier')
+            .update({
+              tier_id: newTier,
+              status: 'active'
+            })
+            .eq('user_id', userId);
+          if (updateError) throw updateError;
+        } else {
+          const { error: insertError } = await supabase
+            .from('afic_subscriptions_tier')
+            .insert({
+              user_id: userId,
+              tier_id: newTier,
+              status: 'active',
+              started_at: new Date().toISOString()
+            });
+          if (insertError) throw insertError;
+        }
+      }
+      
       return { success: true };
     } catch (err) {
       console.error('Error upgrading tier:', err);
-      return { success: false, error: err.message };
+      return { success: false, error: err.message || 'Erro desconhecido' };
     }
   };
 
