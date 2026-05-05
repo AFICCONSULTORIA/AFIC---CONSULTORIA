@@ -412,14 +412,17 @@ window.initApp = function() {
     function checkAdminLink() {
         const analisePerfilLink = document.querySelector('.nav-link[data-page="admin-analise-perfil"]');
         const dashboardLink = document.querySelector('.nav-link[data-page="admin-dashboard"]');
-        const isAdminEmail = currentUser?.email === 'aficconsultoria@gmail.com';
-        const isAdmin = window.isUserAdmin || isAdminEmail;
+        const adminPlansLink = document.querySelector('.nav-link[data-page="admin-plans"]');
+        const isAdmin = currentUser?.email === 'aficconsultoria@gmail.com';
         
         if (analisePerfilLink) {
             analisePerfilLink.style.display = isAdmin ? '' : 'none';
         }
         if (dashboardLink) {
             dashboardLink.style.display = isAdmin ? '' : 'none';
+        }
+        if (adminPlansLink) {
+            adminPlansLink.style.display = isAdmin ? '' : 'none';
         }
     }
     
