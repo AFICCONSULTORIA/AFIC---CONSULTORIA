@@ -10,6 +10,7 @@ export const TierProvider = ({ children }) => {
   const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
 
   // Tier hierarchy for comparison
   const TIER_LEVELS = {
@@ -38,18 +39,26 @@ export const TierProvider = ({ children }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         setCurrentTier('despertar');
+        setUserEmail('');
         setLoading(false);
         return;
       }
 
+      setUserEmail(user.email);
+
       // Check if user is admin
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', user.id)
         .maybeSingle();
       
-      const adminRole = profile?.role === 'admin' || user.email === 'aficconsultoria@gmail.com';
+      if (profileError && profileError.code !== 'PGRST116') {
+        console.warn('Error fetching profile role (column might not exist):', profileError);
+      }
+      
+      const email = user.email?.toLowerCase().trim() || '';
+      const adminRole = profile?.role === 'admin' || email === 'aficconsultoria@gmail.com';
       setIsAdmin(adminRole);
 
       // Get user's subscription
@@ -169,6 +178,7 @@ export const TierProvider = ({ children }) => {
     subscription,
     loading,
     isAdmin,
+    userEmail,
     hasAccess,
     refreshTier: loadUserTier,
     upgradeUserTier,

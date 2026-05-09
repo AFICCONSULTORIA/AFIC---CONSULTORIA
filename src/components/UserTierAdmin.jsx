@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useTier } from './TierContext';
+import { AdminUserBudgetModal } from './AdminUserBudgetModal';
 
 export const UserTierAdmin = () => {
-  const { isAdmin, upgradeUserTier, refreshTier } = useTier();
+  const { isAdmin, upgradeUserTier, refreshTier, userEmail } = useTier();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [upgrading, setUpgrading] = useState(null);
   const [message, setMessage] = useState({ type: '', text: '' });
+  
+  // State for Budget Viewer Modal
+  const [viewingBudgetUser, setViewingBudgetUser] = useState(null);
 
   // State for new user form
   const [newEmail, setNewEmail] = useState('');
@@ -92,8 +96,18 @@ export const UserTierAdmin = () => {
 
   if (!isAdmin) {
     return (
-      <div className="p-6 bg-amber-50 border border-amber-200 rounded-lg">
-        <p className="text-amber-800">Acesso restrito a administradores.</p>
+      <div className="p-6 bg-amber-50 border border-amber-200 rounded-lg max-w-2xl mx-auto mt-10">
+        <h2 className="text-xl font-bold text-amber-900 mb-2">Acesso restrito a administradores</h2>
+        <p className="text-amber-800 mb-4">
+          O seu usuário atual (<span className="font-bold">{useTier().userEmail || 'Não identificado'}</span>) não possui permissões administrativas.
+        </p>
+        <div className="bg-white/60 p-4 rounded-lg text-sm text-amber-900 border border-amber-200">
+          <p className="font-bold mb-2">Como resolver?</p>
+          <ul className="list-disc pl-5 space-y-1">
+            <li>Faça login com o e-mail: <strong>aficconsultoria@gmail.com</strong></li>
+            <li>Ou certifique-se de que a coluna <strong>role</strong> na tabela <strong>profiles</strong> do Supabase está preenchida com o valor <strong>admin</strong> para o seu usuário.</li>
+          </ul>
+        </div>
       </div>
     );
   }
@@ -267,6 +281,13 @@ export const UserTierAdmin = () => {
               </div>
               <div className="flex gap-2">
                 <button
+                  onClick={() => setViewingBudgetUser({ id: user.user_id, name: user.profiles?.nickname || user.profiles?.email_public || 'Usuário' })}
+                  className="px-3 py-1 text-xs bg-blue-100 text-blue-700 font-bold rounded hover:bg-blue-200 transition-colors flex items-center gap-1"
+                >
+                  <span>👁️</span> Orçamento
+                </button>
+                <div className="w-px bg-gray-200 mx-1"></div>
+                <button
                   onClick={() => handleUpgrade(user.user_id, 'assinante')}
                   disabled={upgrading === user.user_id}
                   className="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
@@ -287,6 +308,14 @@ export const UserTierAdmin = () => {
             <p className="text-center p-8 text-gray-400">Nenhum usuário encontrado</p>
           )}
         </div>
+      )}
+
+      {viewingBudgetUser && (
+        <AdminUserBudgetModal 
+          userId={viewingBudgetUser.id} 
+          userName={viewingBudgetUser.name} 
+          onClose={() => setViewingBudgetUser(null)} 
+        />
       )}
     </div>
   );
